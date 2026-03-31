@@ -31,7 +31,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-, "src/app/usuarios/cadastro/page.jsx"  ],
+, "src/app/usuario/cadastro/page.jsx"  ],
   "exclude": [
     "node_modules"
   ]
