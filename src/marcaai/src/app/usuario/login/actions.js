@@ -2,12 +2,11 @@
 import { redirect } from 'next/navigation';
 
 export async function cadastrarUsuario(formData) {
-  const nome = formData.get("nome");
   const email = formData.get("email");
 
-  console.log("Salvo com sucesso:", { nome, email });
+  console.log("Salvo com sucesso:", { email });
   
   // Remova o 'return { success: true }'
   // Se quiser redirecionar após salvar (como no Laravel):
-  redirect('/usuario/login'); 
+  redirect('/usuario'); 
 }
