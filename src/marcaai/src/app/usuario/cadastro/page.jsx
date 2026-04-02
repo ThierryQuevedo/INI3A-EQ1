@@ -48,7 +48,7 @@ export default function CadastroUsuario() {
             type="submit" 
             className="bg-orange-400 px-8 py-2 rounded-2xl text-white font-bold w-full hover:bg-orange-500 transition-all"
           >
-            Entrar
+            Cadastrar
           </button>
           </div>
 
