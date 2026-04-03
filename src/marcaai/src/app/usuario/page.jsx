@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Calendario from "../../components/calendario/Calendario";
-import SemanaCalendario from "../../components/calendario/SemanaCalendario";
 import { User } from "lucide-react";
 import { db } from "../../db/index"; 
 import { users } from "../../db/schema.js"; 

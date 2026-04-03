@@ -30,9 +30,6 @@ export default function Login() {
           <div>
             <div className="flex justify-between">
               <label className="block text-sm font-medium text-gray-700">Senha</label>
-              <Link href="/esqueci-senha" className="text-xs text-blue-600 hover:underline">
-                Esqueceu a senha?
-              </Link>
             </div>
             <input 
               name="password"
@@ -41,6 +38,9 @@ export default function Login() {
               placeholder="********"
               required
             />
+              <Link href="/esqueci-senha" className="text-xs text-blue-600 hover:underline">
+                Esqueceu a senha?
+              </Link>
           </div>
 
           {/* Botão de Entrar (Submit) */}

@@ -1,17 +1,21 @@
 import "./globals.css"
-import Header from "../components/Header"
+import Header from "../components/Header/Header"
 import Footer from "../components/Footer"
+import { Providers } from "../components/Header/providers";
+
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" suppressHydrationWarning>
       <body>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          <main className="flex-1">
-            {children}
+        <Providers>
+          <div className="flex flex-col min-h-screen bg-white  text-black  transition-colors duration-300">
+            <Header />
+            <main className="flex-1">
+              {children}
             </main>
-          <Footer />
-        </div>
+            <Footer />
+          </div>
+        </Providers>
       </body>
     </html>
   );
