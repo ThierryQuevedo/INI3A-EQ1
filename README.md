@@ -21,7 +21,9 @@ adicione a seguinte string de conexão:
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
 ```
 Nota: Certifique-se de que o usuário, senha e porta coincidem com a sua instalação local do Postgres.
-
+OBS Windows: 
+```Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser```
+powershell 
 ### 3. Instalar Dependências
 ```
 npm install
