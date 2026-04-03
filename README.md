@@ -10,7 +10,7 @@ PostgreSQL rodando localmente
 
 ### 1. Clonar e Navegar
 ```
-git clone https://github.com/seu-usuario/seu-repositorio.git
+git clone https://github.com/ThierryQuevedo/INI3A-EQ1.git
 cd src/marcaai/
 ```
 
