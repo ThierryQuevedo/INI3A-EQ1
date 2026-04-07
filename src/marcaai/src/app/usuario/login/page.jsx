@@ -1,9 +1,7 @@
-import { cadastrarUsuario } from "./actions.js";
+import { loginAction } from "../../actions/action_login";
 import Link from 'next/link';
-// Supondo que você terá uma action para o login também
-// import { autenticarUsuario } from "./actions"; 
 
-export default function Login() {
+export default function loginPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -12,7 +10,7 @@ export default function Login() {
         </h1>
 
         {/* Aqui você usaria a action de login quando ela estiver pronta */}
-        <form action = {cadastrarUsuario} className="space-y-4">
+        <form action = {loginAction} className="space-y-4">
           
           {/* Campo Email */}
           <div>

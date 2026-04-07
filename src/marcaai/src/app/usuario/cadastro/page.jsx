@@ -1,7 +1,7 @@
-import { cadastrarUsuario } from "./actions.js";
+import { cadastrarAction } from "../../actions/action_cadastro.js";
 import Link from 'next/link';
 
-export default function CadastroUsuario() {
+export default function cadastrarPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
@@ -9,7 +9,7 @@ export default function CadastroUsuario() {
           Criar Conta na Marca Ai
         </h1>
 
-        <form action = {cadastrarUsuario} className="space-y-4">
+        <form action = {cadastrarAction} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Nome Completo</label>
             <input 
@@ -28,6 +28,17 @@ export default function CadastroUsuario() {
               type="email" 
               className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500 outline-none"
               placeholder="seu@email.com"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Telefone</label>
+            <input 
+              name="cel"
+              type="cel" 
+              className="mt-1 block w-full border border-gray-300 rounded-md p-2 shadow-sm focus:ring-blue-500 focus:border-blue-500 outline-none"
+              placeholder=""
               required
             />
           </div>

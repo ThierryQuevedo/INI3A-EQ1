@@ -4,10 +4,10 @@ import { User } from "lucide-react";
 import { db } from "../../db/index"; 
 import { users } from "../../db/schema.js"; 
 import { eq } from "drizzle-orm";
+import { getSession } from "../actions/action_sessao";
 
 export default async function PaginaUsuario() {
-  const listaUsuarios = await db.select().from(users).where(eq(users.id, 1));
-  const usuario = listaUsuarios[0];
+  const usuario = await getSession();
 
   if (!usuario) {
     return <div className="text-center p-10">Usuário não encontrado.</div>;
@@ -56,6 +56,7 @@ export default async function PaginaUsuario() {
           <section className="bg-fuchsia-300 w-100">
             <h1 className="text-center">Detalhes</h1>
             <div>
+              <p>Telefone: {usuario.telefone}</p>
               <p>Endereço: </p>
             </div>
           </section>
