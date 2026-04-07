@@ -32,6 +32,8 @@ npm install
 ```
 npx drizzle-kit migrate
 ```
+drizzle-kit push // rode isso para atualizar sua tabela se necessario
+```
 ## 💻 Executando o Projeto
 Para iniciar o servidor de desenvolvimento, execute:
 ```
