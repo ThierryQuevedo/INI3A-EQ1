@@ -1,2 +1,30 @@
 @import "tailwindcss";
 
+@theme{
+  /* --- Paleta de Azuis --- */
+  --color-tcc-azul-lightest: #DCE5FE;
+  --color-tcc-azul-light: #A1BDFD;
+  --color-tcc-azul-medium: #5696FC;
+  --color-tcc-azul: #1471D5; /* DEFAULT */
+  --color-tcc-azul-dark: #0B4F98;
+  --color-tcc-azul-darker: #042F5F;
+  --color-tcc-azul-deep: #01112A;
+
+  /* --- Paleta de Laranjas*/
+  --color-tcc-laranja-soft: #FFEDE6;
+  --color-tcc-laranja-pale: #FECCB4;
+  --color-tcc-laranja: #FD953A; /* DEFAULT */
+  --color-tcc-laranja-dark: #CC7313;
+  --color-tcc-laranja-deep: #98540B;
+  --color-tcc-laranja-wood: #673705;
+  --color-tcc-laranja-black: #3A1D01;
+
+  /* --- Paleta de Tons de Cinza --- */
+  --color-tcc-neutro-100: #E5E6E7;
+  --color-tcc-neutro-200: #BCBEC2;
+  --color-tcc-neutro-300: #94979E;
+  --color-tcc-neutro-400: #707378;
+  --color-tcc-neutro-500: #4E5054;
+  --color-tcc-neutro-600: #2E3032;
+  --color-tcc-neutro-700: #111213;
+}
