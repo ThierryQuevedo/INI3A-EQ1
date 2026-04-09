@@ -3,6 +3,7 @@ import Footer from "../components/Footer";
 import CategoriasButton from "../components/CategoriasButton";
 import Link from "next/link";
 import Image from "next/image";
+import { Button } from "../../@/components/ui/button";
 
 import trabalho from "../../public/images/trabalho.jpg"
 export default function Home() {
@@ -11,6 +12,13 @@ export default function Home() {
         <main className="flex-1">
           <section className="justify-center py-10">
             <Image src={trabalho} className="mx-auto" alt="placeholder"/>
+            <h1 className="mx-38">
+              Tilulo 1
+            </h1>
+            <p className="w-50 mx-20">
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Minus, eos totam inventore cupiditate sed quam ad dolor doloribus unde molestias consectetur odio repellat cum voluptatum minima at quis debitis reiciendis?
+            </p>
+            <Button variant="outline">Button</Button>
           </section>
           <section className="bg-gray-200 py-5 rounded-2xl">
             <h1 className="text-center text-2xl font-bold mb-6">Categorias</h1>
@@ -20,6 +28,7 @@ export default function Home() {
               <CategoriasButton link="/usuario/cadastro" texto="Aulas"></CategoriasButton>
               <CategoriasButton link="/usuario/cadastro" texto="Outros"></CategoriasButton>
             </nav>
+            
           </section>
         </main>
     </div>
