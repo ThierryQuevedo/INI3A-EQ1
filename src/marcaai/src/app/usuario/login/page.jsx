@@ -44,7 +44,7 @@ export default function LoginPage() {
         <div className="max-w-sm w-full">
           <h1 className="text-3xl font-extrabold text-tcc-neutro-700 mb-2">Entrar na sua conta</h1>
           <div className="text-sm text-tcc-neutro-400 mb-8">
-            Não tem conta? <Link href="/cadastro" className="text-tcc-azul-dark font-bold hover:underline">Criar conta grátis</Link>
+            Não tem conta? <Link href="cadastro" className="text-tcc-azul-dark font-bold hover:underline">Criar conta grátis</Link>
           </div>
 
           <button className="w-full border border-tcc-neutro-100 rounded-xl p-3.5 flex gap-3 items-center justify-center mb-6 hover:bg-tcc-neutro-100/30 transition-colors">
