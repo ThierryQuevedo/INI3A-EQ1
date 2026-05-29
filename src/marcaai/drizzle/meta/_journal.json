@@ -8,6 +8,20 @@
       "when": 1775171596148,
       "tag": "0000_stale_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780026149464,
+      "tag": "0001_glamorous_banshee",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780026178859,
+      "tag": "0002_fat_leper_queen",
+      "breakpoints": true
     }
   ]
 }
