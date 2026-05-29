@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { eq, and } from "drizzle-orm";
 import { db } from "../../db/index"; // O arquivo que você me mostrou no print
-import { users, sessions } from "../../db/schema"; // Suas tabelas
+import { usuarios, sessoes } from "../../db/schema"; // Suas tabelas
 
 export async function getSession() {
   // 1. Pega o "crachá" (cookie) que o navegador mandou

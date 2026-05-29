@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "../../db/index"; 
-import { users, sessions } from "../../db/schema"; // Adicione 'sessions' aqui
+import { usuarios, sessoes } from "../../db/schema"; // Adicione 'sessions' aqui
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -10,7 +10,7 @@ import crypto from "crypto"; // Faltava importar o crypto nativo
 
 export async function loginAction(formData) {
   const email = formData.get("email");
-  const password = formData.get("password");
+  const password = formData.get("senha");
 
   if (!email || !password) {
     return { error: "Preencha todos os campos." };

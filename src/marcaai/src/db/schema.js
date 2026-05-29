@@ -1,46 +1,39 @@
+import { pgTable, serial, text, timestamp, integer, decimal, boolean } from 'drizzle-orm/pg-core';
 
-import { pgTable, serial, text, timestamp, integer, decimal } from 'drizzle-orm/pg-core';
-
-
-
-export const users = pgTable('users', {
+export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
-  name: text('name').notNull(),
+  nome: text('nome').notNull(),
   email: text('email').notNull().unique(),
   telefone: text('telefone').unique(),
-  senha: text("password").notNull(), 
+  senha: text("senha").notNull(), 
   tipo: text('tipo').notNull(), 
-  createdAt: timestamp('created_at').defaultNow().notNull(),
+  admin: boolean('admin').default(false).notNull(), // Campo adicionado aqui
+  criadoEm: timestamp('criado_em').defaultNow().notNull(),
 });
 
-export const sessions = pgTable('sessions', {
+export const sessoes = pgTable('sessoes', {
   id: text('id').primaryKey(), 
-  userId: integer('user_id')
+  usuarioId: integer('usuario_id')
     .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }), 
-  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    .references(() => usuarios.id, { onDelete: 'cascade' }),
+  expiraEm: timestamp('expira_em', { withTimezone: true }).notNull(),
 });
-
-
 
 export const clientes = pgTable('clientes', {
-
-  usuarioId: integer('user_id')
+  usuarioId: integer('usuario_id')
     .primaryKey()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => usuarios.id, { onDelete: 'cascade' }),
   cpf: text('cpf').notNull().unique(),
 });
 
 export const prestadores = pgTable('prestadores', {
-  usuarioId: integer('user_id')
+  usuarioId: integer('usuario_id')
     .primaryKey()
-    .references(() => users.id, { onDelete: 'cascade' }),
+    .references(() => usuarios.id, { onDelete: 'cascade' }),
   documento: text('documento').notNull().unique(), 
   biografia: text('biografia'),
   raioAtendimentoKm: integer('raio_atendimento_km').default(0).notNull(),
 });
-
-
 
 export const categorias = pgTable('categorias', {
   id: serial('id').primaryKey(),
@@ -60,8 +53,6 @@ export const servicos = pgTable('servicos', {
   preco: decimal('preco', { precision: 10, scale: 2 }).notNull(), 
   duracaoEstimada: integer('duracao_estimada').notNull(), 
 });
-
-
 
 export const disponibilidades = pgTable('disponibilidades', {
   id: serial('id').primaryKey(),
@@ -84,8 +75,6 @@ export const agendamentos = pgTable('agendamentos', {
   dataHora: timestamp('data_hora').notNull(), 
   status: text('status').default('pendente').notNull(), 
 });
-
-
 
 export const avaliacoes = pgTable('avaliacoes', {
   id: serial('id').primaryKey(),
