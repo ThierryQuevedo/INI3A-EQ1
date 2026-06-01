@@ -67,6 +67,7 @@ CREATE TABLE "usuarios" (
 	"telefone" text,
 	"senha" text NOT NULL,
 	"tipo" text NOT NULL,
+	"admin" boolean DEFAULT false NOT NULL,
 	"criado_em" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "usuarios_email_unique" UNIQUE("email"),
 	CONSTRAINT "usuarios_telefone_unique" UNIQUE("telefone")

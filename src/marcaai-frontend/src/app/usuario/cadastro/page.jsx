@@ -1,12 +1,10 @@
-import { cadastrarAction } from "../../actions/action_cadastro.js";
+import {executarCadastro} from '../../actions/auth'
 import Link from 'next/link';
 
 export default function CadastrarPage() {
   return (
     <div className="flex w-full h-screen overflow-hidden font-sans">
-      {/* PAINEL ESQUERDO - Visível apenas em telas maiores que 900px */}
       <div className="hidden min-[900px]:flex w-[40%] bg-[#0B4F98] p-12 flex-col justify-between relative overflow-hidden text-white">
-        {/* Elementos Decorativos */}
         <div className="absolute -bottom-[70px] -right-[70px] w-[300px] h-[300px] rounded-full bg-[#F97316] opacity-15"></div>
         <div className="absolute top-[60px] -left-[50px] w-[200px] h-[200px] rounded-full bg-white opacity-5"></div>
 
@@ -132,7 +130,7 @@ export default function CadastrarPage() {
             </div>
           </div>
 
-          <form action={cadastrarAction} className="space-y-4">
+          <form action={executarCadastro} className="space-y-4">
             <div>
               <label className="text-xs font-bold text-gray-600 block mb-1">Nome Completo</label>
               <input 
@@ -143,7 +141,9 @@ export default function CadastrarPage() {
                 required
               />
             </div>
-
+            <div>
+              <input type="text" name="tipo" placeholder="Tipo (cliente/prestador)" required />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-xs font-bold text-gray-600 block mb-1">E-mail</label>
@@ -155,7 +155,7 @@ export default function CadastrarPage() {
                   required
                 />
               </div>
-              <div>
+              {/* <div>
                 <label className="text-xs font-bold text-gray-600 block mb-1">Telefone</label>
                 <input 
                   name="cel"
@@ -164,13 +164,13 @@ export default function CadastrarPage() {
                   placeholder="(00) 00000-0000"
                   required
                 />
-              </div>
+              </div> */}
             </div>
 
             <div>
               <label className="text-xs font-bold text-gray-600 block mb-1">Senha</label>
               <input 
-                name="password"
+                name="senha"
                 type="password" 
                 className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-[#0B4F98] focus:border-2 outline-none"
                 placeholder="********"

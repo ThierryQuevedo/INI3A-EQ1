@@ -1,1 +1,0 @@
-ALTER TABLE "usuarios" ADD COLUMN "admin" boolean DEFAULT false NOT NULL;
