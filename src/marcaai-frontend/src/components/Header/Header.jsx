@@ -10,7 +10,6 @@ export default async function Header() {
     const user = await getSession();
 
     return (
-        /* Usando o azul escuro para autoridade e texto claro para contraste */
         <header className="bg-tcc-azul-darker flex items-center justify-between px-10 h-16 shrink-0 text-tcc-azul-lightest shadow-md">
             
                 <Link 
@@ -19,10 +18,9 @@ export default async function Header() {
                     <Menu size={22} className='text-tcc-neutro-100'/>    
                 </Link>
 
-            {/* Logo Central: Usando o Laranja para destaque máximo no nome da marca */}
+
             <Link href="/" className="text-2xl font-extrabold tracking-tight">
-                <Image src={logotipo} className='w-45
-                '/>
+                <Image src={logotipo} className='w-45' alt='logotipo marcaai'/>
             </Link>
 
             <div className="flex items-center gap-6">
@@ -42,7 +40,7 @@ export default async function Header() {
                     </div>
                 ) : null}
 
-                {/* Ícone de Usuário: Azul médio para não brigar com o logo, mas ainda ser clicável */}
+            
                 <Link 
                     href={user ? "/usuario" : "/usuario/login"} 
                     className="bg-tcc-azul text-tcc-azul-deep rounded-full p-2 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner">
