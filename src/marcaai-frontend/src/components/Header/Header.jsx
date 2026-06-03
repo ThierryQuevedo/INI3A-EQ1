@@ -1,7 +1,7 @@
 import { User, Menu } from 'lucide-react';
 import Link from "next/link";
 import Image from "next/image"
-import Navbar from './MenuNavBar';
+import MenuSlide from '../menu/MenuSlide';
 import logotipo from '../../../public/images/Identidade visual marca ai/logotipo.png'
 import { logoutAction } from "../../app/actions/action_login";
 import { getSession } from "../../app/actions/action_sessao";
@@ -10,7 +10,7 @@ export default async function Header() {
     const user = await getSession();
 
     return (
-        <header className="bg-tcc-azul-darker flex items-center justify-between px-10 h-16 shrink-0 text-tcc-azul-lightest shadow-md">
+        <header className="bg-tcc-azul-darker flex relative items-center justify-between px-10 h-16 shrink-0 text-tcc-azul-lightest shadow-md">
             
                 <Link 
                     href={user ? "/usuario" : "/usuario/login"} 

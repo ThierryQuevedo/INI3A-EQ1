@@ -32,6 +32,5 @@
   --font-urbanist: var(--font-urbanist), sans-serif;
   --font-sora: var(--font-sora), sans-serif;
   
-  /* Se quiser que a Inter seja a fonte padrão do site (sans) */
   --font-sans: var(--font-inter), sans-serif;
 }
