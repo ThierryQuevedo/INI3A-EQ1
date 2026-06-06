@@ -1,9 +1,9 @@
-import CardServicoDestaque from "../components/cards/CardServicoDestaque";
+import CardServicoDestaque from "../../components/cards/CardServicoDestaque";
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "../../@/components/ui/button";
-import logoMarcaai from "../../public/images/Identidade visual marca ai/marca ai resenheiro.png";
-import logotipoMarcaai from "../../public/images/Identidade visual marca ai/logotipo.png";
+import { Button } from "../../../@/components/ui/button";
+import logoMarcaai from "../../../public/images/Identidade visual marca ai/marca ai resenheiro.png";
+import logotipoMarcaai from "../../../public/images/Identidade visual marca ai/logotipo.png";
 
 
 export default function Home() {
@@ -18,11 +18,11 @@ export default function Home() {
           <p className="text-tcc-neutro-100 ">para quem não tem tempo a perder</p>
         </div>
         <div className="flex flex-col justify-center gap-5">
-          <Link className="" href="/usuario/login">
+          <Link className="" href="/login">
             <Button size={'lg'} className=' hover:scale-102 w-35 text-lg font-semibold transition-all bg-tcc-azul-dark border-2 rounded-2xl border-tcc-laranja text-tcc-laranja'>Entrar</Button>
           </Link>
 
-          <Link href="/usuario/cadastro">
+          <Link href="/cadastro">
             <Button size={'lg'} className=' hover:scale-102 w-35 text-lg font-semibold transition-all bg-tcc-laranja rounded-2xl text-tcc-azul-dark'>Criar conta</Button>
           </Link>
         </div>

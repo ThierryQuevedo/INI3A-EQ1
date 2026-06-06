@@ -1,10 +1,10 @@
 import Image from "next/image";
-import Calendario from "../../components/calendario/Calendario";
+import Calendario from "../../../components/calendario/Calendario";
 import { User } from "lucide-react";
-import { db } from "../../db/index"; 
-import { users } from "../../db/schema.js"; 
+import { db } from "../../../db/index"; 
+import { users } from "../../../db/schema.js"; 
 import { eq } from "drizzle-orm";
-import { getSession } from "../actions/action_sessao";
+import { getSession } from "../../actions/action_sessao";
 
 export default async function PaginaUsuario() {
   const usuario = await getSession();

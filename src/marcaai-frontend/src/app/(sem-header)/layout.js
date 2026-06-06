@@ -1,4 +1,4 @@
-import "./globals.css";
+import "../globals.css";
 import { Inter, Urbanist, Sora } from "next/font/google";
 
 const inter = Inter({
@@ -23,10 +23,19 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${urbanist.variable}`}>
+
+    <html 
+      lang="pt-br" 
+      suppressHydrationWarning 
+      className={`${inter.variable} ${urbanist.variable} ${sora.variable}`}
+    >
       <body className="font-sans antialiased">
-        {children}
+        <div className="flex flex-col min-h-screen bg-white text-black transition-colors duration-300">
+          <main className="flex-1">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
-  );
+  )
 }
