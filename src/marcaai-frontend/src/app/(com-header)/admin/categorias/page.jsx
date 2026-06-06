@@ -1,5 +1,5 @@
-import { db } from '../../../db';
-import { categorias } from '../../../db/schema';
+import { db } from '../../../../db';
+import { categorias } from '../../../../db/schema';
 import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 

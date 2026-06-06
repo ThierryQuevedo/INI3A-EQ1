@@ -1,5 +1,5 @@
 import Header from "../../components/Header/Header";
-import Footer from "../../components/Footer"; // O VS Code entende .jsx automaticamente
+import Footer from "../../../components/Footer"; // O VS Code entende .jsx automaticamente
 import CategoriasButton from "../../components/CategoriasButton";
 import Link from "next/link";
 import Image from "next/image";
