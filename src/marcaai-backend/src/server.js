@@ -23,6 +23,7 @@ app.post('/api/auth/cadastro', async(req, res) =>{
         }
         
         const salt =  await bcrypt.genSalt(10);
+        console.log(salt)
         const hashedPassword = await bcrypt.hash(senha, salt);
 
         await db.insert(usuarios).values({nome, email, senha:hashedPassword, tipo});
@@ -30,6 +31,7 @@ app.post('/api/auth/cadastro', async(req, res) =>{
         return res.status(201).json({message: 'Usuario cadastrado com sucesso!!'});
 
     }catch(err){
+        console.log(err)
         return res.status(500).json({error: 'Error interno no servidor'})
     }
 });
@@ -46,9 +48,12 @@ app.post('/api/auth/login', async (req, res) => {
         if(!senhaValida){
             return res.status(400).json({error: 'Credenciais invalidas'})
         }
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        return res.json({ token, user: { id: user.id, name: user.name, email: user.email } });
+        console.log(user)
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        return res.setHeader("Authorization", token).json({user: { id: user.id, name: user.name, email: user.email } });
     } catch (err) {
+        
+        console.log(err)
         return res.status(500).json({ error: 'Erro interno no servidor.' });
     }
 
