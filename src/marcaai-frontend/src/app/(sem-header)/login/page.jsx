@@ -1,4 +1,4 @@
-import { loginAction } from "../../actions/action_login";
+import { executarLogin } from "../../actions/auth";
 import Link from 'next/link';
 import Image from "next/image";
 
@@ -63,12 +63,12 @@ export default function LoginPage() {
             <div className="flex-1 h-px bg-tcc-neutro-100"></div>
           </div>
 
-          <form action={loginAction} className="space-y-5">
+          <form action={executarLogin} className="space-y-5">
             <div>
               <label className="text-xs font-bold text-tcc-neutro-500 block mb-2">E-mail</label>
               <div className="border-2 border-tcc-azul-dark rounded-xl px-4 py-3 flex items-center gap-3">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0B4F98" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-                <input type="email" placeholder="seu@email.com" className="w-full text-sm outline-none bg-transparent text-tcc-neutro-700" />
+                <input type="email" name="email" placeholder="seu@email.com" className="w-full text-sm outline-none bg-transparent text-tcc-neutro-700" />
               </div>
             </div>
 
@@ -77,7 +77,7 @@ export default function LoginPage() {
               <div className="border border-tcc-neutro-200 rounded-xl px-4 py-3 flex items-center justify-between">
                 <div className="flex items-center gap-3 w-full">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94979E" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  <input type="password" placeholder="••••••••" className="w-full text-sm outline-none bg-transparent text-tcc-neutro-700" />
+                  <input type="password" name="senha" placeholder="••••••••" className="w-full text-sm outline-none bg-transparent text-tcc-neutro-700" />
                 </div>
                 <button type="button">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94979E" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>

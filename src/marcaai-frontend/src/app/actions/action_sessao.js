@@ -1,3 +1,4 @@
+
 import { cookies } from "next/headers";
 import { eq, and } from "drizzle-orm";
 import { db } from "../../db/index"; // O arquivo que você me mostrou no print
