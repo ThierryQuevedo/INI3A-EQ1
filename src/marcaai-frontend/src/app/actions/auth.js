@@ -71,6 +71,7 @@ export async function getSession() {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
     const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
     
+   console.log(jsonPayload);
     return JSON.parse(jsonPayload);
   } catch {
     return null;

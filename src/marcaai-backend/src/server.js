@@ -49,8 +49,8 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(400).json({error: 'Credenciais invalidas'})
         }
         console.log(user)
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        return res.setHeader("Authorization", token).json({user: { id: user.id, name: user.name, email: user.email } });
+        const token = jwt.sign({ id: user.id, nome: user.nome, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        return res.setHeader("Authorization", token).json({user: { id: user.id, nome: user.nome, email: user.email } });
     } catch (err) {
         
         console.log(err)

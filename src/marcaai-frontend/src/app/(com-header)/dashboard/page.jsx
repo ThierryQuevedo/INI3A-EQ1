@@ -1,13 +1,10 @@
-import Header from "../../components/Header/Header";
+import Header from "../../../components/Header"; // O VS Code entende .jsx automaticamente
 import Footer from "../../../components/Footer"; // O VS Code entende .jsx automaticamente
-import CategoriasButton from "../../components/CategoriasButton";
 import Link from "next/link";
 import Image from "next/image";
 
 // COMENTE ESTA LINHA se o arquivo button.jsx não existir em lugar nenhum
 // import { Button } from "../../components/ui/button"; 
-
-import trabalho from "../../../public/images/trabalho.jpg";
 
 export default function Dashboard() {
   return (

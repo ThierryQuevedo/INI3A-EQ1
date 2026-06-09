@@ -9,7 +9,9 @@ import { getSession } from "../../actions/auth";
 
 export default async function PaginaUsuario() {
   const usuario = await getSession();
-
+  console.log("abc")
+  console.log(usuario);
+  console.log(usuario.nome);
   if (!usuario) {
     return <div className="text-center p-10">Usuário não encontrado.</div>;
   }
@@ -42,7 +44,7 @@ export default async function PaginaUsuario() {
       <div>
         {/* 2. Substituímos o texto estático pelos dados do banco */}
         <h1 className="text-center text-xl font-bold">
-          {usuario.name}
+          {usuario.nome}
         </h1>
         <h2 className="text-center text-lg font-medium text-gray-500">
           {usuario.email}
