@@ -6,7 +6,7 @@ import { Button } from "../../../../@/components/ui/button";
 import { Input } from "../../../../@/components/ui/InputCatalogo";
 import CardServicoCatalogo from '../../../components/cards/CardServicoCatalogo';
 import MenuFiltros from '../../../components/menu/MenuFIltros';
-import MenuSlide from '../../../components/menu/MenuSlide'; 
+import Link from "next/link";
 
 export default function CataloguePage() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -18,12 +18,11 @@ export default function CataloguePage() {
             
             <h1 className='font-urbanist text-white font-bold text-4xl my-10'>Catálogo de Serviços</h1>
 
-            <div className='flex flex-col w-2/3 bg-tcc-azul-darker rounded-2xl overflow-hidden pb-10 shadow-lg'>
+            <div className='flex flex-col w-2/3 min-h-150 bg-tcc-azul-darker rounded-2xl overflow-hidden pb-10 shadow-lg'>
                 
-                {/* Barra de Busca */}
+
                 <div className='flex flex-row justify-center m-5 gap-2'>
                     
-                    {/* CONTAINER RELATIVE: Ele serve como a âncora invisível para o Menu de Filtros */}
                     <div className="relative">
                         <Button 
                             className="bg-tcc-laranja text-white flex gap-2 items-center" 
@@ -32,7 +31,6 @@ export default function CataloguePage() {
                             <FunnelPlus/> Filtros
                         </Button>
 
-                        {/* O MENU DEVE FICAR AQUI DENTRO: Logo após o botão de disparo */}
                         <MenuFiltros isOpen={isFilterOpen} onClose={toggleFilterMenu} />
                     </div>
                     
@@ -43,15 +41,29 @@ export default function CataloguePage() {
                     </Button>
                 </div>
 
-                {/* Grade de Cards de Serviços */}
                 <div className='flex gap-4 items-center justify-center flex-wrap p-4'>
-                    <CardServicoCatalogo avaliacao={1.3}/>
-                    <CardServicoCatalogo avaliacao={3}/>
-                    <CardServicoCatalogo avaliacao={4}/>
-                    <CardServicoCatalogo avaliacao={2.5}/>
-                    <CardServicoCatalogo avaliacao={4.5}/>
-                    <CardServicoCatalogo avaliacao={1}/>
-                    <CardServicoCatalogo avaliacao={1.5}/>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+                    <Link href="/servicos/2">
+                        <CardServicoCatalogo avaliacao={1.3}/>
+                    </Link>
+
                 </div>
             </div>
         </div>

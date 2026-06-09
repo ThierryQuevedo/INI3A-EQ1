@@ -4,18 +4,16 @@ import Image from "next/image";
 import { Button } from "../../../@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 
-// Importe apenas a escrita horizontal ou trate o logo para o menu
+
 import logoMarcaai from "../../../public/images/Identidade visual marca ai/marca ai resenheiro.png";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-tcc-azul-deep text-tcc-neutro-100 font-sans antialiased">
       
-      {/* 1. Navbar Fina e Isolada (Mantém o topo fixo e organizado) */}
       <nav className="border-b border-tcc-azul-darker/30 bg-tcc-azul-deep sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
           
-          {/* Logo posicionado corretamente no canto esquerdo */}
           <div className="flex items-center">
             <Image 
               src={logoMarcaai} 
@@ -25,7 +23,6 @@ export default function Home() {
             />
           </div>
           
-          {/* Ações no canto direito */}
           <div className="flex items-center gap-6 text-sm">
             <Link href="/login" className="text-tcc-neutro-300 hover:text-white transition-colors font-medium">
               Entrar
@@ -39,12 +36,10 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* 2. Hero Section (Conteúdo Principal da Home) */}
       <header className="max-w-6xl mx-auto px-6 pt-16 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
-        {/* Lado Esquerdo: Textos e Chamada de Ação */}
         <div className="lg:col-span-7 space-y-6 flex flex-col justify-center">
-          <div className="w-fit inline-flex items-center gap-2 bg-tcc-azul-darker/50 border border-tcc-azul-medium/20 px-3 py-1 rounded-full text-xs text-tcc-azul-light font-medium">
+          <div className="w-fit inline-flex items-center gap-2 bg-tcc-azul-darker/50 border border-tcc-azul-medium/5 px-3 py-1 rounded-full text-xs text-tcc-azul-light font-medium">
             <Sparkles size={12} className="text-tcc-laranja" /> O jeito mais esperto de agendar
           </div>
           
@@ -69,8 +64,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Lado Direito: Box Informativo de Apoio */}
-        <div className="lg:col-span-5 bg-gradient-to-br from-tcc-azul-darker/40 to-transparent p-8 rounded-2xl border border-tcc-azul-darker/40 relative overflow-hidden h-fit">
+        <div className="lg:col-span-5 bg-tcc-azul-darker/40 p-8 rounded-2xl border border-tcc-azul-darker/5 relative overflow-hidden h-fit">
           <h3 className="text-white font-bold font-urbanist text-lg mb-2">Por que o Marca Aí?</h3>
           <p className="text-tcc-neutro-300 text-xs leading-relaxed font-light">
             Centralizamos barbeiros, manicures, mecânicos e professores em um único ecossistema. Você escolhe, agenda e recebe notificações automáticas para não esquecer o compromisso.
@@ -83,7 +77,6 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 3. Seção das Categorias */}
       <section className="max-w-6xl mx-auto px-6 py-10 border-t border-tcc-azul-darker/20">
         <div className="mb-6">
           <h2 className="text-xs font-bold uppercase tracking-widest text-tcc-azul-light font-urbanist">Categorias em Alta</h2>
@@ -92,17 +85,16 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-2.5">
           {["Barbearia & Cabelo", "Estética & Manicure", "Aulas Particulares", "Manutenção & Mecânica", "Saúde & Bem-estar", "Consultorias"].map((category, idx) => (
-            <button 
+            <Link href="/catalogo"
               key={idx} 
               className="bg-tcc-azul-darker/20 hover:bg-white hover:text-tcc-azul-deep text-tcc-neutro-200 font-medium text-xs px-4 py-2.5 rounded-lg border border-tcc-azul-darker/60 transition-all cursor-pointer"
             >
               {category}
-            </button>
+            </Link>
           ))}
         </div>
       </section>
-
-      {/* 4. Grid de Destaques */}
+      
       <section className="max-w-6xl mx-auto px-6 py-10 pb-24">
         <div className="flex justify-between items-end mb-6">
           <div>
@@ -115,14 +107,30 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <CardServicoDestaque />
-          <CardServicoDestaque />
-          <CardServicoDestaque />
-          <CardServicoDestaque />
-          <CardServicoDestaque />
-          <CardServicoDestaque />
-          <CardServicoDestaque />
-          <CardServicoDestaque />
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
+          <Link href="/servicos/1">
+            <CardServicoDestaque />
+          </Link>
         </div>
       </section>
 

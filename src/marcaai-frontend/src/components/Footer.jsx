@@ -9,7 +9,7 @@ export default function Footer() {
    
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">
           <span className="font-urbanist font-black text-sm tracking-tight text-white">
-            <Image className="w-18" src={logotipo}/>
+            <Image className="w-18" src={logotipo} alt="logotipo"/>
           </span>
           <span className="hidden sm:inline text-tcc-azul-darker/60">|</span>
           <p className="text-tcc-neutro-300/80">
