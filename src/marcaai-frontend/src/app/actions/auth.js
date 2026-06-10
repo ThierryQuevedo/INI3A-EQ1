@@ -35,18 +35,19 @@ export async function executarCadastro(formData) {
   const senha = formData.get('senha');
   const tipo = formData.get('tipo');
   const telefone = formData.get('cel');
-
+  
   const resposta = await fetch('http://localhost:5000/api/auth/cadastrar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ nome, email, telefone, senha, tipo }),
   });
-
+  
   const dados = await resposta.json();
   if (!resposta.ok) {
+    console.log(dados.error)
     return { erro: dados.error || 'Erro ao cadastrar' };
   }
-  redirect('/login')
+  await executarLogin(formData);
 }
 
 export async function executarLogin(formData) {
@@ -82,7 +83,7 @@ export async function executarLogin(formData) {
     console.log(err);
   }
 
-  const cookie = await getSession();
+  const cookie = await getSession();  
   const usuario = await decodeJwtPayload(cookie);
 
   if(usuario.tipo == "prestador"){
