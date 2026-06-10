@@ -41,7 +41,7 @@ export default async function Header() {
                 ) : null}
 
                 <Link 
-                    href={user ? "/usuario" : "/usuario/login"} 
+                    href={user ? "/usuario" : "/login"} 
                     className="bg-tcc-azul text-tcc-azul-deep rounded-full p-2 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner">
                     <User size={22} className='text-tcc-neutro-100'/>    
                 </Link>

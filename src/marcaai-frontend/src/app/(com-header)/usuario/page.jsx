@@ -5,11 +5,11 @@ import { db } from "../../../db/index";
 import { users } from "../../../db/schema.js"; 
 import { eq } from "drizzle-orm";
 //import { getSession } from "../../actions/action_sessao";
-import { getSession } from "../../actions/auth";
+import { getSession, decodeJwtPayload } from "../../actions/auth";
 
 export default async function PaginaUsuario() {
-  const usuario = await getSession();
-  console.log("abc")
+  const cookie = await getSession();
+  const usuario = await decodeJwtPayload(cookie);
   console.log(usuario);
   console.log(usuario.nome);
   if (!usuario) {

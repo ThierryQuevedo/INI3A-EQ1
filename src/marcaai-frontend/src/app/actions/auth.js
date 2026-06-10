@@ -3,31 +3,57 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+export async function getSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('marcaai_token')?.value;
+
+  if (!token) throw new Error("cookie marcaai_token is undefined. cannot provide token");
+  
+  return token;
+}
+
+export async function decodeJwtPayload(token) {
+  try {
+    const rawToken = token.startsWith('Bearer ') ? token.slice(7) : token;
+    const base64Url = rawToken.split('.')[1];
+
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+    const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
+
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Malformed or invalid JWT token", error);
+    return null;
+  }
+}
+
+
 export async function executarCadastro(formData) {
-    const nome = formData.get('nome');
-    const email = formData.get('email');
-    const senha = formData.get('senha');
-    const tipo = formData.get('tipo');
+  const nome = formData.get('nome');
+  const email = formData.get('email');
+  const senha = formData.get('senha');
+  const tipo = formData.get('tipo');
 
-    const resposta = await fetch('http://localhost:5000/api/auth/cadastro',{
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({nome, email, senha, tipo}),
-    });
+  const resposta = await fetch('http://localhost:5000/api/auth/cadastro', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nome, email, senha, tipo }),
+  });
 
-    const dados = await resposta.json();
-    if(!resposta.ok){
-        return {erro: dados.error || 'Erro ao cadastrar'};
-    }
-    redirect('/usuario/login')
+  const dados = await resposta.json();
+  if (!resposta.ok) {
+    return { erro: dados.error || 'Erro ao cadastrar' };
+  }
+  redirect('/login')
 }
 
 export async function executarLogin(formData) {
   console.log("executarLogin c.")
-    const email = formData.get('email');
-    const senha = formData.get('senha');
-    console.log(email);
-    const tipo = "tipo";
+  const email = formData.get('email');
+  const senha = formData.get('senha');
+  console.log(email);
+  const tipo = "tipo";
 
   const resposta = await fetch('http://localhost:5000/api/auth/login', {
     method: 'POST',
@@ -40,40 +66,26 @@ export async function executarLogin(formData) {
   if (!resposta.ok) {
     return { erro: dados.error || 'Credenciais inválidas.' };
   }
-  try
-  {
+  try {
     const token = resposta.headers.get('Authorization');
+    const tokenPayLoad = await decodeJwtPayload(token);
     const cookieStore = await cookies();
     cookieStore.set('marcaai_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24, 
+      maxAge: 60 * 60 * 24,
       path: '/',
     });
-    console.log("c cookie login ");
+    console.log(tokenPayLoad)
+    
   }
-  catch(err)
-  {
+  catch (err) {
     console.log(err);
   }
 
-  redirect('/dashboard');
-}
+  if (tokenPayLoad.tipo == "prestador")
+      redirect("/dashboard");
+    else
+      redirect("/usuario");
 
-export async function getSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('marcaai_token')?.value;
-
-  if (!token) return null;
-
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = Buffer.from(base64, 'base64').toString('utf8');
-    
-   console.log(jsonPayload);
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
 }
