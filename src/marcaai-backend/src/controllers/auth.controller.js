@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/index.js';
-import { usuarios, prestadores, clientes } from '../db/schema.js';
+import { usuarios, prestadores } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 export async function cadastrarUsuario(req, res, next) {

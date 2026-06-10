@@ -3,11 +3,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "../../../@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-
-
 import logoMarcaai from "../../../public/images/Identidade visual marca ai/marca ai resenheiro.png";
+import { getSession, decodeJwtPayload } from "../actions/auth";
 
-export default function Home() {
+// 💡 Força o Next.js a ler a sessão em tempo real toda vez que carregar a Home
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  // Buscamos os dados dinamicamente no momento da requisição
+  const token = await getSession();
+  const usuario = await decodeJwtPayload(token); 
+
   return (
     <div className="min-h-screen bg-tcc-azul-deep text-tcc-neutro-100 font-sans antialiased">
       
@@ -24,14 +30,23 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-6 text-sm">
-            <Link href="/login" className="text-tcc-neutro-300 hover:text-white transition-colors font-medium">
-              Entrar
-            </Link>
-            <Link href="/cadastro">
-              <button className="bg-white text-tcc-azul-deep hover:bg-tcc-neutro-100 font-bold px-4 py-2.5 rounded-xl text-xs transition-all tracking-wide cursor-pointer">
-                Começar agora
-              </button>
-            </Link>
+            {/* LÓGICA CONDICIONAL DOS BOTÕES DO NAV */}
+            {usuario ? (
+              <span className="text-tcc-azul-light font-medium">
+                Olá, <span className="text-white font-bold">{usuario.nome || usuario.name}</span>
+              </span>
+            ) : (
+              <>
+                <Link href="/login" className="text-tcc-neutro-300 hover:text-white transition-colors font-medium">
+                  Entrar
+                </Link>
+                <Link href="/cadastrar">
+                  <button className="bg-white text-tcc-azul-deep hover:bg-tcc-neutro-100 font-bold px-4 py-2.5 rounded-xl text-xs transition-all tracking-wide cursor-pointer">
+                    Começar agora
+                  </button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -107,30 +122,11 @@ export default function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
-          <Link href="/servicos/1">
-            <CardServicoDestaque />
-          </Link>
+          {[...Array(8)].map((_, i) => (
+            <Link key={i} href="/servicos/1">
+              <CardServicoDestaque />
+            </Link>
+          ))}
         </div>
       </section>
 

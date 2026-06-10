@@ -1,49 +1,93 @@
 import { Calendar, Clock, DollarSign, Phone, Mail, MapPin, Award } from 'lucide-react';
 import Image from "next/image";
 import Link from 'next/link';
-import CardServicoCatalogo from '../../../../components/cards/CardServicoCatalogo'; 
+import { notFound } from 'next/navigation'; 
 
+// IMPORTAÇÕES DO BANCO DE DADOS
+import { db } from '../../../../db/index.js'; 
+import { servicos, usuarios, categorias } from '../../../../db/schema.js';
+import { eq } from 'drizzle-orm';
 
-async function getServicoDados(id) {
-  return {
-    id: id,
-    nome: "Corte de Cabelo & Barba Premium",
-    descricao: "Um serviço completo para o seu visual. Inclui lavagem com shampoo premium, corte personalizado de acordo com seu estilo, alinhamento de barba com toalha quente e finalização com pomada modeladora nacional ou importada.",
-    preco: "85.00",
-    duracaoEstimada: 60,
-    categoria: "Cabelo e Barba",
-    avaliacaoMedia: 4.5,
-    prestador: {
-      nome: "Fabrício Santos",
-      biografia: "Profissional com mais de 8 anos de experiência no mercado de estética masculina, especializado em cortes modernos, visagismo e barboterapia relaxante.",
-      telefone: "(14) 99888-7766",
-      email: "fabricio.barber@marcaai.com",
-    }
-  };
-}
+// Força a página a rodar de forma dinâmica para pegar as mudanças de ID instantaneamente
+export const dynamic = 'force-dynamic';
 
 export default async function DetalheServico({ params }) {
-  const { id } = await params;
-  const servico = await getServicoDados(id);
+  // 🔍 COLE ESTE BLOCO TEMPORÁRIO AQUI PARA DIAGNÓSTICO:
+  console.log("=== CHECKLIST DO DRIZZLE ===");
+  console.log("servicos.id:", !!servicos.id, "| prestadorId:", !!servicos.prestadorId, "| categoriaId:", !!servicos.categoriaId);
+  console.log("usuarios.id:", !!usuarios.id, "| biografia:", !!usuarios.biografia, "| telefone:", !!usuarios.telefone);
+  console.log("categorias.id:", !!categorias.id, "| nome:", !!categorias.nome);
+  console.log("=============================");
+  // 1. Aguarda a resolução dos parâmetros da URL de forma segura
+  const resolvedParams = await params;
+  const idBruto = resolvedParams?.id;
 
+  // 2. 🛡️ BARREIRA DE SEGURANÇA: Valida se o ID é um número válido
+  const idNumero = parseInt(idBruto, 10);
+  
+  if (!idBruto || isNaN(idNumero)) {
+    // Se o ID for "undefined", "null" ou um arquivo de imagem perdido, para aqui e joga pro 404
+    return notFound();
+  }
+
+  // 3. Busca o serviço específico sabendo que o ID é 100% seguro e numérico
+  const resultadoBanco = await db
+    .select({
+      id: servicos.id,
+      nome: servicos.nome,
+      descricao: servicos.descricao,
+      preco: servicos.preco,
+      duracaoEstimada: servicos.duracaoEstimada,
+      categoriaNome: categorias.nome,
+      prestadorNome: usuarios.nome,
+      prestadorEmail: usuarios.email,
+      prestadorTelefone: usuarios.telefone, 
+    })
+    .from(servicos)
+    .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
+    .where(eq(servicos.id, idNumero)); // 👈 Agora vai um número limpo e real aqui
+
+  // Se o serviço não for encontrado no banco de dados
+  if (!resultadoBanco || resultadoBanco.length === 0) {
+    return notFound();
+  }
+
+  const dadosDb = resultadoBanco[0];
+
+  // 4. Estrutura o objeto exatamente como seu layout precisa
+  const servico = {
+    id: dadosDb.id,
+    nome: dadosDb.nome || "Serviço sem nome",
+    descricao: dadosDb.descricao || "Nenhuma descrição informada pelo prestador.",
+    preco: dadosDb.preco || "0.00",
+    duracaoEstimada: dadosDb.duracaoEstimada || 0,
+    categoria: dadosDb.categoriaNome || "Sem categoria",
+    avaliacaoMedia: 4.5, 
+    prestador: {
+      nome: dadosDb.prestadorNome || "Profissional",
+      biografia: dadosDb.prestadorBiografia || "Profissional parceiro do Marca Aí.",
+      telefone: dadosDb.prestadorTelefone || "Não informado",
+      email: dadosDb.prestadorEmail || "Não informado",
+    }
+  };
+
+  // 👇 SEU LAYOUT ORIGINAL INTACTO
   return (
     <div className="bg-tcc-azul-deep min-h-screen text-white font-sans">
       
-
       <div className="relative h-60 w-full bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-[url('https://picsum.photos/1920/1080?blur=5')] bg-cover bg-center" />
       </div>
 
-
       <div className="max-w-5xl mx-auto px-6 -mt-24 relative z-10 pb-20">
         
-
         <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-tcc-azul-darker/60 backdrop-blur-md p-6 rounded-3xl shadow-2xl gap-6">
           <div className="flex flex-col items-center md:flex-row gap-6">
     
             <div className="relative size-32 rounded-2xl overflow-hidden border-4 border-tcc-azul-medium shadow-md">
               <Image 
-                src="https://picsum.photos/200/200?random=1" 
+                src={`https://picsum.photos/200/200?random=${servico.id}`} 
                 alt={servico.prestador.nome}
                 fill
                 className="object-cover"
@@ -69,20 +113,17 @@ export default async function DetalheServico({ params }) {
             </div>
           </div>
 
- 
           <Link href={`/agendamento/novo?servico=${servico.id}`} className="w-full md:w-auto">
-            <button className="w-full md:w-auto bg-tcc-laranja text-white hover:bg-tcc-laranja-dark active:scale-98 font-bold px-8 py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-lg">
+            <button className="w-full md:w-auto bg-tcc-laranja text-white hover:bg-tcc-laranja-dark active:scale-98 font-bold px-8 py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-lg cursor-pointer">
               <Calendar size={22} /> Agendar Horário
             </button>
           </Link>
         </div>
 
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
           
-        
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-tcc-azul-darker/40 p-8 rounded-3xl  shadow-inner">
+            <div className="bg-tcc-azul-darker/40 p-8 rounded-3xl shadow-inner">
               <h2 className="text-xl font-bold font-urbanist border-b border-tcc-azul-dark pb-3 mb-4 flex items-center gap-2">
                 <Award size={20} className="text-tcc-laranja" /> Detalhes do Serviço
               </h2>
@@ -92,7 +133,7 @@ export default async function DetalheServico({ params }) {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-tcc-azul-darker/40 p-5 rounded-2xl   flex items-center gap-4">
+              <div className="bg-tcc-azul-darker/40 p-5 rounded-2xl flex items-center gap-4">
                 <div className="bg-tcc-laranja/10 p-3 rounded-xl text-tcc-laranja">
                   <DollarSign size={24} />
                 </div>
@@ -113,7 +154,6 @@ export default async function DetalheServico({ params }) {
               </div>
             </div>
           </div>
-
 
           <div className="space-y-6">
             <div className="bg-tcc-azul-darker/40 p-6 rounded-3xl shadow-md">

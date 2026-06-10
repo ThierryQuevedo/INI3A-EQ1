@@ -1,68 +1,104 @@
 import Image from "next/image";
-import Calendario from "../../../components/calendario/Calendario";
-import { User } from "lucide-react";
+import { User, ArrowRight } from "lucide-react";
+// Importações do seu backend mantidas exatamente como você pediu
 import { db } from "../../../db/index"; 
 import { users } from "../../../db/schema.js"; 
 import { eq } from "drizzle-orm";
-//import { getSession } from "../../actions/action_sessao";
 import { getSession, decodeJwtPayload } from "../../actions/auth";
 
 export default async function PaginaUsuario() {
+  // --- LÓGICA DE BACKEND MANTIDA ---
   const cookie = await getSession();
   const usuario = await decodeJwtPayload(cookie);
-  console.log(usuario);
-  console.log(usuario.nome);
+  
   if (!usuario) {
-    return <div className="text-center p-10">Usuário não encontrado.</div>;
+    return <div className="text-center p-10 font-sans text-tcc-azul-darker">Usuário não encontrado.</div>;
   }
 
+  // Tratamento da data (se não vier no JWT, coloca uma genérica no formato do wireframe)
+  const dataCriacao = usuario.criadoEm 
+    ? new Date(usuario.criadoEm).toLocaleDateString("pt-BR") 
+    : "xx/xx/xxxx";
+
   return (
-    <div>
-      <section className="relative flex flex-col items-center">
-        <div className="relative w-full h-48 overflow-hidden"> 
-            <Image src="https://picsum.photos/800/300" alt="Capa do usuário" fill className="object-cover" priority/>
-        </div>
-
-      <div className="absolute -bottom-10 flex justify-center w-full">
-        <div className="bg-amber-300 h-20 w-20 rounded-full border-4 border-white flex items-center justify-center shadow-lg overflow-hidden">
-          <Image 
-            src="https://picsum.photos/seed/picsum/200/200" 
-            alt="Foto de Perfil" 
-            width={200} 
-            height={200} 
-            className="object-cover w-full h-full" 
-            priority
-          />
-        </div>
-      </div>
-      </section>
-
-      <div className="h-14"></div>
+    <div className="min-h-screen bg-tcc-azul-deep font-sans flex flex-col">
       
-      <div>
-        {/* 2. Substituímos o texto estático pelos dados do banco */}
-        <h1 className="text-center text-xl font-bold">
+      {/* SEÇÃO SUPERIOR (Azul Escuro com Avatar e Nome) */}
+      <section className="bg-tcc-azul-darker pt-16 pb-24 flex flex-col items-center justify-center relative">
+        {/* Ícone de Perfil igual ao Wireframe (Cinza claro com linha escura) */}
+        <div className="bg-[#E5E5E5] w-24 h-24 rounded-full flex items-center justify-center mb-4 border border-gray-300 shadow-md">
+          <User size={48} className="text-gray-600" strokeWidth={1.5} />
+        </div>
+        
+        {/* Nome do Usuário */}
+        <h1 className="text-white text-3xl font-medium tracking-wide">
           {usuario.nome}
         </h1>
-        <h2 className="text-center text-lg font-medium text-gray-500">
-          {usuario.email}
-        </h2>
-        {/* Se você tiver o campo 'profissao' no seu schema.js: */}
-        {/* <h2 className="text-center text-lg font-medium">{usuario.profissao}</h2> */}
-      </div>
-      <main className="bg-red-200 flex-row">
-        <div className="bg-gray-200 flex">
-          {/*calendario*/}
-          <Calendario/>
-          <section className="bg-fuchsia-300 w-100">
-            <h1 className="text-center">Detalhes</h1>
-            <div>
-              <p>Telefone: {usuario.telefone}</p>
-              <p>Endereço: </p>
-            </div>
-          </section>
+      </section>
+
+      {/* SEÇÃO PRINCIPAL (Fundo Azul Profundo com o Card Sobreposto) */}
+      <main className="flex-1 flex justify-center px-4 -mt-10 mb-10 z-10">
+        
+        {/* O Card Claro */}
+        <div className="bg-tcc-azul-lightest rounded-2xl p-6 md:p-8 w-full max-w-2xl shadow-xl flex flex-col">
+          
+          <h2 className="text-center text-lg font-medium text-tcc-neutro-700 mb-8">
+            Informações do usuário
+          </h2>
+
+          {/* Lista de Informações (As linhas pontilhadas) */}
+          <div className="space-y-5 flex-1 px-2 md:px-6">
+            <LinhaPontilhada label="Nome completo" valor="editar" isButton={true} />
+            <LinhaPontilhada label="Email" valor="editar" isButton={true} />
+            <LinhaPontilhada label="Senha" valor="editar" isButton={true} />
+            <LinhaPontilhada label="Telefone" valor="editar" isButton={true} />
+            
+            {/* O "Lorem" do seu wireframe pode ser o Tipo de usuário ou CPF no banco real */}
+            <LinhaPontilhada label="Tipo" valor={usuario.tipo || "ipsum"} isButton={false} />
+          </div>
+
+          {/* Rodapé do Card */}
+          <div className="mt-10 flex flex-col items-center gap-4">
+            <p className="text-sm text-tcc-neutro-700 font-medium">
+              Conta criada em {dataCriacao}
+            </p>
+            
+            <button className="bg-tcc-laranja hover:bg-tcc-laranja-dark text-tcc-neutro-700 font-medium py-2.5 px-6 rounded-md w-full max-w-[280px] flex justify-between items-center transition-all shadow-sm cursor-pointer">
+              <span>Histórico</span>
+              <ArrowRight size={20} />
+            </button>
+          </div>
+
         </div>
       </main>
+
+    </div>
+  );
+}
+
+/**
+ * COMPONENTE AUXILIAR: Linha Pontilhada
+ * Cria a estrutura "Texto ------ Botão" que se adapta à tela automaticamente.
+ */
+function LinhaPontilhada({ label, valor, isButton }) {
+  return (
+    <div className="flex items-end w-full gap-2">
+      <span className="text-tcc-neutro-600 font-medium whitespace-nowrap text-base pb-0.5">
+        {label}
+      </span>
+      
+      {/* A mágica da linha pontilhada acontece aqui */}
+      <div className="flex-grow border-b-[2.5px] border-dotted border-tcc-neutro-400 mb-1.5 opacity-60"></div>
+      
+      {isButton ? (
+        <button className="bg-white hover:bg-gray-50 px-3 py-1 rounded text-tcc-neutro-600 text-sm shadow-sm cursor-pointer transition-colors border border-tcc-neutro-100">
+          {valor}
+        </button>
+      ) : (
+        <span className="bg-white px-3 py-1 rounded text-tcc-neutro-600 text-sm shadow-sm border border-tcc-neutro-100">
+          {valor}
+        </span>
+      )}
     </div>
   );
 }
