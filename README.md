@@ -34,7 +34,7 @@ npx drizzle-kit migrate
 ```
 drizzle-kit push // rode isso para atualizar sua tabela se necessario
 ```
-"db:seed": "node --env-file=.env src/db/seed.js" // rode isso no terminal para popular a tabela
+npm run db:seed // rode isso no terminal para popular a tabela (em marcaai frontend)
 ```
 ## 💻 Executando o Projeto
 Para iniciar o servidor de desenvolvimento, execute:

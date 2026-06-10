@@ -18,7 +18,7 @@ export default function CardServicoCatalogo({ servico, avaliacao = 5 }) {
       </div>
 
       <h3 className="font-semibold text-lg text-gray-800 text-center leading-tight w-full truncate px-1" title={servico?.nomeProfissional}>
-        {servico?.nomeProfissional || "Profissional"}
+        {servico?.nomeProfissional  || "Profissional"}
       </h3>
       
       <p className="text-sm text-gray-500 mb-2 font-medium w-full text-center truncate" title={servico?.nomeCategoria}>
