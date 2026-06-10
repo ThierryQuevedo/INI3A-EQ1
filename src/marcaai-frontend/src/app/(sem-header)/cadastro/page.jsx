@@ -12,7 +12,7 @@ export default function CadastrarPage() {
   const [categoria, setCategoria] = useState("cliente");
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
       <Link href="/" className="w-100 mb-10"><Image src={logotipo} alt="Logo"/></Link>
       <div className="bg-white rounded-lg shadow-sm max-w-xl w-full p-8 md:p-12 border border-tcc-neutro-100/30">
         
@@ -133,7 +133,7 @@ export default function CadastrarPage() {
         </form>
 
         <div className="text-center mt-6">
-          <Link href="/usuario/login" className="text-sm text-tcc-azul hover:underline font-medium">
+          <Link href="/login" className="text-sm text-tcc-azul hover:underline font-medium">
             Já tem uma conta? Faça login
           </Link>
         </div>

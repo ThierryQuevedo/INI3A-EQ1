@@ -32,14 +32,14 @@ export default function MenuSlide({ isOpen, onClose }) {
                     </div>
 
                     <div className="flex mt-15 flex-col relative gap-2 flex-1 w-full items-center">
-                        <div className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row">
+                        <Link href="/usuario" className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row">
                             <User size={50}/>
                             <h1 className="font-urbanist font-bold px-2 text-3xl">Perfil</h1>
-                        </div>
-                        <div className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row">
+                        </Link>
+                        <Link href="/agenda" className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row">
                             <Calendar size={50}/>
                             <h1 className="font-urbanist font-bold px-2 text-3xl">Agenda</h1>
-                        </div>
+                        </Link>
                         <Link href={'/catalogo'} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row">
                             <BookOpen size={50}/>
                             <h1 className="font-urbanist font-bold px-2 text-3xl">Catálogo</h1>

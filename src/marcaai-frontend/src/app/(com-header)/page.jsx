@@ -11,7 +11,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-tcc-azul-deep text-tcc-neutro-100 font-sans antialiased">
       
-      <nav className="border-b border-tcc-azul-darker/30 bg-tcc-azul-deep sticky top-0 z-50">
+      <nav className="border-b border-tcc-azul-darker/30 bg-tcc-azul-deep sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
           
           <div className="flex items-center">
