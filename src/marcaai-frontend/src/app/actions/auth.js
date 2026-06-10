@@ -2,7 +2,7 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { revalidatePath } from 'next/cache'; // 👈 IMPORTANTE para limpar o cache
+import { revalidatePath } from 'next/cache';
 import { db } from '../../db/index.js';
 import { servicos, categorias } from "../../db/schema.js";
 
@@ -55,7 +55,6 @@ export async function executarCadastro(formData) {
     return { erro: "Servidor fora do ar. Tente mais tarde." };
   }
   
-  // Se cadastrou, passa o fluxo direto pro login que já limpa o cache
   await executarLogin(formData);
 }
 
@@ -66,7 +65,6 @@ export async function executarLogin(formData) {
   
   let resposta;
   try {
-    // 💡 Corrigido de localhost para 127.0.0.1 para evitar fetch failed
     resposta = await fetch('http://127.0.0.1:5000/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -102,8 +100,6 @@ export async function executarLogin(formData) {
   const tokenGerado = resposta.headers.get('Authorization');
   const usuario = await decodeJwtPayload(tokenGerado);
 
-  // 🔥 FORÇA O NEXT.JS A APAGAR O CACHE DO LAYOUT E DO HEADER
-  // Isso obriga o MenuSlide a recalcular quem é o novo usuário ativo imediatamente.
   revalidatePath('/', 'layout');
 
   if (usuario && usuario.tipo === "prestador") {
@@ -164,8 +160,6 @@ export async function executarCadastroServico(formData) {
     console.error("===> ERRO DETALHADO DO BANCO:", error.message);
     throw error;
   }
-
-  // Se o prestador adicionou um serviço, limpa o cache do dashboard/catálogo
   revalidatePath('/dashboard');
   revalidatePath('/catalogo');
 
@@ -174,8 +168,7 @@ export async function executarCadastroServico(formData) {
 
 export async function logoutAction() {
   const cookieStore = await cookies();
-  cookieStore.delete('marcaai_token'); // Remove o token
-  
-  revalidatePath('/', 'layout'); // Limpa a UI para remover os dados do cabeçalho
-  redirect('/login'); // Manda de volta para a tela de autenticação
+  cookieStore.delete('marcaai_token'); 
+  revalidatePath('/', 'layout');
+  redirect('/login');
 }

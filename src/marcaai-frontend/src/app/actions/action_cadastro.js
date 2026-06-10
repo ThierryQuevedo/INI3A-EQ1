@@ -3,7 +3,7 @@
 import bcrypt from "bcryptjs";
 import { db } from "../../db/index"; 
 import { users } from "../../db/schema";
-import { redirect } from "next/navigation"; // Importação correta
+import { redirect } from "next/navigation"; 
 
 export async function cadastrarAction(formData) {
   const nome = formData.get("nome");
@@ -15,13 +15,11 @@ export async function cadastrarAction(formData) {
     return { error: "Dados inválidos" };
   }
 
-  // Variável para controlar se o cadastro deu certo
   let cadastrouComSucesso = false;
 
   try {
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
-    // No Postgres, o .returning() funciona e você pode pegar o ID gerado
     const [newUser] = await db.insert(users).values({
       name: nome,      
       email: email,
@@ -36,7 +34,6 @@ export async function cadastrarAction(formData) {
     return { error: "E-mail já cadastrado ou erro na conexão." };
   }
 
-  // O REDIRECT PRECISA FICAR FORA DO TRY/CATCH
   if (cadastrouComSucesso) {
     redirect("/usuario/login");
   }

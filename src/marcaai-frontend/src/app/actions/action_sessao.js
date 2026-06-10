@@ -1,20 +1,17 @@
 
 import { cookies } from "next/headers";
 import { eq, and } from "drizzle-orm";
-import { db } from "../../db/index"; // O arquivo que você me mostrou no print
-import { usuarios, sessoes } from "../../db/schema"; // Suas tabelas
+import { db } from "../../db/index"; 
+import { usuarios, sessoes } from "../../db/schema"; 
 
 export async function getSession() {
-  // 1. Pega o "crachá" (cookie) que o navegador mandou
   const cookieStore = await cookies();
   const sessionId = cookieStore.get("session_token")?.value;
 
-  // Se não tem cookie, nem vai no banco: não está logado.
+
   if (!sessionId) return null;
 
   try {
-    // 2. Busca no banco se esse ID de sessão existe e quem é o dono dele
-    // Usamos o .innerJoin para já trazer os dados do usuário junto
     const [result] = await db
       .select({
         user: {
@@ -22,7 +19,6 @@ export async function getSession() {
           name: users.name,
           email: users.email,
           telefone: users.telefone,
-          // Adicione outros campos do usuário que você queira (nome, foto, etc)
         },
         session: sessions,
       })
@@ -30,18 +26,14 @@ export async function getSession() {
       .innerJoin(users, eq(sessions.userId, users.id))
       .where(eq(sessions.id, sessionId));
 
-    // 3. Validações de segurança
     if (!result) return null;
 
-    // Verifica se a sessão já expirou
     const agora = new Date();
     if (result.session.expiresAt < agora) {
-      // Opcional: deletar a sessão expirada do banco para limpar o lixo
       await db.delete(sessions).where(eq(sessions.id, sessionId));
       return null;
     }
 
-    // Se chegou até aqui, o cara é ele mesmo!
     return result.user;
     
   } catch (error) {

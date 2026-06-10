@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { executarCadastroServico } from '../../../app/actions/auth'; // Adapte o caminho da sua action
+import { executarCadastroServico } from '../../../app/actions/auth'; 
 
 export default function CadastroServico() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');

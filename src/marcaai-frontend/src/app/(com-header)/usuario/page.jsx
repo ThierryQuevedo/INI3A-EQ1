@@ -1,71 +1,111 @@
 import Image from "next/image";
-import { User, ArrowRight } from "lucide-react";
-// Importações do seu backend mantidas exatamente como você pediu
+import { User, ArrowRight, Pencil, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
 import { db } from "../../../db/index"; 
 import { users } from "../../../db/schema.js"; 
 import { eq } from "drizzle-orm";
 import { getSession, decodeJwtPayload } from "../../actions/auth";
 
 export default async function PaginaUsuario() {
-  // --- LÓGICA DE BACKEND MANTIDA ---
+
   const cookie = await getSession();
   const usuario = await decodeJwtPayload(cookie);
   
   if (!usuario) {
-    return <div className="text-center p-10 font-sans text-tcc-azul-darker">Usuário não encontrado.</div>;
+    return (
+      <div className="min-h-screen bg-tcc-azul-deep flex items-center justify-center p-10 font-sans">
+        <div className="bg-white p-6 rounded-xl shadow-lg text-center max-w-sm">
+          <p className="text-red-500 font-semibold text-lg mb-2">Acesso Negado</p>
+          <p className="text-gray-600 text-sm">Usuário não encontrado ou sessão expirada.</p>
+        </div>
+      </div>
+    );
   }
 
-  // Tratamento da data (se não vier no JWT, coloca uma genérica no formato do wireframe)
   const dataCriacao = usuario.criadoEm 
-    ? new Date(usuario.criadoEm).toLocaleDateString("pt-BR") 
+    ? new Date(usuario.criadoEm).toLocaleDateString("pt-BR", { day: '2-digit', month: 'long', year: 'numeric' }) 
     : "xx/xx/xxxx";
 
+  // Pega a inicial do nome para criar um avatar amigável
+  const inicialNome = usuario.nome ? usuario.nome.charAt(0).toUpperCase() : "U";
+
   return (
-    <div className="min-h-screen bg-tcc-azul-deep font-sans flex flex-col">
+    <div className="min-h-screen bg-tcc-azul-deep font-sans flex flex-col antialiased selection:bg-tcc-laranja/30">
       
-      {/* SEÇÃO SUPERIOR (Azul Escuro com Avatar e Nome) */}
-      <section className="bg-tcc-azul-darker pt-16 pb-24 flex flex-col items-center justify-center relative">
-        {/* Ícone de Perfil igual ao Wireframe (Cinza claro com linha escura) */}
-        <div className="bg-[#E5E5E5] w-24 h-24 rounded-full flex items-center justify-center mb-4 border border-gray-300 shadow-md">
-          <User size={48} className="text-gray-600" strokeWidth={1.5} />
+      {/* Seção do Topo / Header do Perfil */}
+      <section className="bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep pt-16 pb-28 flex flex-col items-center justify-center relative">
+        <div className="bg-gradient-to-tr from-tcc-laranja to-amber-400 w-28 h-28 rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-tcc-azul-deep relative group transition-transform duration-300 hover:scale-105">
+          <span className="text-white text-4xl font-bold tracking-wider font-urbanist drop-shadow-md">
+            {inicialNome}
+          </span>
+          <div className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md border border-gray-200">
+            <User size={16} className="text-tcc-azul-darker" />
+          </div>
         </div>
         
-        {/* Nome do Usuário */}
-        <h1 className="text-white text-3xl font-medium tracking-wide">
+        <h1 className="text-white text-3xl font-bold tracking-wide font-urbanist drop-shadow-sm">
           {usuario.nome}
         </h1>
+        
+        <span className="mt-2 px-3 py-1 bg-white/10 backdrop-blur-md text-white/90 text-xs font-semibold rounded-full uppercase tracking-wider border border-white/10">
+          {usuario.tipo || "Usuário"}
+        </span>
       </section>
 
-      {/* SEÇÃO PRINCIPAL (Fundo Azul Profundo com o Card Sobreposto) */}
-      <main className="flex-1 flex justify-center px-4 -mt-10 mb-10 z-10">
-        
-        {/* O Card Claro */}
-        <div className="bg-tcc-azul-lightest rounded-2xl p-6 md:p-8 w-full max-w-2xl shadow-xl flex flex-col">
+      {/* Bloco de Informações Principal */}
+      <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
+        <div className="bg-white rounded-2xl p-6 md:p-10 w-full max-w-2xl shadow-2xl flex flex-col border border-gray-100">
           
-          <h2 className="text-center text-lg font-medium text-tcc-neutro-700 mb-8">
-            Informações do usuário
-          </h2>
-
-          {/* Lista de Informações (As linhas pontilhadas) */}
-          <div className="space-y-5 flex-1 px-2 md:px-6">
-            <LinhaPontilhada label="Nome completo" valor="editar" isButton={true} />
-            <LinhaPontilhada label="Email" valor="editar" isButton={true} />
-            <LinhaPontilhada label="Senha" valor="editar" isButton={true} />
-            <LinhaPontilhada label="Telefone" valor="editar" isButton={true} />
-            
-            {/* O "Lorem" do seu wireframe pode ser o Tipo de usuário ou CPF no banco real */}
-            <LinhaPontilhada label="Tipo" valor={usuario.tipo || "ipsum"} isButton={false} />
+          <div className="flex items-center justify-between border-b pb-4 mb-8">
+            <h2 className="text-xl font-bold text-gray-800 tracking-tight">
+              Meus Dados Cadastrais
+            </h2>
+            <p className="text-xs text-gray-400 hidden sm:block">Gerencie seu perfil</p>
           </div>
 
-          {/* Rodapé do Card */}
-          <div className="mt-10 flex flex-col items-center gap-4">
-            <p className="text-sm text-tcc-neutro-700 font-medium">
-              Conta criada em {dataCriacao}
-            </p>
+          {/* Lista de Informações Amigáveis */}
+          <div className="space-y-6 flex-1">
+            <LinhaPontilhada 
+              label="Nome completo" 
+              valor={usuario.nome} 
+              isButton={true} 
+              icon={<User size={18} className="text-gray-400" />}
+            />
+            <LinhaPontilhada 
+              label="E-mail principal" 
+              valor={usuario.email} 
+              isButton={true} 
+              icon={<Mail size={18} className="text-gray-400" />}
+            />
+            <LinhaPontilhada 
+              label="Senha de acesso" 
+              valor="••••••••••••" 
+              isButton={true} 
+              icon={<ShieldCheck size={18} className="text-gray-400" />}
+            />
+            <LinhaPontilhada 
+              label="Telefone / WhatsApp" 
+              valor={usuario.telefone || "Não cadastrado"} 
+              isButton={true} 
+              icon={<Phone size={18} className="text-gray-400" />}
+            />
+            <LinhaPontilhada 
+              label="Nível de Acesso" 
+              valor={usuario.tipo === 'prestador' ? 'Prestador de Serviços' : 'Cliente da Plataforma'} 
+              isButton={false} 
+              icon={<ShieldCheck size={18} className="text-gray-400" />}
+            />
+          </div>
+
+          {/* Rodapé do Card e Ações adicionais */}
+          <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium Order-2 sm:order-1">
+              <Calendar size={16} className="text-gray-400" />
+              <span>Membro desde {dataCriacao}</span>
+            </div>
             
-            <button className="bg-tcc-laranja hover:bg-tcc-laranja-dark text-tcc-neutro-700 font-medium py-2.5 px-6 rounded-md w-full max-w-[280px] flex justify-between items-center transition-all shadow-sm cursor-pointer">
-              <span>Histórico</span>
-              <ArrowRight size={20} />
+            <button className="bg-tcc-laranja hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl w-full sm:w-auto sm:min-w-[200px] flex justify-between items-center transition-all shadow-md shadow-tcc-laranja/20 hover:shadow-lg active:scale-95 cursor-pointer order-1 sm:order-2 text-sm">
+              <span>Ver Histórico</span>
+              <ArrowRight size={18} />
             </button>
           </div>
 
@@ -76,29 +116,34 @@ export default async function PaginaUsuario() {
   );
 }
 
-/**
- * COMPONENTE AUXILIAR: Linha Pontilhada
- * Cria a estrutura "Texto ------ Botão" que se adapta à tela automaticamente.
- */
-function LinhaPontilhada({ label, valor, isButton }) {
+
+function LinhaPontilhada({ label, valor, isButton, icon }) {
   return (
-    <div className="flex items-end w-full gap-2">
-      <span className="text-tcc-neutro-600 font-medium whitespace-nowrap text-base pb-0.5">
-        {label}
-      </span>
+    <div className="flex flex-col sm:flex-row sm:items-end w-full gap-2 group">
       
-      {/* A mágica da linha pontilhada acontece aqui */}
-      <div className="flex-grow border-b-[2.5px] border-dotted border-tcc-neutro-400 mb-1.5 opacity-60"></div>
+      {/* Label com Ícone */}
+      <div className="flex items-center gap-2 min-w-[160px]">
+        {icon}
+        <span className="text-gray-500 font-semibold text-sm tracking-wide uppercase">
+          {label}
+        </span>
+      </div>
       
-      {isButton ? (
-        <button className="bg-white hover:bg-gray-50 px-3 py-1 rounded text-tcc-neutro-600 text-sm shadow-sm cursor-pointer transition-colors border border-tcc-neutro-100">
-          {valor}
-        </button>
-      ) : (
-        <span className="bg-white px-3 py-1 rounded text-tcc-neutro-600 text-sm shadow-sm border border-tcc-neutro-100">
+      {/* Divisor Visual Pontilhado */}
+      <div className="hidden sm:block flex-grow border-b-2 border-dashed border-gray-200 mb-1 opacity-70 group-hover:border-gray-300 transition-colors"></div>
+      
+      {/* Área do Valor Real / Botão de Edição */}
+      <div className="flex items-center justify-between sm:justify-end gap-3 mt-1 sm:mt-0">
+        <span className={`text-base font-medium ${valor === "Não cadastrado" ? "text-gray-400 italic" : "text-gray-800"}`}>
           {valor}
         </span>
-      )}
+        
+        {isButton && (
+          <button className="bg-gray-50 hover:bg-tcc-laranja hover:text-white p-2 rounded-lg text-gray-500 shadow-sm border border-gray-200 cursor-pointer transition-all duration-200 flex items-center justify-center" title={`Editar ${label}`}>
+            <Pencil size={14} />
+          </button>
+        )}
+      </div>
     </div>
   );
 }

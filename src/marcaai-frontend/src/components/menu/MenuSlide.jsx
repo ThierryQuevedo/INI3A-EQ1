@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { User, Calendar, BookOpen, Info } from "lucide-react";
+import { User, Calendar, BookOpen, Info, LayoutDashboard  } from "lucide-react";
 import Link from "next/link";
 
 export default function MenuSlide({ isOpen, onClose, usuario }) {
@@ -57,7 +57,7 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
                         {/* 💡 Agora sim! Se for null, 'tipo' vira 'visitante' e não renderiza o botão do prestador nem quebra o app */}
                         {tipo === "prestador" && (
                             <Link href="/dashboard" className="py-3 px-5 rounded-xl bg-tcc-laranja w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
-                                <User size={50} className="text-white"/>
+                                <LayoutDashboard size={50} className="text-white"/>
                                 <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Painel</h1>
                             </Link>
                         )}

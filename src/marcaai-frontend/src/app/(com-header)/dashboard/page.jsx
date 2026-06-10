@@ -1,11 +1,5 @@
-import Header from "../../../components/Header"; // O VS Code entende .jsx automaticamente
-import Footer from "../../../components/Footer"; // O VS Code entende .jsx automaticamente
-import Link from "next/link";
-import Image from "next/image";
-import { getSession, decodeJwtPayload } from "../../../app/actions/auth"
 
-// COMENTE ESTA LINHA se o arquivo button.jsx não existir em lugar nenhum
-// import { Button } from "../../components/ui/button"; 
+import { getSession, decodeJwtPayload } from "../../../app/actions/auth"
 
 export default async function Dashboard() {
   const cookie = await getSession();
@@ -16,7 +10,7 @@ export default async function Dashboard() {
     <div className="min-h-screen bg-gray-50">
 
       <main className="p-8 max-w-7xl mx-auto">
-        {/* Cabeçalho do Dashboard */}
+
         <div className="flex justify-between items-center mb-8">
           <div>
             <p className="text-gray-500 text-sm">Painel do prestador</p>
@@ -27,7 +21,7 @@ export default async function Dashboard() {
           </span>
         </div>
 
-        {/* Cards de Métricas */}
+  
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
           <div className="bg-white p-6 rounded-xl border-l-4 border-blue-600 shadow-sm">
             <h3 className="text-blue-600 text-4xl font-bold">qtde_agendamentos</h3>
@@ -51,12 +45,12 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        {/* Seção da Agenda */}
+
         <section>
           <h2 className="text-xl font-bold mb-4 text-gray-800">Agenda de hoje</h2>
           
           <div className="space-y-3">
-            {/* Item da Agenda 1 */}
+
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
               <div className="flex gap-6 items-center">
                 <span className="text-blue-600 font-semibold">09:00</span>
@@ -68,7 +62,7 @@ export default async function Dashboard() {
               <span className="bg-green-100 text-green-700 px-3 py-1 rounded-lg text-xs font-bold uppercase">Feito</span>
             </div>
 
-            {/* Item da Agenda 2 */}
+
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
               <div className="flex gap-6 items-center">
                 <span className="text-blue-600 font-semibold">14:00</span>

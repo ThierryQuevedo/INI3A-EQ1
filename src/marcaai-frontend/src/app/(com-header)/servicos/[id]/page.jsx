@@ -3,30 +3,24 @@ import Image from "next/image";
 import Link from 'next/link';
 import { notFound } from 'next/navigation'; 
 
-// IMPORTAÇÕES DO BANCO DE DADOS
 import { db } from '../../../../db/index.js'; 
 import { servicos, usuarios, categorias } from '../../../../db/schema.js';
 import { eq } from 'drizzle-orm';
 
-// Força a página a rodar de forma dinâmica para pegar as mudanças de ID instantaneamente
 export const dynamic = 'force-dynamic';
 
 export default async function DetalheServico({ params }) {
-  // 🔍 COLE ESTE BLOCO TEMPORÁRIO AQUI PARA DIAGNÓSTICO:
   console.log("=== CHECKLIST DO DRIZZLE ===");
   console.log("servicos.id:", !!servicos.id, "| prestadorId:", !!servicos.prestadorId, "| categoriaId:", !!servicos.categoriaId);
   console.log("usuarios.id:", !!usuarios.id, "| biografia:", !!usuarios.biografia, "| telefone:", !!usuarios.telefone);
   console.log("categorias.id:", !!categorias.id, "| nome:", !!categorias.nome);
   console.log("=============================");
-  // 1. Aguarda a resolução dos parâmetros da URL de forma segura
   const resolvedParams = await params;
   const idBruto = resolvedParams?.id;
 
-  // 2. 🛡️ BARREIRA DE SEGURANÇA: Valida se o ID é um número válido
   const idNumero = parseInt(idBruto, 10);
   
   if (!idBruto || isNaN(idNumero)) {
-    // Se o ID for "undefined", "null" ou um arquivo de imagem perdido, para aqui e joga pro 404
     return notFound();
   }
 
@@ -69,7 +63,6 @@ export default async function DetalheServico({ params }) {
     }
   };
 
-  // 👇 SEU LAYOUT ORIGINAL INTACTO
   return (
     <div className="bg-tcc-azul-deep min-h-screen text-white font-sans">
       

@@ -129,9 +129,9 @@ export default async function AgendaPage() {
 
                   {usuarioLogado.tipo === 'prestador' && (
                     <div className="mt-2 text-sm text-gray-700">
-                      <p>👤 Cliente: <span className="font-medium">{item.clienteNome}</span></p>
+                      <p>Cliente: <span className="font-medium">{item.clienteNome}</span></p>
                       {item.clienteTelefone && (
-                        <p className="text-gray-500 text-xs mt-0.5">📞 Tel: {item.clienteTelefone}</p>
+                        <p className="text-gray-500 text-xs mt-0.5">Tel: {item.clienteTelefone}</p>
                       )}
                     </div>
                   )}

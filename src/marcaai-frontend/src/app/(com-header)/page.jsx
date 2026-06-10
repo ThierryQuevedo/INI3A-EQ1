@@ -6,11 +6,9 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import logoMarcaai from "../../../public/images/Identidade visual marca ai/marca ai resenheiro.png";
 import { getSession, decodeJwtPayload } from "../actions/auth";
 
-// 💡 Força o Next.js a ler a sessão em tempo real toda vez que carregar a Home
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
-  // Buscamos os dados dinamicamente no momento da requisição
   const token = await getSession();
   const usuario = await decodeJwtPayload(token); 
 
@@ -30,7 +28,6 @@ export default async function Home() {
           </div>
           
           <div className="flex items-center gap-6 text-sm">
-            {/* LÓGICA CONDICIONAL DOS BOTÕES DO NAV */}
             {usuario ? (
               <span className="text-tcc-azul-light font-medium">
                 Olá, <span className="text-white font-bold">{usuario.nome || usuario.name}</span>
