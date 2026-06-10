@@ -6,8 +6,8 @@ import { eq } from 'drizzle-orm';
 
 export async function cadastrarUsuario(req, res, next) {
   try {
-    const { nome, email, senha, tipo } = req.body;
-    if (!nome || !email || !senha || !tipo) {
+    const { nome, email, telefone, senha, tipo } = req.body;
+    if (!nome || !email || !telefone || !senha || !tipo) {
       return res.status(400).json({ error: "Campos incompletos." });
       // talvez criar uma classe de erro de campos e colocar throw new FieldError(), pra chamar o global errorHandler?
     }
@@ -15,7 +15,7 @@ export async function cadastrarUsuario(req, res, next) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(senha, salt);
 
-    await db.insert(usuarios).values({ nome, email, senha: hashedPassword, tipo });
+    await db.insert(usuarios).values({ nome, email, telefone, senha: hashedPassword, tipo });
 
     return res.status(201).json({ message: 'Usuario cadastrado com sucesso!!' });
 

@@ -34,11 +34,12 @@ export async function executarCadastro(formData) {
   const email = formData.get('email');
   const senha = formData.get('senha');
   const tipo = formData.get('tipo');
+  const telefone = formData.get('cel');
 
-  const resposta = await fetch('http://localhost:5000/api/auth/cadastro', {
+  const resposta = await fetch('http://localhost:5000/api/auth/cadastrar', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nome, email, senha, tipo }),
+    body: JSON.stringify({ nome, email, telefone, senha, tipo }),
   });
 
   const dados = await resposta.json();
@@ -68,7 +69,6 @@ export async function executarLogin(formData) {
   }
   try {
     const token = resposta.headers.get('Authorization');
-    const tokenPayLoad = await decodeJwtPayload(token);
     const cookieStore = await cookies();
     cookieStore.set('marcaai_token', token, {
       httpOnly: true,
@@ -76,16 +76,20 @@ export async function executarLogin(formData) {
       maxAge: 60 * 60 * 24,
       path: '/',
     });
-    console.log(tokenPayLoad)
     
   }
   catch (err) {
     console.log(err);
   }
 
-  if (tokenPayLoad.tipo == "prestador")
-      redirect("/dashboard");
-    else
-      redirect("/usuario");
+  const cookie = await getSession();
+  const usuario = await decodeJwtPayload(cookie);
+
+  if(usuario.tipo == "prestador"){
+    redirect("/dashboard");
+  }
+  else{
+    redirect("/usuario");
+  }
 
 }
