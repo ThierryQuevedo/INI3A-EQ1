@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "node --env-file=.env src/db/seed.js",
+    "db:push": "drizzle-kit push",
+    "db:seed": "node src/db/seed.js",
     "db:fresh": "npx drizzle-kit migrate && node src/db/seed.js"
   },
   "dependencies": {
