@@ -133,7 +133,7 @@ export default function CadastrarPage() {
         </form>
 
         <div className="text-center mt-6">
-          <Link href="/usuario/login" className="text-sm text-tcc-azul hover:underline font-medium">
+          <Link href="/login" className="text-sm text-tcc-azul hover:underline font-medium">
             Já tem uma conta? Faça login
           </Link>
         </div>

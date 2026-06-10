@@ -9,18 +9,37 @@ export async function cadastrarUsuario(req, res, next) {
     const { nome, email, telefone, senha, tipo } = req.body;
     if (!nome || !email || !telefone || !senha || !tipo) {
       return res.status(400).json({ error: "Campos incompletos." });
-      // talvez criar uma classe de erro de campos e colocar throw new FieldError(), pra chamar o global errorHandler?
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(senha, salt);
 
-    await db.insert(usuarios).values({ nome, email, telefone, senha: hashedPassword, tipo });
+    // 1. Inserimos o usuário e usamos .returning() para pegar o ID gerado automaticamente pelo banco
+    const [novoUsuario] = await db
+      .insert(usuarios)
+      .values({ 
+        nome, 
+        email, 
+        telefone, 
+        senha: hashedPassword, 
+        tipo 
+      })
+      .returning({ id: usuarios.id });
+
+    // 2. Verificamos se o tipo dele é prestador para criar o vínculo na outra tabela
+    // (Ajuste o termo 'prestador' caso no seu banco você salve como 'PRESTADOR', 'p', etc.)
+    if (tipo.toLowerCase() === 'prestador') {
+      await db.insert(prestadores).values({
+        // IMPORTANTE: Use a chave em camelCase exata do seu schema de prestadores!
+        // No passo anterior, vimos que o Drizzle usa referências como 'usuarioId' ou 'prestadorId'
+        usuarioId: novoUsuario.id 
+      });
+    }
 
     return res.status(201).json({ message: 'Usuario cadastrado com sucesso!!' });
 
   } catch (err) {
-    next(err) // vai ser capturado pelo errorhandler, o next chama a funcao middleware dps dele
+    next(err); // vai ser capturado pelo errorhandler
   }
 }
 
@@ -43,19 +62,43 @@ export async function loginUsuario(req, res) {
   }
 }
 
-export async function cadServico(req,res, nextw){
-    try {
-    const { nome, email, senha, tipo } = req.body;
-    if (!nome || !email || !senha || !tipo) {
-      return res.status(400).json({ error: "Campos incompletos." });
-      // talvez criar uma classe de erro de campos e colocar throw new FieldError(), pra chamar o global errorHandler?
+export async function cadastrarServico(req){
+try {
+    const body = await req.json();
+    const { nome, categoriaId, novaCategoria, preco, duracaoEstimada, descricao } = body;
+
+    let idDaCategoriaFinal = categoriaId;
+
+    // 1. Se o front enviou categoriaId como nulo e passou o texto em 'novaCategoria'
+    if (!idDaCategoriaFinal && novaCategoria) {
+      // Cria a nova categoria no banco
+      const [novaCategoriaCriada] = await db
+        .insert(categorias)
+        .values({
+          nome: novaCategoria, // Exemplo de nome da coluna na tabela de categorias
+        })
+        .returning({ id: categorias.id }); // Retorna o ID gerado automaticamente
+
+      idDaCategoriaFinal = novaCategoriaCriada.id;
     }
 
-    await db.insert(servico).values({ nome, email, senha, tipo });
+    // Nota: Lembre-se de obter o id do prestador dinamicamente (da sessão/auth do usuário logado)
+    const prestadorIdMock = 1; 
 
-    return res.status(201).json({ message: 'Serviço cadastrado com sucesso!!' });
+    // 2. Insere os dados finais na sua tabela de serviços (mapeado de acordo com seu print)
+    await db.insert(servicos).values({
+      nome: nome,
+      descricao: descricao,
+      preco: preco.toString(), // Se sua coluna 'numeric' no Drizzle exigir string para precisão decimal
+      duracao_estimada: duracaoEstimada, // Nome idêntico ao do seu banco
+      categoria_id: idDaCategoriaFinal,   // Salva apenas o ID numérico aqui!
+      prestador_id: prestadorIdMock,     // ID obrigatório do prestador
+    });
 
-  } catch (err) {
-    next(err) // vai ser capturado pelo errorhandler, o next chama a funcao middleware dps dele
-  } 
+    return NextResponse.json({ success: true, message: "Serviço cadastrado com sucesso!" }, { status: 201 });
+
+  } catch (error) {
+    console.error("Erro ao salvar serviço no banco:", error);
+    return NextResponse.json({ success: false, error: "Erro interno do servidor" }, { status: 500 });
+  }
 }
