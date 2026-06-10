@@ -1,4 +1,4 @@
-"use client";
+ "use client";
 
 import { useState } from "react";
 import { executarLogin } from "../../actions/auth";
@@ -12,8 +12,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
-      <Link href="/" className="w-100 mb-10"><Image src={logotipo} alt="Logo Marca Ai"/></Link>
       <div className="bg-white rounded-lg shadow-sm max-w-xl w-full p-8 md:p-12 border border-tcc-neutro-100/30">
+      <Link href="/" className="w-100 mb-10"><Image src={logotipo} alt="Logo Marca Ai"/></Link>
         
         <h1 className="text-2xl font-bold text-center text-tcc-neutro-700 mb-8 tracking-wide">
           Entrar conta Marca Ai

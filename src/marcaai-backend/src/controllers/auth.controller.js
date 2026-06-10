@@ -42,3 +42,20 @@ export async function loginUsuario(req, res) {
     next(err)
   }
 }
+
+export async function cadServico(req,res, nextw){
+    try {
+    const { nome, email, senha, tipo } = req.body;
+    if (!nome || !email || !senha || !tipo) {
+      return res.status(400).json({ error: "Campos incompletos." });
+      // talvez criar uma classe de erro de campos e colocar throw new FieldError(), pra chamar o global errorHandler?
+    }
+
+    await db.insert(servico).values({ nome, email, senha, tipo });
+
+    return res.status(201).json({ message: 'Serviço cadastrado com sucesso!!' });
+
+  } catch (err) {
+    next(err) // vai ser capturado pelo errorhandler, o next chama a funcao middleware dps dele
+  } 
+}

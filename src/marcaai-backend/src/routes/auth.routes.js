@@ -7,5 +7,6 @@ const r = Router();
 // tudo que vier em /api/auth/cadastrar vai ser jogado dentro do authController, na função cadastrarUsuario.
 r.post("/cadastrar", authController.cadastrarUsuario);
 r.post("/login", authController.loginUsuario);
+r.post("/cadastrarServico", authController.cadServico);
 
 export default r;
