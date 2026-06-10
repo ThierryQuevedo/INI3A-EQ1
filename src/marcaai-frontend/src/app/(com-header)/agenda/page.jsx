@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Calendar } from "../../../../@/components/ui/Calendar";
+// Importando o componente que acabamos de restaurar no Passo 1
+import Calendar from "../../../../@/components/ui/Calendar"; 
 import { Calendar as CalendarIcon, Clock, User } from "lucide-react";
 
 const mockAgendamentos = [
@@ -16,7 +17,6 @@ export default function AgendaPage() {
 
   useEffect(() => {
     if (!date) return;
-    // Evita problemas de fuso horário convertendo localmente para YYYY-MM-DD
     const ano = date.getFullYear();
     const mes = String(date.getMonth() + 1).padStart(2, "0");
     const dia = String(date.getDate()).padStart(2, "0");
@@ -32,12 +32,10 @@ export default function AgendaPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
-      
-      {/* Container principal limpo e sem gambiarras de pt-20 ou absolute */}
       <div className="bg-white rounded-lg shadow-sm max-w-3xl w-full p-6 md:p-8 border border-gray-200 flex flex-col gap-4">
         
-        {/* O Calendário agora centraliza e gerencia o próprio topo com perfeição */}
         <div className="flex justify-center border-b border-gray-100 pb-6">
+          {/* Aqui ele vai renderizar o componente do Passo 1 sem conflitos! */}
           <Calendar
             mode="single"
             selected={date}
@@ -47,10 +45,9 @@ export default function AgendaPage() {
           />
         </div>
 
-        {/* LISTAGEM INFERIOR */}
         <div className="space-y-4 pt-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
-            <span className="text-lg font-bold text-tcc-laranja">
+            <span className="text-lg font-bold text-orange-500">
               {dataFormatadaBR}
             </span>
             <span className="text-sm font-medium text-gray-400">
@@ -65,7 +62,7 @@ export default function AgendaPage() {
               trabalhosDoDia.map((item) => (
                 <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
                   <div className="flex items-center gap-3">
-                    <div className="bg-orange-50 text-tcc-laranja p-2 rounded-md">
+                    <div className="bg-orange-50 text-orange-500 p-2 rounded-md">
                       <Clock className="w-4 h-4" />
                     </div>
                     <div>
@@ -86,12 +83,8 @@ export default function AgendaPage() {
             )}
           </div>
 
-          {/* BOTÕES DE AÇÃO DO RODAPÉ */}
           <div className="grid grid-cols-2 gap-4 pt-2">
-            <button
-              type="button"
-              className="bg-tcc-laranja hover:brightness-95 text-white font-bold py-3 px-6 rounded-md transition-all shadow-sm cursor-pointer text-center text-sm md:text-base"
-            >
+            <button type="button" className="bg-orange-500 hover:brightness-95 text-white font-bold py-3 px-6 rounded-md transition-all shadow-sm text-center text-sm md:text-base">
               Cadastrar
             </button>
             <button
@@ -101,12 +94,11 @@ export default function AgendaPage() {
                 setDate(hoje);
                 setCurrentMonth(hoje);
               }}
-              className="bg-tcc-laranja hover:brightness-95 text-white font-bold py-3 px-6 rounded-md transition-all shadow-sm cursor-pointer text-center text-sm md:text-base"
+              className="bg-orange-500 hover:brightness-95 text-white font-bold py-3 px-6 rounded-md transition-all shadow-sm text-center text-sm md:text-base"
             >
               Cancelar
             </button>
           </div>
-
         </div>
 
       </div>

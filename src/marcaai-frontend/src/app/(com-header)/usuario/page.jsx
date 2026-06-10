@@ -25,8 +25,6 @@ export default async function PaginaUsuario() {
 
       <div className="absolute -bottom-10 flex justify-center w-full">
         <div className="bg-amber-300 h-20 w-20 rounded-full border-4 border-white flex items-center justify-center shadow-lg overflow-hidden">
-          {/* Removido o <User /> e mantida apenas a Image */}
-          {/* <User size={40} className="text-amber-900" /> */}
           <Image 
             src="https://picsum.photos/seed/picsum/200/200" 
             alt="Foto de Perfil" 

@@ -13,7 +13,7 @@ export default function CadastroServico() {
   ];
 
   return (
-    <div className="min-h-screen bg-tcc-neutro-100 flex items-center justify-center p-4 antialiased">
+    <div className="min-h-screen bg-tcc-azul-deep flex items-center justify-center p-4 antialiased">
       <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-tcc-neutro-200/40 p-8 md:p-10">
         
         <div className="text-center mb-8">
