@@ -128,7 +128,7 @@ export default function CadastrarPage() {
             type="submit" 
             className="w-full bg-tcc-laranja hover:bg-tcc-laranja-dark text-white rounded-md py-3 text-lg font-bold transition-colors mt-4 cursor-pointer"
           >
-            Entrar
+            Cadastrar
           </button>
         </form>
 

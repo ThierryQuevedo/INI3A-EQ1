@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/index.js';
-import { usuarios } from '../db/schema.js';
+import { usuarios, prestadores, clientes } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 export async function cadastrarUsuario(req, res, next) {
@@ -14,7 +14,7 @@ export async function cadastrarUsuario(req, res, next) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(senha, salt);
 
-    // 1. Inserimos o usuário e usamos .returning() para pegar o ID gerado automaticamente pelo banco
+    // 1. Insere o usuário geral
     const [novoUsuario] = await db
       .insert(usuarios)
       .values({ 
@@ -26,20 +26,28 @@ export async function cadastrarUsuario(req, res, next) {
       })
       .returning({ id: usuarios.id });
 
-    // 2. Verificamos se o tipo dele é prestador para criar o vínculo na outra tabela
-    // (Ajuste o termo 'prestador' caso no seu banco você salve como 'PRESTADOR', 'p', etc.)
-    if (tipo.toLowerCase() === 'prestador') {
-      await db.insert(prestadores).values({
-        // IMPORTANTE: Use a chave em camelCase exata do seu schema de prestadores!
-        // No passo anterior, vimos que o Drizzle usa referências como 'usuarioId' ou 'prestadorId'
-        usuarioId: novoUsuario.id 
+    // 2. Compara ignorando maiúsculas e minúsculas para evitar erros do Front
+    if (tipo && tipo.toLowerCase() === 'prestador') {
+      try {
+        await db.insert(prestadores).values({
+          // Verifique no seu schema da tabela 'prestadores' se o nome antes dos dois pontos é 'usuarioId' mesmo!
+          usuarioId: novoUsuario.id 
+        });
+      } catch (prestadorError) {
+        // Loga o erro específico no terminal do VS Code para você descobrir o nome correto da coluna
+        console.error("===> ERRO AO INSERIR NA TABELA PRESTADORES:", prestadorError.message);
+        throw prestadorError;
+      }
+    } else {
+      await db.insert(clientes).values({
+        usuarioId: novoUsuario.id
       });
     }
 
     return res.status(201).json({ message: 'Usuario cadastrado com sucesso!!' });
 
   } catch (err) {
-    next(err); // vai ser capturado pelo errorhandler
+    next(err); // Se cair aqui, o Front-end vai receber erro e não vai redirecionar
   }
 }
 

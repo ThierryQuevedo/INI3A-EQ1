@@ -6,10 +6,10 @@ const r = Router();
 //o rotedor dessa rota chama os controladores
 // tudo que vier em /api/auth/cadastrar vai ser jogado dentro do authController, na função cadastrarUsuario.
 
-r.post('/', criarAgendamento);
-r.get('/', listarAgendamentos);
-r.get('/:id', buscarAgendamento);
-r.put('/:id', atualizarAgendamento);
-r.delete('/:id', deletarAgendamento);
+r.post('/', agendamentosController.criarAgendamento);
+r.get('/', agendamentosController.listarAgendamentos);
+r.get('/:id', agendamentosController.buscarAgendamento);
+r.put('/:id', agendamentosController.atualizarAgendamento);
+r.delete('/:id', agendamentosController.deletarAgendamento);
 
 export default r;

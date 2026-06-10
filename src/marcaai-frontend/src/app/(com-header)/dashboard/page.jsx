@@ -2,11 +2,16 @@ import Header from "../../../components/Header"; // O VS Code entende .jsx autom
 import Footer from "../../../components/Footer"; // O VS Code entende .jsx automaticamente
 import Link from "next/link";
 import Image from "next/image";
+import { getSession, decodeJwtPayload } from "../../../app/actions/auth"
 
 // COMENTE ESTA LINHA se o arquivo button.jsx não existir em lugar nenhum
 // import { Button } from "../../components/ui/button"; 
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const cookie = await getSession();
+  const usuario = await decodeJwtPayload(cookie);
+  const nome = usuario.nome;
+
   return (
     <div className="min-h-screen bg-gray-50">
 
@@ -15,7 +20,7 @@ export default function Dashboard() {
         <div className="flex justify-between items-center mb-8">
           <div>
             <p className="text-gray-500 text-sm">Painel do prestador</p>
-            <h1 className="text-3xl font-bold text-tcc-azul-dark">Barbearia do *nome*</h1>
+            <h1 className="text-3xl font-bold text-tcc-azul-dark">Barbearia do {nome}</h1>
           </div>
           <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm flex items-center gap-2">
             <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span> Online

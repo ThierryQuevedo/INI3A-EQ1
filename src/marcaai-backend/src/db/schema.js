@@ -23,16 +23,13 @@ export const clientes = pgTable('clientes', {
   usuarioId: integer('usuario_id')
     .primaryKey()
     .references(() => usuarios.id, { onDelete: 'cascade' }),
-  cpf: text('cpf').notNull().unique(),
 });
 
 export const prestadores = pgTable('prestadores', {
   usuarioId: integer('usuario_id')
     .primaryKey()
     .references(() => usuarios.id, { onDelete: 'cascade' }),
-  documento: text('documento').notNull().unique(),
   biografia: text('biografia'),
-  raioAtendimentoKm: integer('raio_atendimento_km').default(0).notNull(),
 });
 
 export const categorias = pgTable('categorias', {

@@ -30,7 +30,7 @@ export async function decodeJwtPayload(token) {
     return null;
   }
 }
-
+  
 
 export async function executarCadastro(formData) {
   const nome = formData.get('nome');
