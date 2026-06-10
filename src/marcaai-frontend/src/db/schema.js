@@ -19,11 +19,6 @@ export const sessoes = pgTable('sessoes', {
   expiraEm: timestamp('expira_em', { withTimezone: true }).notNull(),
 });
 
-export const clientes = pgTable('clientes', {
-  usuarioId: integer('usuario_id')
-    .primaryKey()
-    .references(() => usuarios.id, { onDelete: 'cascade' }),
-});
 
 export const prestadores = pgTable('prestadores', {
   usuarioId: integer('usuario_id')
@@ -65,7 +60,7 @@ export const agendamentos = pgTable('agendamentos', {
   id: serial('id').primaryKey(),
   clienteId: integer('cliente_id')
     .notNull()
-    .references(() => clientes.usuarioId),
+    .references(() => usuarios.id),
   servicoId: integer('servico_id')
     .notNull()
     .references(() => servicos.id),

@@ -38,10 +38,6 @@ export async function cadastrarUsuario(req, res, next) {
         console.error("===> ERRO AO INSERIR NA TABELA PRESTADORES:", prestadorError.message);
         throw prestadorError;
       }
-    } else {
-      await db.insert(clientes).values({
-        usuarioId: novoUsuario.id
-      });
     }
 
     return res.status(201).json({ message: 'Usuario cadastrado com sucesso!!' });

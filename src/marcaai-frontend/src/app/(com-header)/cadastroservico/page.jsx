@@ -25,10 +25,8 @@ export default function CadastroServico() {
           </p>
         </div>
 
-        {/* Formulário chamando a Server Action diretamente */}
         <form action={executarCadastroServico} className="space-y-5">
           
-          {/* Nome do Serviço */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="nome" className="text-sm font-inter font-medium text-tcc-neutro-600">
               Nome do serviço <span className="text-tcc-laranja-dark">*</span>
@@ -43,7 +41,6 @@ export default function CadastroServico() {
             />
           </div>
 
-          {/* Categoria (categoriaId) */}
           <div className="flex flex-col gap-1.5">
             <label htmlFor="categoriaId" className="text-sm font-inter font-medium text-tcc-neutro-600">
               Categoria <span className="text-tcc-laranja-dark">*</span>
@@ -73,7 +70,6 @@ export default function CadastroServico() {
             </div>
           </div>
 
-          {/* Campo Condicional: Só renderiza se a opção for 'outro' */}
           {categoriaSelecionada === 'outro' && (
             <div className="flex flex-col gap-1.5">
               <label htmlFor="novaCategoria" className="text-sm font-inter font-medium text-tcc-neutro-600">
@@ -90,10 +86,8 @@ export default function CadastroServico() {
             </div>
           )}
 
-          {/* Grid de Preço e Duração */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             
-            {/* Preço */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="preco" className="text-sm font-inter font-medium text-tcc-neutro-600">
                 Preço (R$) <span className="text-tcc-laranja-dark">*</span>
@@ -115,7 +109,6 @@ export default function CadastroServico() {
               </div>
             </div>
 
-            {/* Duração Estimada */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="duracaoEstimada" className="text-sm font-inter font-medium text-tcc-neutro-600">
                 Duração estimada <span className="text-tcc-laranja-dark">*</span>
@@ -138,7 +131,6 @@ export default function CadastroServico() {
 
           </div>
 
-          {/* Descrição */}
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
               <label htmlFor="descricao" className="text-sm font-inter font-medium text-tcc-neutro-600">

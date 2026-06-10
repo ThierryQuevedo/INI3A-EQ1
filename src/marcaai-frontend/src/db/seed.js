@@ -1,6 +1,6 @@
 // src/db/seed.js
-import { db } from "./index"; // Ajuste o caminho do seu objeto db
-import { categorias } from "./schema"; // Ajuste o caminho do seu schema
+import { db } from "./index.js"; // Ajuste o caminho do seu objeto db
+import { categorias } from "./schema.js"; // Ajuste o caminho do seu schema
 
 async function main() {
   console.log("🌱 Populando o banco de dados com categorias padrão...");

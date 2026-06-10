@@ -2,13 +2,14 @@
   "name": "marcaai",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
-    "db:seed": "node src/db/seed.js",
+    "db:seed": "node --env-file=.env src/db/seed.js",    
     "db:fresh": "npx drizzle-kit migrate && node src/db/seed.js"
   },
   "dependencies": {
