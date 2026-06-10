@@ -1,107 +1,154 @@
-"use client";
+import React from 'react';
+import { db } from '../../../db/index'; 
+import { agendamentos, servicos, usuarios } from '../../../db/schema';
+import { eq, asc } from 'drizzle-orm';
 
-import { useState, useEffect } from "react";
-// Importando o componente que acabamos de restaurar no Passo 1
-import Calendar from "../../../../@/components/ui/Calendar"; 
-import { Calendar as CalendarIcon, Clock, User } from "lucide-react";
+import { getSession, decodeJwtPayload } from "../../actions/auth";
 
-const mockAgendamentos = [
-  { id: 1, data: "2026-06-12", hora: "14:00", cliente: "Carlos Silva", servico: "Corte de Cabelo", preco: "50.00" },
-  { id: 2, data: "2026-06-12", hora: "16:00", cliente: "Ana Souza", servico: "Barba Completa", preco: "35.00" },
-];
 
-export default function AgendaPage() {
-  const [date, setDate] = useState(new Date());
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [trabalhosDoDia, setTrabalhosDoDia] = useState([]);
+async function getAgendaCliente(clienteId) {
+  return await db
+    .select({
+      id: agendamentos.id,
+      dataHora: agendamentos.dataHora,
+      status: agendamentos.status,
+      servicoNome: servicos.nome,
+      servicoPreco: servicos.preco,
+      prestadorNome: usuarios.nome,
+    })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .where(eq(agendamentos.clienteId, clienteId))
+    .orderBy(asc(agendamentos.dataHora));
+}
 
-  useEffect(() => {
-    if (!date) return;
-    const ano = date.getFullYear();
-    const mes = String(date.getMonth() + 1).padStart(2, "0");
-    const dia = String(date.getDate()).padStart(2, "0");
-    const dataFormatada = `${ano}-${mes}-${dia}`;
+async function getAgendaPrestador(prestadorId) {
+  return await db
+    .select({
+      id: agendamentos.id,
+      dataHora: agendamentos.dataHora,
+      status: agendamentos.status,
+      servicoNome: servicos.nome,
+      clienteNome: usuarios.nome,
+      clienteTelefone: usuarios.telefone,
+    })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
+    .where(eq(servicos.prestadorId, prestadorId))
+    .orderBy(asc(agendamentos.dataHora));
+}
 
-    const filtrados = mockAgendamentos.filter((a) => a.data === dataFormatada);
-    setTrabalhosDoDia(filtrados);
-  }, [date]);
 
-  const dataFormatadaBR = date 
-    ? date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })
-    : "XX/XX/XXXX";
+export default async function AgendaPage() {
+  
+  const token = await getSession();
+  const usuarioLogado = await decodeJwtPayload(token); 
+
+  if (!usuarioLogado) {
+    return (
+      <div className="max-w-5xl mx-auto p-6 text-center py-12">
+        <p className="text-red-500 font-medium">Você precisa estar logado para acessar a agenda.</p>
+      </div>
+    );
+  }
+
+  let meusAgendamentos = [];
+  try {
+    if (usuarioLogado.tipo === 'cliente') {
+      meusAgendamentos = await getAgendaCliente(usuarioLogado.id);
+    } else if (usuarioLogado.tipo === 'prestador') {
+      meusAgendamentos = await getAgendaPrestador(usuarioLogado.id);
+    }
+  } catch (error) {
+    console.error("Erro ao buscar dados do banco de dados:", error);
+  }
+
+  const formatarData = (data) => {
+    return new Date(data).toLocaleDateString('pt-BR', {
+      weekday: 'long', day: '2-digit', month: 'long',
+    });
+  };
+
+  const formatarHora = (data) => {
+    return new Date(data).toLocaleTimeString('pt-BR', {
+      hour: '2-digit', minute: '2-digit',
+    });
+  };
+
+  const getStatusBadge = (status) => {
+    const estilos = {
+      pendente: 'bg-yellow-100 text-yellow-800',
+      confirmado: 'bg-green-100 text-green-800',
+      concluido: 'bg-blue-100 text-blue-800',
+      cancelado: 'bg-red-100 text-red-800',
+    };
+    return estilos[status?.toLowerCase()] || 'bg-gray-100 text-gray-800';
+  };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4 font-sans">
-      <div className="bg-white rounded-lg shadow-sm max-w-3xl w-full p-6 md:p-8 border border-gray-200 flex flex-col gap-4">
-        
-        <div className="flex justify-center border-b border-gray-100 pb-6">
-          {/* Aqui ele vai renderizar o componente do Passo 1 sem conflitos! */}
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={setDate}
-            month={currentMonth}
-            onMonthChange={setCurrentMonth}
-          />
-        </div>
+    <div className="max-w-5xl mx-auto p-6 font-sans">
 
-        <div className="space-y-4 pt-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 pb-2">
-            <span className="text-lg font-bold text-orange-500">
-              {dataFormatadaBR}
-            </span>
-            <span className="text-sm font-medium text-gray-400">
-              {trabalhosDoDia.length === 0 
-                ? "Nenhum trabalho agendado..." 
-                : `${trabalhosDoDia.length} trabalho(s) agendado(s)...`}
-            </span>
-          </div>
-
-          <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
-            {trabalhosDoDia.length > 0 ? (
-              trabalhosDoDia.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-orange-50 text-orange-500 p-2 rounded-md">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-sm font-bold text-gray-700">{item.hora} - {item.servico}</div>
-                      <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                        <User className="w-3 h-3" /> {item.cliente}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-sm font-extrabold text-gray-600">R$ {item.preco}</div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-6 text-sm text-gray-400 flex flex-col items-center gap-2">
-                <CalendarIcon className="w-8 h-8 opacity-40 text-gray-400" />
-                Dia livre ou sem compromissos marcados.
-              </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 pt-2">
-            <button type="button" className="bg-orange-500 hover:brightness-95 text-white font-bold py-3 px-6 rounded-md transition-all shadow-sm text-center text-sm md:text-base">
-              Cadastrar
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                const hoje = new Date();
-                setDate(hoje);
-                setCurrentMonth(hoje);
-              }}
-              className="bg-orange-500 hover:brightness-95 text-white font-bold py-3 px-6 rounded-md transition-all shadow-sm text-center text-sm md:text-base"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-
+      <div className="border-b pb-4 mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Sua Agenda</h1>
+        <p className="text-gray-600 mt-1">
+          Olá, <span className="font-semibold">{usuarioLogado.nome}</span>. 
+          Modo visualização: <span className="text-indigo-600 font-medium uppercase text-xs bg-indigo-50 px-2 py-1 rounded">{usuarioLogado.tipo}</span>
+        </p>
       </div>
+
+      {meusAgendamentos.length === 0 ? (
+        <div className="text-center py-12 border-2 border-dashed rounded-lg bg-gray-50">
+          <p className="text-gray-500 text-lg">Nenhum agendamento encontrado.</p>
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {meusAgendamentos.map((item) => (
+            <div 
+              key={item.id} 
+              className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 flex flex-col md:flex-row md:items-center md:justify-between hover:shadow-md transition-shadow"
+            >
+
+              <div className="flex items-start space-x-4">
+                <div className="bg-indigo-50 p-3 rounded-lg text-center min-w-[100px]">
+                  <p className="text-xs font-bold text-indigo-600 uppercase">Horário</p>
+                  <p className="text-xl font-extrabold text-indigo-900">{formatarHora(item.dataHora)}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900">{item.servicoNome}</h3>
+                  <p className="text-sm text-gray-500 capitalize">{formatarData(item.dataHora)}</p>
+                  
+                  {usuarioLogado.tipo === 'cliente' && (
+                    <div className="mt-2 text-sm text-gray-700">
+                      <p>Prestador: <span className="font-medium">{item.prestadorNome}</span></p>
+                      <p className="text-green-600 font-semibold mt-0.5">R$ {Number(item.servicoPreco).toFixed(2)}</p>
+                    </div>
+                  )}
+
+                  {usuarioLogado.tipo === 'prestador' && (
+                    <div className="mt-2 text-sm text-gray-700">
+                      <p>👤 Cliente: <span className="font-medium">{item.clienteNome}</span></p>
+                      {item.clienteTelefone && (
+                        <p className="text-gray-500 text-xs mt-0.5">📞 Tel: {item.clienteTelefone}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+
+              <div className="mt-4 md:mt-0">
+                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusBadge(item.status)}`}>
+                  {item.status}
+                </span>
+              </div>
+
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

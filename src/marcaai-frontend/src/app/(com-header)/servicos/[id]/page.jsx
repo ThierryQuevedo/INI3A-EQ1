@@ -30,7 +30,6 @@ export default async function DetalheServico({ params }) {
     return notFound();
   }
 
-  // 3. Busca o serviço específico sabendo que o ID é 100% seguro e numérico
   const resultadoBanco = await db
     .select({
       id: servicos.id,
@@ -46,16 +45,14 @@ export default async function DetalheServico({ params }) {
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(eq(servicos.id, idNumero)); // 👈 Agora vai um número limpo e real aqui
+    .where(eq(servicos.id, idNumero)); 
 
-  // Se o serviço não for encontrado no banco de dados
   if (!resultadoBanco || resultadoBanco.length === 0) {
     return notFound();
   }
 
   const dadosDb = resultadoBanco[0];
 
-  // 4. Estrutura o objeto exatamente como seu layout precisa
   const servico = {
     id: dadosDb.id,
     nome: dadosDb.nome || "Serviço sem nome",
