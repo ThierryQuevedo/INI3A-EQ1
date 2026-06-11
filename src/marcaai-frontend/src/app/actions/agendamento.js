@@ -1,48 +1,33 @@
-'use server';
+'use server'
 
-import { cookies } from 'next/headers';
+import { db } from '../../db/index.js';
+import { agendamentos } from '../../db/schema.js';
+import { eq } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
 
-async function decodeJwtPayload(token) {
-  if (!token) return null;
-  try {
-    const rawToken = token.startsWith('Bearer ') ? token.slice(7) : token;
-    const base64Url = rawToken.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = Buffer.from(base64, 'base64').toString('utf-8');
-    return JSON.parse(jsonPayload);
-  } catch {
-    return null;
-  }
+export async function atualizarStatusAgendamento(id, status) {
+  await db.update(agendamentos)
+    .set({ status })
+    .where(eq(agendamentos.id, id));
+
+  revalidatePath('/dashboard');
 }
 
 export async function confirmarAgendamentoAction({ servicoId, dataHora }) {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('marcaai_token')?.value;
-  const usuario = await decodeJwtPayload(token);
+  const { getSession, decodeJwtPayload } = await import('./auth.js');
 
-  if (!usuario?.id) {
-    return { erro: 'Usuário não autenticado.' };
-  }
+  const cookie = await getSession();
+  const usuario = await decodeJwtPayload(cookie);
 
-  try {
-    const res = await fetch('http://localhost:5000/api/agendamentos/criarAgendamento', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        clienteId: usuario.id,
-        servicoId,
-        dataHora,
-      }),
-    });
+  if (!usuario?.id) return { erro: 'Não autenticado.' };
 
-    if (!res.ok) {
-      const d = await res.json();
-      return { erro: d.error || 'Erro ao agendar.' };
-    }
+  const [novo] = await db.insert(agendamentos).values({
+    clienteId: usuario.id,
+    servicoId,
+    dataHora: new Date(dataHora),
+    status: 'pendente',
+  }).returning();
 
-    return { sucesso: true };
-  } catch (e) {
-    console.error(e);
-    return { erro: 'Erro ao conectar com o servidor.' };
-  }
+  revalidatePath('/agenda');
+  return novo;
 }

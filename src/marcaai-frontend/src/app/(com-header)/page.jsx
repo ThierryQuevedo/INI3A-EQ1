@@ -81,11 +81,11 @@ export default async function Home() {
           <p className="text-tcc-neutro-300 text-xs leading-relaxed font-light">
             Centralizamos barbeiros, manicures, mecânicos e professores em um único ecossistema. Você escolhe, agenda e recebe notificações automáticas para não esquecer o compromisso.
           </p>
-          <div className="mt-6 flex gap-3 text-xs text-tcc-azul-light font-mono">
+          {/* <div className="mt-6 flex gap-3 text-xs text-tcc-azul-light font-mono">
             <span>+300 Profissionais</span>
             <span>•</span>
             <span>Zero Taxas</span>
-          </div>
+          </div> */}
         </div>
       </header>
 
