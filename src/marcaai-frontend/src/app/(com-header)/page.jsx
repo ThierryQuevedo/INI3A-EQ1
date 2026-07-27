@@ -5,48 +5,38 @@ import { Button } from "../../../@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import logoMarcaai from "../../../public/images/Identidade visual marca ai/marca ai resenheiro.png";
 import { getSession, decodeJwtPayload } from "../actions/auth";
+import { eq, desc } from "drizzle-orm";
+import { db } from "../../db/index.js";
+import { servicos, usuarios, categorias } from "../../db/schema.js";
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const token = await getSession();
-  const usuario = await decodeJwtPayload(token); 
+  const usuario = await decodeJwtPayload(token);
+
+
+  const servicosDestaque = await db
+    .select({
+      id: servicos.id,
+      nomeServico: servicos.nome,
+      preco: servicos.preco,
+      duracao: servicos.duracaoEstimada,
+      nomeProfissional: usuarios.nome,
+      nomeCategoria: categorias.nome,
+    })
+    .from(servicos)
+    .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
+    .orderBy(desc(servicos.id))
+    .limit(8); 
+
+
 
   return (
     <div className="min-h-screen bg-tcc-azul-deep text-tcc-neutro-100 font-sans antialiased">
       
-      <nav className="border-b border-tcc-azul-darker/30 bg-tcc-azul-deep sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          
-          <div className="flex items-center">
-            <Image 
-              src={logoMarcaai} 
-              className="h-12 w-auto object-contain brightness-110" 
-              alt="Marca Aí"
-              priority
-            />
-          </div>
-          
-          <div className="flex items-center gap-6 text-sm">
-            {usuario ? (
-              <span className="text-tcc-azul-light font-medium">
-                Olá, <span className="text-white font-bold">{usuario.nome || usuario.name}</span>
-              </span>
-            ) : (
-              <>
-                <Link href="/login" className="text-tcc-neutro-300 hover:text-white transition-colors font-medium">
-                  Entrar
-                </Link>
-                <Link href="/cadastrar">
-                  <button className="bg-white text-tcc-azul-deep hover:bg-tcc-neutro-100 font-bold px-4 py-2.5 rounded-xl text-xs transition-all tracking-wide cursor-pointer">
-                    Começar agora
-                  </button>
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </nav>
+      
 
       <header className="max-w-6xl mx-auto px-6 pt-16 pb-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         
@@ -119,9 +109,9 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <Link key={i} href="/servicos/1">
-              <CardServicoDestaque />
+          {servicosDestaque.map((servico) => (
+            <Link key={servico.id} href={`/servicos/${servico.id}`}>
+              <CardServicoDestaque servico={servico} />
             </Link>
           ))}
         </div>

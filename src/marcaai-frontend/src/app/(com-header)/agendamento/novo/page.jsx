@@ -2,8 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { confirmarAgendamentoAction } from '../../../actions/agendamento';
-
-const DIAS_SEMANA = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+import Calendario from '../../../../components/calendario/Calendario'; // ajuste o caminho se necessário
 
 function gerarSlots(horaInicio, horaFim, duracaoMin) {
   const slots = [];
@@ -20,17 +19,6 @@ function gerarSlots(horaInicio, horaFim, duracaoMin) {
   return slots;
 }
 
-function proximosDias(diaSemana, quantidade = 4) {
-  const dias = [];
-  const hoje = new Date();
-  for (let i = 1; i <= 60 && dias.length < quantidade; i++) {
-    const d = new Date(hoje);
-    d.setDate(hoje.getDate() + i);
-    if (d.getDay() === diaSemana) dias.push(new Date(d));
-  }
-  return dias;
-}
-
 export default function AgendarPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -39,6 +27,8 @@ export default function AgendarPage() {
   const [servico, setServico] = useState(null);
   const [disponibilidades, setDisponibilidades] = useState([]);
   const [agendados, setAgendados] = useState([]);
+  const [mesAtual, setMesAtual] = useState(new Date().getMonth());
+  const [anoAtual, setAnoAtual] = useState(new Date().getFullYear());
   const [diaSelecionado, setDiaSelecionado] = useState(null);
   const [horarioSelecionado, setHorarioSelecionado] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,15 +62,6 @@ export default function AgendarPage() {
     carregar();
   }, [servicoId]);
 
-  const opcoesDias = disponibilidades.flatMap((disp) =>
-    proximosDias(disp.diaSemana).map((data) => ({
-      data,
-      diaSemana: disp.diaSemana,
-      horaInicio: disp.horaInicio,
-      horaFim: disp.horaFim,
-    }))
-  ).sort((a, b) => a.data - b.data);
-
   function slotsLivres(diaObj) {
     if (!servico) return [];
     const slots = gerarSlots(diaObj.horaInicio, diaObj.horaFim, servico.duracaoEstimada);
@@ -94,6 +75,39 @@ export default function AgendarPage() {
       });
 
     return slots.filter((s) => !ocupados.includes(s));
+  }
+
+  // Calcula, para cada dia do mês exibido, se há disponibilidade e quantas vagas
+  function calcularDiasInfo() {
+    if (!servico) return {};
+    const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
+    const info = {};
+
+    for (let dia = 1; dia <= diasNoMes; dia++) {
+      const data = new Date(anoAtual, mesAtual, dia);
+      const diaSemana = data.getDay();
+      const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
+
+      if (!disp) {
+        info[dia] = { disponivel: false, vagas: 0 };
+        continue;
+      }
+
+      const livres = slotsLivres({ data, horaInicio: disp.horaInicio, horaFim: disp.horaFim });
+      info[dia] = { disponivel: livres.length > 0, vagas: livres.length };
+    }
+    return info;
+  }
+
+  const diasInfo = calcularDiasInfo();
+
+  // Quando o usuário clica num dia do calendário, monta o objeto que slotsLivres() espera
+  function selecionarDia(data) {
+    const diaSemana = data.getDay();
+    const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
+    if (!disp) return;
+    setDiaSelecionado({ data, diaSemana, horaInicio: disp.horaInicio, horaFim: disp.horaFim });
+    setHorarioSelecionado(null);
   }
 
   async function confirmarAgendamento() {
@@ -170,38 +184,15 @@ export default function AgendarPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
-          <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Dias disponíveis</h2>
-          {opcoesDias.length === 0 ? (
-            <p className="text-sm text-gray-400">Nenhum dia disponível encontrado.</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {opcoesDias.map((diaObj, i) => {
-                const selecionado = diaSelecionado?.data.toDateString() === diaObj.data.toDateString();
-                const livres = slotsLivres(diaObj);
-                return (
-                  <button
-                    key={i}
-                    disabled={livres.length === 0}
-                    onClick={() => { setDiaSelecionado(diaObj); setHorarioSelecionado(null); }}
-                    className={`rounded-xl p-3 text-center border-2 transition-all
-                      ${selecionado ? 'border-[#0B4F98] bg-[#0B4F98] text-white' : 'border-transparent bg-[#F7F8FC] text-[#1a1a2e] hover:border-[#0B4F98]/30'}
-                      ${livres.length === 0 ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
-                    `}
-                  >
-                    <div className="text-xs font-bold uppercase">{DIAS_SEMANA[diaObj.data.getDay()]}</div>
-                    <div className="text-lg font-extrabold">{diaObj.data.getDate()}</div>
-                    <div className="text-[10px] opacity-70">
-                      {diaObj.data.toLocaleDateString('pt-BR', { month: 'short' })}
-                    </div>
-                    <div className={`text-[10px] mt-1 font-semibold ${selecionado ? 'text-white/80' : 'text-[#0B4F98]'}`}>
-                      {livres.length} horário{livres.length !== 1 ? 's' : ''}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
+        <div className="bg-white rounded-2xl p-6 shadow-sm mb-4 flex justify-center">
+          <Calendario
+            mes={mesAtual}
+            ano={anoAtual}
+            diasInfo={diasInfo}
+            diaSelecionado={diaSelecionado?.data ?? null}
+            onSelectDia={selecionarDia}
+            onMesChange={(novoMes, novoAno) => { setMesAtual(novoMes); setAnoAtual(novoAno); }}
+          />
         </div>
 
         {diaSelecionado && (

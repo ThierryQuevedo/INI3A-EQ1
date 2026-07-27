@@ -4,7 +4,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '../../../db/index.js'; 
 import { servicos, usuarios, categorias } from '../../../db/schema.js'; 
 import CatalogoClient from './CatalogoClient';
-
+    
 export default async function CataloguePage() {
     const dadosBrutos = await db
         .select({

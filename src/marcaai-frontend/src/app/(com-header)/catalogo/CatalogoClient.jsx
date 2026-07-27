@@ -34,9 +34,9 @@ export default function CatalogoClient({ servicos = [] }) {
     return (
         <div className="bg-tcc-azul-deep min-h-screen flex flex-col items-center relative">
             
-            <h1 className='font-urbanist text-white font-bold text-4xl my-10'>Catálogo de Serviços</h1>
+            <h1 className='font-urbanist text-white font-bold text-4xl my-8'>Catálogo de Serviços</h1>
 
-            <div className='flex flex-col w-2/3 min-h-150 bg-tcc-azul-darker rounded-2xl overflow-hidden pb-10 shadow-lg'>
+            <div className='flex flex-col w-[95vw] max-w-[1600px] min-h-[85vh] bg-tcc-azul-darker rounded-2xl overflow-hidden pb-10 shadow-lg'>
                 
                 <div className='flex flex-row justify-center m-5 gap-2'>
                     
@@ -62,9 +62,9 @@ export default function CatalogoClient({ servicos = [] }) {
                     </Button>
                 </div>
 
-                <div className='flex gap-4 items-center justify-center flex-wrap p-4'>
+                <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 w-full'>
                     {servicosFiltrados.length === 0 ? (
-                        <p className="text-tcc-azul-light mt-10 font-medium">
+                        <p className="text-tcc-azul-light mt-10 font-medium col-span-full text-center">
                             {servicos.length === 0 
                                 ? "Nenhum serviço cadastrado no momento." 
                                 : "Nenhum resultado encontrado para a sua busca."}

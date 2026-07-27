@@ -29,7 +29,7 @@ export default function LoginPage() {
               type="email" 
               name="email" 
               required
-              className="w-full bg-gray-50 border border-tcc-neutro-100 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
+              className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
             />
           </div>
 
@@ -42,7 +42,7 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"} 
                 name="senha" 
                 required
-                className="w-full bg-gray-50 border border-tcc-neutro-100 rounded-md py-3 px-4 pr-12 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
+                className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 pr-12 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
               />
               
               <button 

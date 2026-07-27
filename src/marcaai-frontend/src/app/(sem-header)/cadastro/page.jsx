@@ -32,7 +32,7 @@ export default function CadastrarPage() {
               type="text" 
               name="nome" 
               required
-              className="w-full bg-gray-50 border border-tcc-neutro-100 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
+              className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
             />
           </div>
 
@@ -44,7 +44,7 @@ export default function CadastrarPage() {
               type="email" 
               name="email" 
               required
-              className="w-full bg-gray-50 border border-tcc-neutro-100 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
+              className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
             />
           </div>
 
@@ -56,7 +56,7 @@ export default function CadastrarPage() {
               type="text" 
               name="cel" 
               required
-              className="w-full bg-gray-50 border border-tcc-neutro-100 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
+              className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
             />
           </div>
 
@@ -69,7 +69,7 @@ export default function CadastrarPage() {
                 type={showPassword ? "text" : "password"} 
                 name="senha" 
                 required
-                className="w-full bg-gray-50 border border-tcc-neutro-100 rounded-md py-3 px-4 pr-12 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
+                className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 pr-12 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all" 
               />
             
               <button 
@@ -104,7 +104,7 @@ export default function CadastrarPage() {
                 className={`w-36 py-4 rounded-md font-bold text-lg border-2 transition-all cursor-pointer text-center ${
                   categoria === "cliente"
                     ? "border-tcc-azul bg-white text-tcc-azul-dark shadow-sm"
-                    : "border-tcc-neutro-100 bg-white text-tcc-azul-dark/80 hover:border-tcc-neutro-200"
+                    : "border-tcc-neutro-300 bg-white text-tcc-azul-dark/80 hover:border-tcc-neutro-400"
                 }`}
               >
                 Cliente
@@ -116,7 +116,7 @@ export default function CadastrarPage() {
                 className={`w-36 py-4 rounded-md font-bold text-lg border-2 transition-all cursor-pointer text-center ${
                   categoria === "prestador"
                     ? "border-tcc-azul bg-white text-tcc-azul-dark shadow-sm"
-                    : "border-tcc-neutro-100 bg-white text-tcc-azul-dark/80 hover:border-tcc-neutro-200"
+                    : "border-tcc-neutro-300 bg-white text-tcc-azul-dark/80 hover:border-tcc-neutro-400"
                 }`}
               >
                 Prestador
