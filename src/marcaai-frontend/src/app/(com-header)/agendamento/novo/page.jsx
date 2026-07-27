@@ -62,6 +62,26 @@ export default function AgendarPage() {
     carregar();
   }, [servicoId]);
 
+  // Assim que os dados carregarem, seleciona automaticamente o dia de hoje
+  // (se ele tiver disponibilidade cadastrada), para que os horários já
+  // apareçam na primeira abertura da página, sem precisar clicar no calendário.
+  useEffect(() => {
+    if (loading || diaSelecionado) return;
+    if (!servico || disponibilidades.length === 0) return;
+
+    const hoje = new Date();
+    const diaSemana = hoje.getDay();
+    const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
+    if (disp) {
+      setDiaSelecionado({
+        data: hoje,
+        diaSemana,
+        horaInicio: disp.horaInicio,
+        horaFim: disp.horaFim,
+      });
+    }
+  }, [loading, servico, disponibilidades, diaSelecionado]);
+
   function slotsLivres(diaObj) {
     if (!servico) return [];
     const slots = gerarSlots(diaObj.horaInicio, diaObj.horaFim, servico.duracaoEstimada);
@@ -74,7 +94,19 @@ export default function AgendarPage() {
         return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       });
 
-    return slots.filter((s) => !ocupados.includes(s));
+    let livres = slots.filter((s) => !ocupados.includes(s));
+
+    // Se o dia em questão for hoje, remove os horários que já passaram
+    const agora = new Date();
+    if (dataStr === agora.toDateString()) {
+      const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
+      livres = livres.filter((s) => {
+        const [h, m] = s.split(':').map(Number);
+        return h * 60 + m > minutosAgora;
+      });
+    }
+
+    return livres;
   }
 
   // Calcula, para cada dia do mês exibido, se há disponibilidade e quantas vagas

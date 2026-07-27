@@ -42,3 +42,66 @@ Para iniciar o servidor de desenvolvimento, execute:
 npm run dev
 ```
 O projeto estará disponível em **http://localhost:3000**.
+
+## COMANDO PRA DAR NO PGADMIN4 PARA CRIAR OS BANCOS DE DADOS NO POSTGRES
+CREATE TABLE usuarios (
+  id SERIAL PRIMARY KEY,
+  nome TEXT NOT NULL,
+  email TEXT NOT NULL UNIQUE,
+  telefone TEXT UNIQUE,
+  senha TEXT NOT NULL,
+  tipo TEXT NOT NULL,
+  admin BOOLEAN NOT NULL DEFAULT false,
+  criado_em TIMESTAMP NOT NULL DEFAULT NOW()
+);
+ 
+CREATE TABLE sessoes (
+  id TEXT PRIMARY KEY,
+  usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+  expira_em TIMESTAMP WITH TIME ZONE NOT NULL
+);
+ 
+CREATE TABLE prestadores (
+  usuario_id INTEGER PRIMARY KEY REFERENCES usuarios(id) ON DELETE CASCADE,
+  biografia TEXT
+);
+ 
+CREATE TABLE categorias (
+  id SERIAL PRIMARY KEY,
+  nome TEXT NOT NULL UNIQUE
+);
+ 
+CREATE TABLE servicos (
+  id SERIAL PRIMARY KEY,
+  prestador_id INTEGER NOT NULL REFERENCES prestadores(usuario_id) ON DELETE CASCADE,
+  categoria_id INTEGER NOT NULL REFERENCES categorias(id),
+  nome TEXT NOT NULL,
+  descricao TEXT,
+  preco DECIMAL(10, 2) NOT NULL,
+  duracao_estimada INTEGER NOT NULL
+);
+ 
+CREATE TABLE disponibilidades (
+  id SERIAL PRIMARY KEY,
+  prestador_id INTEGER NOT NULL REFERENCES prestadores(usuario_id) ON DELETE CASCADE,
+  dia_semana INTEGER NOT NULL,
+  hora_inicio TEXT NOT NULL,
+  hora_fim TEXT NOT NULL
+);
+ 
+CREATE TABLE agendamentos (
+  id SERIAL PRIMARY KEY,
+  cliente_id INTEGER NOT NULL REFERENCES usuarios(id),
+  servico_id INTEGER NOT NULL REFERENCES servicos(id),
+  data_hora TIMESTAMP NOT NULL,
+  status TEXT NOT NULL DEFAULT 'pendente'
+);
+ 
+CREATE TABLE avaliacoes (
+  id SERIAL PRIMARY KEY,
+  agendamento_id INTEGER NOT NULL UNIQUE REFERENCES agendamentos(id) ON DELETE CASCADE,
+  nota_para_prestador INTEGER,
+  comentario_prestador TEXT,
+  nota_para_cliente INTEGER,
+  comentario_cliente TEXT
+);
