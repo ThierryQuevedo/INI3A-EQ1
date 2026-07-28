@@ -27,6 +27,21 @@ export async function listarServicos(req, res) {
   }
 }
 
+// NOVO: usado pelo seletor de serviços na tela de disponibilidade,
+// pra listar só os serviços daquele prestador logado.
+export async function listarServicosPorPrestador(req, res) {
+  try {
+    const { prestadorId } = req.params;
+    const lista = await db.select()
+      .from(servicos)
+      .where(eq(servicos.prestadorId, Number(prestadorId)));
+    return res.json(lista);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ error: 'Erro ao listar serviços do prestador.' });
+  }
+}
+
 export async function cadastrarServico(req, res) {
   try {
     const { nome, categoriaId, novaCategoria, preco, duracaoEstimada, descricao, prestadorId } = req.body;

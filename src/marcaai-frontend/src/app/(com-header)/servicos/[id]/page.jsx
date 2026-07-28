@@ -4,17 +4,12 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation'; 
 
 import { db } from '../../../../db/index.js'; 
-import { servicos, usuarios, categorias } from '../../../../db/schema.js';
+import { servicos, usuarios, categorias, prestadores } from '../../../../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DetalheServico({ params }) {
-  console.log("=== CHECKLIST DO DRIZZLE ===");
-  console.log("servicos.id:", !!servicos.id, "| prestadorId:", !!servicos.prestadorId, "| categoriaId:", !!servicos.categoriaId);
-  console.log("usuarios.id:", !!usuarios.id, "| biografia:", !!usuarios.biografia, "| telefone:", !!usuarios.telefone);
-  console.log("categorias.id:", !!categorias.id, "| nome:", !!categorias.nome);
-  console.log("=============================");
   const resolvedParams = await params;
   const idBruto = resolvedParams?.id;
 
@@ -32,12 +27,17 @@ export default async function DetalheServico({ params }) {
       preco: servicos.preco,
       duracaoEstimada: servicos.duracaoEstimada,
       categoriaNome: categorias.nome,
+      prestadorId: servicos.prestadorId,
       prestadorNome: usuarios.nome,
       prestadorEmail: usuarios.email,
-      prestadorTelefone: usuarios.telefone, 
+      prestadorTelefone: usuarios.telefone,
+      // FIX: biografia mora na tabela `prestadores` (não em `usuarios`),
+      // então precisa de mais um join usando prestadores.usuarioId.
+      prestadorBiografia: prestadores.biografia,
     })
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .leftJoin(prestadores, eq(servicos.prestadorId, prestadores.usuarioId))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
     .where(eq(servicos.id, idNumero)); 
 
@@ -55,6 +55,7 @@ export default async function DetalheServico({ params }) {
     duracaoEstimada: dadosDb.duracaoEstimada || 0,
     categoria: dadosDb.categoriaNome || "Sem categoria",
     avaliacaoMedia: 4.5, 
+    prestadorId: dadosDb.prestadorId,
     prestador: {
       nome: dadosDb.prestadorNome || "Profissional",
       biografia: dadosDb.prestadorBiografia || "Profissional parceiro do Marca Aí.",

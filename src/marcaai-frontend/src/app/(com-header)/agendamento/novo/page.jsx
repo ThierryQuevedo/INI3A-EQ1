@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { confirmarAgendamentoAction } from '../../../actions/agendamento';
 import Calendario from '../../../../components/calendario/Calendario'; // ajuste o caminho se necessário
@@ -18,6 +18,34 @@ function gerarSlots(horaInicio, horaFim, duracaoMin) {
   }
   return slots;
 }
+
+// Agrupa os horários livres em períodos do dia, pra facilitar a escolha visual
+function agruparPorPeriodo(slots) {
+  const grupos = { manha: [], tarde: [], noite: [] };
+  for (const s of slots) {
+    const hora = Number(s.split(':')[0]);
+    if (hora < 12) grupos.manha.push(s);
+    else if (hora < 18) grupos.tarde.push(s);
+    else grupos.noite.push(s);
+  }
+  return grupos;
+}
+
+const IconSun = (props) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
+);
+const IconCloudSun = (props) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><path d="M12 2v2M4.93 4.93l1.41 1.41" /><path d="M20 12a4 4 0 0 0-4-4 4.5 4.5 0 0 0-8.6 1.53A4 4 0 0 0 8 17h9a3 3 0 0 0 0-6" /></svg>
+);
+const IconMoon = (props) => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+);
+
+const PERIODOS = [
+  { chave: 'manha', label: 'Manhã', Icon: IconSun },
+  { chave: 'tarde', label: 'Tarde', Icon: IconCloudSun },
+  { chave: 'noite', label: 'Noite', Icon: IconMoon },
+];
 
 export default function AgendarPage() {
   const searchParams = useSearchParams();
@@ -46,8 +74,10 @@ export default function AgendarPage() {
 
         const prestadorId = dadosServico.prestadorId;
 
+        // A agenda agora é por serviço: cada serviço do prestador tem seus
+        // próprios blocos de disponibilidade, então filtramos por servicoId.
         const [resDisp, resAgend] = await Promise.all([
-          fetch(`http://localhost:5000/api/disponibilidades/prestador/${prestadorId}`),
+          fetch(`http://localhost:5000/api/disponibilidades/prestador/${prestadorId}?servicoId=${servicoId}`),
           fetch(`http://localhost:5000/api/disponibilidades/agendamentos/prestador/${prestadorId}`),
         ]);
 
@@ -170,6 +200,9 @@ export default function AgendarPage() {
     }
   }
 
+  const slotsDoDia = diaSelecionado ? slotsLivres(diaSelecionado) : [];
+  const gruposPeriodo = useMemo(() => agruparPorPeriodo(slotsDoDia), [slotsDoDia]);
+
   if (loading) return (
     <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
@@ -190,8 +223,6 @@ export default function AgendarPage() {
       </div>
     </div>
   );
-
-  const slotsDoDia = diaSelecionado ? slotsLivres(diaSelecionado) : [];
 
   return (
     <div className="min-h-screen bg-[#F7F8FC] py-10 px-4">
@@ -235,27 +266,42 @@ export default function AgendarPage() {
             {slotsDoDia.length === 0 ? (
               <p className="text-sm text-gray-400">Nenhum horário disponível neste dia.</p>
             ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {slotsDoDia.map((slot) => (
-                  <button
-                    key={slot}
-                    onClick={() => setHorarioSelecionado(slot)}
-                    className={`rounded-xl py-2.5 text-sm font-bold border-2 transition-all
-                      ${horarioSelecionado === slot
-                        ? 'border-[#FD953A] bg-[#FD953A] text-white'
-                        : 'border-transparent bg-[#F7F8FC] text-[#1a1a2e] hover:border-[#FD953A]/40'}
-                    `}
-                  >
-                    {slot}
-                  </button>
-                ))}
+              <div className="space-y-5">
+                {PERIODOS.map(({ chave, label, Icon }) => {
+                  const slotsPeriodo = gruposPeriodo[chave];
+                  if (slotsPeriodo.length === 0) return null;
+                  return (
+                    <div key={chave}>
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                        <Icon />
+                        {label}
+                        <span className="text-gray-300 font-medium normal-case tracking-normal">· {slotsPeriodo.length} horário{slotsPeriodo.length > 1 ? 's' : ''}</span>
+                      </div>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {slotsPeriodo.map((slot) => (
+                          <button
+                            key={slot}
+                            onClick={() => setHorarioSelecionado(slot)}
+                            className={`rounded-xl py-2.5 text-sm font-bold border-2 transition-all
+                              ${horarioSelecionado === slot
+                                ? 'border-[#FD953A] bg-[#FD953A] text-white shadow-sm scale-[1.02]'
+                                : 'border-transparent bg-[#F7F8FC] text-[#1a1a2e] hover:border-[#FD953A]/40'}
+                            `}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         )}
 
         {diaSelecionado && horarioSelecionado && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
+          <div className="bg-white rounded-2xl p-6 shadow-sm sticky bottom-4">
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Resumo</h2>
             <div className="flex flex-col gap-2 mb-6">
               <div className="flex justify-between text-sm">

@@ -105,3 +105,30 @@ CREATE TABLE avaliacoes (
   nota_para_cliente INTEGER,
   comentario_cliente TEXT
 );
+
+
+
+para o vitor: o claude falou pra fazer isso, mas acabou os tokens
+Confirmado — coluna "servico_id" não existe. O migrate gerou o arquivo SQL mas não aplicou de fato no banco que sua aplicação usa (ou aplicou em outro banco).
+
+Preciso ver dois arquivos pra achar a causa exata:
+
+drizzle.config.js (mostra qual banco o migrate usa)
+db/index.js (mostra qual banco a aplicação usa)
+
+Se os dois apontarem pra DATABASE_URLs diferentes (ex: um lê de .env e outro tem a string hardcoded, ou tem .env e .env.local divergentes), é exatamente isso.
+
+Enquanto isso, um jeito rápido de resolver sem depender do CLI: roda esse SQL direto no banco (via psql, DBeaver, pgAdmin, ou até um client web se você usa Neon/Supabase):
+
+sql
+ALTER TABLE disponibilidades
+  ADD COLUMN servico_id INTEGER NOT NULL REFERENCES servicos(id) ON DELETE CASCADE;
+
+Se a tabela tiver linhas antigas sem esse valor, primeiro rode:
+
+sql
+DELETE FROM disponibilidades;
+
+e depois o ALTER TABLE acima.
+
+Isso resolve na hora. Mas ainda vale eu ver os dois arquivos de config pra garantir que o próximo drizzle-kit migrate funcione (senão você vai ter esse mesmo problema toda vez que mudar o schema).

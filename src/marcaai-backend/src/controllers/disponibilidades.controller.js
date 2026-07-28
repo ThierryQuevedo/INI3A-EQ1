@@ -5,9 +5,20 @@ import { eq, and, gte } from 'drizzle-orm';
 export async function listarDisponibilidades(req, res) {
   try {
     const { prestadorId } = req.params;
+    const { servicoId } = req.query;
+
+    const filtros = [eq(disponibilidades.prestadorId, Number(prestadorId))];
+
+    // Se veio servicoId na query, filtra só os blocos daquele serviço.
+    // Sem isso, a agenda de todos os serviços do prestador aparecia junta
+    // (por isso os horários pareciam "iguais" entre serviços diferentes).
+    if (servicoId) {
+      filtros.push(eq(disponibilidades.servicoId, Number(servicoId)));
+    }
+
     const lista = await db.select()
       .from(disponibilidades)
-      .where(eq(disponibilidades.prestadorId, Number(prestadorId)));
+      .where(and(...filtros));
     return res.json(lista);
   } catch (err) {
     console.log(err);
@@ -44,7 +55,7 @@ export async function listarAgendamentosPorPrestador(req, res) {
 export async function criarDisponibilidade(req, res) {
   try {
     const prestadorId = Number(req.params.prestadorId);
-    const { diaSemana, horaInicio, horaFim } = req.body;
+    const { diaSemana, horaInicio, horaFim, servicoId } = req.body;
 
     // 1. Validações básicas de formato/range
     if (diaSemana < 0 || diaSemana > 6) {
@@ -53,32 +64,43 @@ export async function criarDisponibilidade(req, res) {
     if (!horaInicio || !horaFim || horaInicio >= horaFim) {
       return res.status(400).json({ error: 'Horários inválidos (horaInicio deve ser menor que horaFim).' });
     }
+    if (!servicoId) {
+      return res.status(400).json({ error: 'servicoId é obrigatório.' });
+    }
 
-    // 2. Busca todas as disponibilidades cadastradas para o prestador nesse dia
+    // 2. Busca as disponibilidades cadastradas para ESSE serviço nesse dia
+    //    (antes checava todas as do prestador, o que misturava a agenda
+    //    de serviços diferentes)
     const disponibilidadesDoDia = await db.select()
       .from(disponibilidades)
       .where(
         and(
           eq(disponibilidades.prestadorId, prestadorId),
-          eq(disponibilidades.diaSemana, Number(diaSemana)) // MEGA BRAIN: Garante que é número!
+          eq(disponibilidades.servicoId, Number(servicoId)),
+          eq(disponibilidades.diaSemana, Number(diaSemana))
         )
       );
 
-    // 3. Checa conflitos de sobreposição de horários
+    // 3. Checa conflitos de sobreposição de horários (dentro do mesmo serviço)
     const temConflito = disponibilidadesDoDia.some((d) => {
       return horaInicio < d.horaFim && horaFim > d.horaInicio;
     });
 
     if (temConflito) {
-      // Se der conflito, a mensagem que vai aparecer na tela agora é essa aqui:
       return res.status(409).json({ 
         error: 'Já existe um horário cadastrado que conflita com este intervalo.' 
       });
     }
 
-    // 4. Insere o novo bloco segregado
+    // 4. Insere o novo bloco, já vinculado ao serviço
     const [nova] = await db.insert(disponibilidades)
-      .values({ prestadorId, diaSemana: Number(diaSemana), horaInicio, horaFim }) // MEGA BRAIN: Garante que é número!
+      .values({
+        prestadorId,
+        servicoId: Number(servicoId),
+        diaSemana: Number(diaSemana),
+        horaInicio,
+        horaFim,
+      })
       .returning();
 
     return res.status(201).json(nova);

@@ -43,11 +43,19 @@ const IconArrowRight = (props) => (
 const IconTrash = (props) => (
   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
 );
+const IconBriefcase = (props) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
+);
 
 export default function DisponibilidadePage() {
   const router = useRouter();
   const [prestadorId, setPrestadorId] = useState(null);
   const [disponibilidades, setDisponibilidades] = useState([]);
+
+  // NOVO: serviços do prestador + serviço selecionado (cada serviço tem sua própria agenda)
+  const [servicos, setServicos] = useState([]);
+  const [servicoSelecionadoId, setServicoSelecionadoId] = useState(null);
+  const [carregandoServicos, setCarregandoServicos] = useState(true);
 
   const [passoModo, setPassoModo] = useState('30');
   const [passoCustom, setPassoCustom] = useState(45);
@@ -64,10 +72,13 @@ export default function DisponibilidadePage() {
   const arrastandoAgora = useRef(false);
   const disponibilidadesRef = useRef(disponibilidades);
 
+  const gridRefs = useRef({});
+
   useEffect(() => {
     disponibilidadesRef.current = disponibilidades;
   }, [disponibilidades]);
 
+  // Carrega o prestador logado e a lista de serviços dele
   useEffect(() => {
     let montado = true;
     async function inicializar() {
@@ -91,7 +102,38 @@ export default function DisponibilidadePage() {
 
         if (montado) setPrestadorId(idValido);
 
-        const res = await fetch(`http://localhost:5000/api/disponibilidades/prestador/${idValido}`);
+        const resServicos = await fetch(`http://localhost:5000/api/servicos/prestador/${idValido}`);
+        if (resServicos.ok && montado) {
+          const listaServicos = await resServicos.json();
+          const lista = Array.isArray(listaServicos) ? listaServicos : [];
+          setServicos(lista);
+          if (lista.length > 0) {
+            setServicoSelecionadoId(lista[0].id);
+          } else {
+            setLoading(false);
+          }
+        }
+      } catch {
+        if (montado) setErro('Erro ao carregar seus serviços.');
+      } finally {
+        if (montado) setCarregandoServicos(false);
+      }
+    }
+    inicializar();
+    return () => { montado = false; };
+  }, [router]);
+
+  // Sempre que o serviço selecionado mudar, recarrega a agenda daquele serviço
+  useEffect(() => {
+    if (prestadorId == null || servicoSelecionadoId == null) return;
+    let montado = true;
+
+    async function carregarDisponibilidades() {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/disponibilidades/prestador/${prestadorId}?servicoId=${servicoSelecionadoId}`
+        );
         if (res.ok && montado) {
           const dados = await res.json();
           setDisponibilidades(Array.isArray(dados) ? dados.map(normalizarBloco) : []);
@@ -102,9 +144,11 @@ export default function DisponibilidadePage() {
         if (montado) setLoading(false);
       }
     }
-    inicializar();
+
+    carregarDisponibilidades();
+    setBlocoSelecionado(null);
     return () => { montado = false; };
-  }, [router]);
+  }, [prestadorId, servicoSelecionadoId]);
 
   useEffect(() => {
     if (!erro) return;
@@ -130,11 +174,17 @@ export default function DisponibilidadePage() {
   async function criarBlocoBackend(diaSemana, horaInicio, horaFim) {
     const idParaEnvio = await resolverPrestadorId();
     if (idParaEnvio == null) throw new Error('Prestador ID inválido.');
+    if (servicoSelecionadoId == null) throw new Error('Selecione um serviço primeiro.');
 
     const res = await fetch(`http://localhost:5000/api/disponibilidades/prestador/${idParaEnvio}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ diaSemana: Number(diaSemana), horaInicio, horaFim }),
+      body: JSON.stringify({
+        diaSemana: Number(diaSemana),
+        horaInicio,
+        horaFim,
+        servicoId: servicoSelecionadoId,
+      }),
     });
 
     const data = await res.json();
@@ -169,7 +219,7 @@ export default function DisponibilidadePage() {
 
   const confirmarArraste = useCallback(async (dadosArraste) => {
     if (!dadosArraste) return;
-    
+
     const { dia, inicioLinha, atualLinha } = dadosArraste;
     const minLinhaIndex = Math.min(inicioLinha, atualLinha);
     const maxLinhaIndex = Math.max(inicioLinha, atualLinha);
@@ -223,7 +273,7 @@ export default function DisponibilidadePage() {
       setArraste(null);
       arrasteRef.current = null;
     }
-  }, [prestadorId, passo]);
+  }, [prestadorId, passo, servicoSelecionadoId]);
 
   useEffect(() => {
     function aoSoltar() {
@@ -233,12 +283,21 @@ export default function DisponibilidadePage() {
       arrastandoAgora.current = false;
     }
     window.addEventListener('pointerup', aoSoltar);
-    return () => window.removeEventListener('pointerup', aoSoltar);
+    window.addEventListener('pointercancel', aoSoltar);
+    return () => {
+      window.removeEventListener('pointerup', aoSoltar);
+      window.removeEventListener('pointercancel', aoSoltar);
+    };
   }, [confirmarArraste]);
 
   function iniciarArraste(e, dia, linha) {
-    if (processando) return;
+    if (processando || servicoSelecionadoId == null) return;
     e.preventDefault();
+
+    if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
+      e.target.releasePointerCapture(e.pointerId);
+    }
+
     setBlocoSelecionado(null);
     arrastandoAgora.current = true;
     const novo = { dia, inicioLinha: linha, atualLinha: linha };
@@ -250,8 +309,22 @@ export default function DisponibilidadePage() {
     if (!arrastandoAgora.current) return;
     setArraste((prev) => {
       if (!prev || prev.dia !== dia || prev.atualLinha === linha) return prev;
-      return { ...prev, atualLinha: linha };
+      const atualizado = { ...prev, atualLinha: linha };
+      arrasteRef.current = atualizado;
+      return atualizado;
     });
+  }
+
+  function handlePointerMoveNaColuna(e, dia) {
+    if (!arrastandoAgora.current) return;
+    const el = gridRefs.current[dia];
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    let linha = Math.floor(y / ROW_HEIGHT);
+    if (linha < 0) linha = 0;
+    if (linha >= totalLinhas) linha = totalLinhas - 1;
+    moverArraste(dia, linha);
   }
 
   async function alterarTamanhoBloco(bloco, lado, operacao) {
@@ -326,14 +399,29 @@ export default function DisponibilidadePage() {
     }
   }
 
-  if (loading) return (
+  if (carregandoServicos) return (
     <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 rounded-full border-4 border-[#0B4F98] border-t-transparent animate-spin" />
-        <span className="text-[#0B4F98] font-semibold text-sm">Carregando horários...</span>
+        <span className="text-[#0B4F98] font-semibold text-sm">Carregando seus serviços...</span>
       </div>
     </div>
   );
+
+  // Prestador sem nenhum serviço cadastrado ainda
+  if (servicos.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center px-4">
+        <div className="bg-white rounded-2xl p-10 flex flex-col items-center gap-4 shadow-sm text-center max-w-sm">
+          <div className="w-16 h-16 bg-[#0B4F98]/10 rounded-full flex items-center justify-center text-[#0B4F98]">
+            <IconBriefcase width={28} height={28} />
+          </div>
+          <h2 className="text-lg font-bold text-[#1a1a2e]">Nenhum serviço cadastrado</h2>
+          <p className="text-sm text-gray-500">Cadastre um serviço primeiro para poder configurar a disponibilidade dele.</p>
+        </div>
+      </div>
+    );
+  }
 
   const linhasHora = [];
   for (let l = 0; l <= totalLinhas; l += linhasPorHora) {
@@ -370,6 +458,31 @@ export default function DisponibilidadePage() {
           <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold rounded-xl px-4 py-3 shadow-sm">{erro}</div>
         )}
 
+        {/* Seletor de serviço — cada serviço tem sua própria agenda */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4" onClick={(e) => e.stopPropagation()}>
+          <label className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 mb-2">
+            <IconBriefcase width={13} height={13} /> Serviço
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {servicos.map((s) => {
+              const ativo = s.id === servicoSelecionadoId;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setServicoSelecionadoId(s.id)}
+                  className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all border-2 ${
+                    ativo
+                      ? 'bg-[#0B4F98] border-[#0B4F98] text-white shadow-sm'
+                      : 'bg-[#F7F8FC] border-transparent text-[#1a1a2e] hover:border-[#0B4F98]/30'
+                  }`}
+                >
+                  {s.nome}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex items-center gap-4 flex-wrap" onClick={(e) => e.stopPropagation()}>
           <label className="text-xs font-semibold text-gray-500">Duração do incremento</label>
           <select
@@ -398,7 +511,12 @@ export default function DisponibilidadePage() {
           )}
         </div>
 
-        <div className="bg-white rounded-2xl p-3 shadow-sm overflow-x-auto touch-none select-none">
+        <div className={`bg-white rounded-2xl p-3 shadow-sm overflow-x-auto touch-none select-none relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+          {loading && (
+            <div className="absolute inset-0 flex items-center justify-center z-50">
+              <div className="w-8 h-8 rounded-full border-4 border-[#0B4F98] border-t-transparent animate-spin" />
+            </div>
+          )}
           <div className="flex min-w-[850px]">
 
             <div className="w-14 flex-shrink-0 relative pt-6" style={{ height: totalLinhas * ROW_HEIGHT + 24 }}>
@@ -424,7 +542,12 @@ export default function DisponibilidadePage() {
                   <div className="text-center text-[11px] font-semibold text-gray-500 py-1.5 border-b border-gray-100 sticky top-0 bg-white z-10">
                     {nome}
                   </div>
-                  <div className="relative" style={{ height: totalLinhas * ROW_HEIGHT }}>
+                  <div
+                    ref={(el) => { gridRefs.current[dia] = el; }}
+                    className="relative"
+                    style={{ height: totalLinhas * ROW_HEIGHT }}
+                    onPointerMove={(e) => handlePointerMoveNaColuna(e, dia)}
+                  >
 
                     {linhasHora.map(({ linha }) => (
                       <div
@@ -440,7 +563,7 @@ export default function DisponibilidadePage() {
                         onPointerDown={(e) => iniciarArraste(e, dia, linha)}
                         onPointerEnter={() => moverArraste(dia, linha)}
                         className="absolute left-0 right-0 hover:bg-[#0B4F98]/10 cursor-pointer transition-colors"
-                        style={{ top: linha * ROW_HEIGHT, height: ROW_HEIGHT }}
+                        style={{ top: linha * ROW_HEIGHT, height: ROW_HEIGHT, touchAction: 'none' }}
                       />
                     ))}
 

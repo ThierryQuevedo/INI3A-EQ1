@@ -51,6 +51,9 @@ export const disponibilidades = pgTable('disponibilidades', {
   prestadorId: integer('prestador_id')
     .notNull()
     .references(() => prestadores.usuarioId, { onDelete: 'cascade' }),
+  servicoId: integer('servico_id')            // <-- essa linha precisa estar aqui
+    .notNull()
+    .references(() => servicos.id, { onDelete: 'cascade' }),
   diaSemana: integer('dia_semana').notNull(),
   horaInicio: text('hora_inicio').notNull(),
   horaFim: text('hora_fim').notNull(),
