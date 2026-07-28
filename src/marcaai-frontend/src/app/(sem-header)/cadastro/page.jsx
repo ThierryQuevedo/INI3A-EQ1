@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useActionState } from "react";
 import { executarCadastro } from "../../actions/auth";
 import Link from 'next/link';
 import Image from "next/image";
 import logotipo from "../../../../public/images/Identidade visual marca ai/logotipo.png"
 import { Eye, EyeOff } from 'lucide-react';
 
+const estadoInicial = { erro: null };
+
 export default function CadastrarPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [categoria, setCategoria] = useState("cliente");
+  const [state, formAction, isPending] = useActionState(executarCadastro, estadoInicial);
 
   return (
     <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
@@ -20,7 +24,13 @@ export default function CadastrarPage() {
           Criar conta Marca Ai
         </h1>
 
-        <form action={executarCadastro} className="space-y-5">
+        {state?.erro && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded-md text-center">
+            {state.erro}
+          </div>
+        )}
+
+        <form action={formAction} className="space-y-5">
           
           <input type="hidden" name="tipo" value={categoria} />
 
@@ -126,9 +136,10 @@ export default function CadastrarPage() {
 
           <button 
             type="submit" 
-            className="w-full bg-tcc-laranja hover:bg-tcc-laranja-dark text-white rounded-md py-3 text-lg font-bold transition-colors mt-4 cursor-pointer"
+            disabled={isPending}
+            className="w-full bg-tcc-laranja hover:bg-tcc-laranja-dark text-white rounded-md py-3 text-lg font-bold transition-colors mt-4 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Cadastrar
+            {isPending ? "Cadastrando..." : "Cadastrar"}
           </button>
         </form>
 

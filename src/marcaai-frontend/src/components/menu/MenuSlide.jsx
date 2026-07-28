@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { User, Calendar, BookOpen, Info, LayoutDashboard  } from "lucide-react";
+import { User, Calendar, BookOpen, Info, LayoutDashboard, Home } from "lucide-react";
 import Link from "next/link";
 
 export default function MenuSlide({ isOpen, onClose, usuario }) {
@@ -38,25 +38,31 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
                     </div>
 
                     <div className="flex mt-15 flex-col relative gap-2 flex-1 w-full items-center">
+                        {/* Novo: link para a home. Fica no topo por ser o "ponto zero" da navegação */}
+                        <Link href="/" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
+                            <Home size={50} className="text-white"/>
+                            <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Início</h1>
+                        </Link>
+
                         {/* Se estiver deslogado, manda para o login, se não, para o perfil */}
-                        <Link href={usuario ? "/usuario" : "/login"} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
+                        <Link href={usuario ? "/usuario" : "/login"} onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
                             <User size={50} className="text-white"/>
                             <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Perfil</h1>
                         </Link>
                         
-                        <Link href="/agenda" className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
+                        <Link href="/agenda" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
                             <Calendar size={50} className="text-white"/>
                             <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Agenda</h1>
                         </Link>
                         
-                        <Link href="/catalogo" className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
+                        <Link href="/catalogo" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
                             <BookOpen size={50} className="text-white"/>
                             <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Catálogo</h1>
                         </Link>
                         
                         {/* 💡 Agora sim! Se for null, 'tipo' vira 'visitante' e não renderiza o botão do prestador nem quebra o app */}
                         {tipo === "prestador" && (
-                            <Link href="/dashboard" className="py-3 px-5 rounded-xl bg-tcc-laranja w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
+                            <Link href="/dashboard" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-laranja w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
                                 <LayoutDashboard size={50} className="text-white"/>
                                 <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Painel</h1>
                             </Link>

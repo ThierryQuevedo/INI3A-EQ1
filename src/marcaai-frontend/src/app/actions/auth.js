@@ -4,14 +4,14 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { db } from '../../db/index.js';
-import { servicos, categorias } from "../../db/schema.js";
+import { servicos, categorias, prestadores } from "../../db/schema.js";
+import { eq } from 'drizzle-orm';
 
 export async function getSession() {
   const cookieStore = await cookies();
   const token = cookieStore.get('marcaai_token')?.value;
 
   if (!token) return null; 
-  
   return token;
 }
 
@@ -31,7 +31,7 @@ export async function decodeJwtPayload(token) {
   }
 }
 
-export async function executarCadastro(formData) {
+export async function executarCadastro(estadoAnterior, formData) {
   const nome = formData.get('nome');
   const email = formData.get('email');
   const senha = formData.get('senha');
@@ -55,11 +55,10 @@ export async function executarCadastro(formData) {
     return { erro: "Servidor fora do ar. Tente mais tarde." };
   }
   
-  await executarLogin(formData);
+  return await executarLogin(estadoAnterior, formData);
 }
 
-export async function executarLogin(formData) {
-  console.log("executarLogin c.")
+export async function executarLogin(estadoAnterior, formData) {
   const email = formData.get('email');
   const senha = formData.get('senha');
   
@@ -78,7 +77,7 @@ export async function executarLogin(formData) {
   const dados = await resposta.json();
 
   if (!resposta.ok) {
-    return { erro: dados.error || 'Credenciais inválidas.' };
+    return { erro: "E-mail ou senha inválidos." };
   }
 
   try {
@@ -105,7 +104,7 @@ export async function executarLogin(formData) {
   if (usuario && usuario.tipo === "prestador") {
     redirect("/dashboard");
   } else {
-    redirect("/usuario");
+    redirect("/");
   }
 }
 
@@ -117,7 +116,23 @@ export async function executarCadastroServico(formData) {
     throw new Error("Usuário não autenticado.");
   }
   
-  const prestadorId = usuario.id;
+  const prestadorId = Number(usuario.id);
+  // Verifica se prestador existe 
+  const prestadorExiste = await db
+    .select()
+    .from(prestadores)
+    .where(eq(prestadores.usuarioId, prestadorId))
+    .limit(1);
+  console.log(prestadorExiste.length)
+  if (prestadorExiste.length === 0) { //PRESTADOR EXISTE RETORNANDO 0.... MSM QUANDO EXISTE PRESTADOR... -ASS OTAVIO
+    await db.insert(prestadores).values({
+      usuarioId: prestadorId,
+      documento: formData.get('documento') ?? '',
+      biografia: formData.get('biografia') ?? '',
+      raioAtendimentoKm: 0,
+    });
+  }
+  // ------------------------------------------------------------------------
 
   const nome = formData.get("nome");
   const categoriaIdRaw = formData.get("categoriaId"); 
@@ -142,7 +157,7 @@ export async function executarCadastroServico(formData) {
       .values({ nome: novaCategoriaNome })
       .returning({ id: categorias.id });
 
-    categoriaIdFinal = novaCat.id;
+    categoriaIdFinal = Number(novaCat.id);
   } else {
     categoriaIdFinal = Number(categoriaIdRaw);
   }
@@ -153,13 +168,14 @@ export async function executarCadastroServico(formData) {
       categoriaId: categoriaIdFinal,
       nome: nome.toString(),
       descricao: descricao ? descricao.toString() : null, 
-      preco: preco.toString(), 
+      preco: preco.toString(), // Drizzle converte string formatada para decimal/numeric do Postgres
       duracaoEstimada: parseInt(duracaoEstimada, 10),
     });
   } catch (error) {
     console.error("===> ERRO DETALHADO DO BANCO:", error.message);
     throw error;
   }
+
   revalidatePath('/dashboard');
   revalidatePath('/catalogo');
 

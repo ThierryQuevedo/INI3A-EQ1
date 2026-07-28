@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { db } from '../../../../db/index.js'; 
 import { servicos, usuarios, categorias, prestadores } from '../../../../db/schema.js';
 import { eq } from 'drizzle-orm';
+import BotaoVoltar from '../../../../components/botao/BotaoVoltar';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +19,7 @@ export default async function DetalheServico({ params }) {
   if (!idBruto || isNaN(idNumero)) {
     return notFound();
   }
-
+  
   const resultadoBanco = await db
     .select({
       id: servicos.id,
@@ -31,8 +32,6 @@ export default async function DetalheServico({ params }) {
       prestadorNome: usuarios.nome,
       prestadorEmail: usuarios.email,
       prestadorTelefone: usuarios.telefone,
-      // FIX: biografia mora na tabela `prestadores` (não em `usuarios`),
-      // então precisa de mais um join usando prestadores.usuarioId.
       prestadorBiografia: prestadores.biografia,
     })
     .from(servicos)
@@ -69,6 +68,10 @@ export default async function DetalheServico({ params }) {
       
       <div className="relative h-60 w-full bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-[url('https://picsum.photos/1920/1080?blur=5')] bg-cover bg-center" />
+
+        <div className="absolute top-6 left-6 z-20">
+          <BotaoVoltar fallbackHref="/catalogo" />
+        </div>
       </div>
 
       <div className="max-w-5xl mx-auto px-6 -mt-24 relative z-10 pb-20">

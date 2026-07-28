@@ -1,25 +1,35 @@
- "use client";
+"use client";
 
 import { useState } from "react";
+import { useActionState } from "react";
 import { executarLogin } from "../../actions/auth";
 import Link from 'next/link';
-import logotipo from "../../../../public/images/Identidade visual marca ai/logotipo.png"
+import logotipo from "../../../../public/images/Identidade visual marca ai/logotipo.png";
 import Image from "next/image";
 import { Eye, EyeOff } from 'lucide-react';
 
+const estadoInicial = { erro: null };
+
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [state, formAction, isPending] = useActionState(executarLogin, estadoInicial);
 
   return (
     <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
-      <Link href="/" className="w-100 mb-10 "><Image src={logotipo} alt="Logo Marca Ai"/></Link>
+      <Link href="/" className="w-100 mb-10"><Image src={logotipo} alt="Logo Marca Ai"/></Link>
       <div className="bg-white rounded-lg shadow-sm max-w-xl w-full p-8 md:p-12 border border-tcc-neutro-100/30">
         
         <h1 className="text-2xl font-bold text-center text-tcc-neutro-700 mb-8 tracking-wide">
           Entrar conta Marca Ai
         </h1>
 
-        <form action={executarLogin} className="space-y-5">
+        {state?.erro && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded-md text-center">
+            {state.erro}
+          </div>
+        )}
+
+        <form action={formAction} className="space-y-5">
           
           <div>
             <label className="block text-tcc-neutro-500 text-base font-normal mb-1.5">
@@ -67,9 +77,10 @@ export default function LoginPage() {
 
           <button 
             type="submit" 
-            className="w-full bg-tcc-laranja hover:bg-tcc-laranja-dark text-white rounded-md py-3 text-lg font-bold transition-colors mt-2 cursor-pointer"
+            disabled={isPending}
+            className="w-full bg-tcc-laranja hover:bg-tcc-laranja-dark text-white rounded-md py-3 text-lg font-bold transition-colors mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Entrar
+            {isPending ? "Entrando..." : "Entrar"}
           </button>
         </form>
 

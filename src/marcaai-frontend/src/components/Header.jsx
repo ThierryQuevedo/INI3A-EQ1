@@ -1,25 +1,21 @@
-// 1. Força o Next.js a ler este componente de forma dinâmica a cada requisição
-export const dynamic = 'force-dynamic';
-
-import { User } from 'lucide-react';
+import { LayoutDashboard, User } from 'lucide-react';
 import Link from "next/link";
 import Image from "next/image";
 import MenuWrapper from '../components/menu/MenuSlideWrapper';
+import PerfilDropdown from '../components/menu/MenuPerfilDropdown';
 import logotipo from '../../public/images/Identidade visual marca ai/logotipo.png';
-import { logoutAction } from "../app/actions/auth";
 
-// Importando as funções do seu auth correto para decodificar o JWT
 import { getSession, decodeJwtPayload } from "../app/actions/auth";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Header() {
-    // 2. Buscamos o token e decodificamos os dados reais do usuário atualizado no servidor
     const token = await getSession();
     const user = await decodeJwtPayload(token);
 
     return (
         <header className="bg-tcc-azul-darker sticky top-0 z-50 flex items-center justify-between px-4 sm:px-6 lg:px-10 h-16 shrink-0 text-tcc-azul-lightest shadow-md">
 
-            {/* 3. Passamos os dados do usuário para o Wrapper do Menu (mesmo se for null) */}
             <MenuWrapper usuario={user} />
 
             <Link
@@ -30,10 +26,18 @@ export default async function Header() {
             </Link>
 
             <div className="flex items-center gap-6">
-                {/* LOGICA CONDICIONAL DE AUTENTICAÇÃO */}
                 {user ? (
-                    // Se o usuário ESTIVER LOGADO, mostra nome + ícone (ambos linkam para o perfil) e o botão de Sair
                     <div className="flex items-center gap-4">
+                        {user.tipo === "prestador" && (
+                            <Link
+                                href="/dashboard"
+                                className="hidden sm:flex items-center gap-2 text-sm font-semibold bg-tcc-azul-medium/40 hover:bg-tcc-azul-medium/70 text-white px-3 py-1.5 rounded-lg border border-tcc-azul-medium hover:border-tcc-azul-light transition-all duration-200"
+                            >
+                                <LayoutDashboard size={16} />
+                                Dashboard
+                            </Link>
+                        )}
+
                         <Link
                             href="/usuario"
                             className="text-sm font-medium text-tcc-azul-light hover:text-white transition-colors hidden sm:inline"
@@ -41,30 +45,11 @@ export default async function Header() {
                             Olá, <span className="text-white font-semibold">{user.nome || user.name}</span>
                         </Link>
 
-                        <form action={logoutAction}>
-                            <button
-                                type="submit"
-                                className="text-xs uppercase tracking-wider text-tcc-laranja-pale hover:text-tcc-laranja transition-colors font-bold cursor-pointer"
-                            >
-                                Sair
-                            </button>
-                        </form>
-
-                        <Link
-                            href="/usuario"
-                            className="bg-tcc-azul text-tcc-azul-deep rounded-full p-2 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner"
-                            title="Meu Perfil"
-                        >
-                            <User size={22} className='text-tcc-neutro-100' />
-                        </Link>
+                        <PerfilDropdown user={user} />
                     </div>
                 ) : (
-                    // Se NÃO TIVER USUÁRIO LOGADO, mostra apenas os links de Login/Cadastro
                     <div className="flex items-center gap-3">
-                        <Link
-                            href="/login"
-                            className="text-sm font-semibold text-tcc-azul-light hover:text-white transition-colors"
-                        >
+                        <Link href="/login" className="text-sm font-semibold text-tcc-azul-light hover:text-white transition-colors">
                             Entrar
                         </Link>
                         <span className="text-tcc-azul-medium text-sm">|</span>

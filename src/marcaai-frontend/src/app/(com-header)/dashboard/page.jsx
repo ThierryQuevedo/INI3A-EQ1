@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSession, decodeJwtPayload } from "../../../app/actions/auth"
+import BotaoCancelarAgendamento from "../../../components/cancelarAgendamento/BotaoCancelarAgendamento";
 import { db } from "../../../db/index.js";
 import { agendamentos, servicos, usuarios } from "../../../db/schema.js";
 import { eq, and, gte, lt } from "drizzle-orm";
@@ -102,11 +103,7 @@ export default async function Dashboard() {
           )}
 
           {podeCancelar && (
-            <form action={atualizarStatusAgendamento.bind(null, ag.id, 'cancelado')}>
-              <button type="submit" className="bg-red-100 hover:bg-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
-                Cancelar
-              </button>
-            </form>
+            <BotaoCancelarAgendamento action={atualizarStatusAgendamento.bind(null, ag.id, 'cancelado')} />
           )}
         </div>
       </div>

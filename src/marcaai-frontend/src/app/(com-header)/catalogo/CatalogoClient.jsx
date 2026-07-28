@@ -62,7 +62,7 @@ export default function CatalogoClient({ servicos = [] }) {
                     </Button>
                 </div>
 
-                <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 w-full'>
+                <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 w-full'>
                     {servicosFiltrados.length === 0 ? (
                         <p className="text-tcc-azul-light mt-10 font-medium col-span-full text-center">
                             {servicos.length === 0 
