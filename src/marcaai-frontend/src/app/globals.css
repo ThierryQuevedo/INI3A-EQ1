@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@import "@uploadthing/react/styles.css";
 @theme{
   /* --- Paleta de Azuis --- */
   --color-tcc-azul-lightest: #DCE5FE;

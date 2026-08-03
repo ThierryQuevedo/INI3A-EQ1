@@ -9,11 +9,12 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
-    "db:seed": "node --env-file=.env src/db/seed.js",    
+    "db:seed": "node --env-file=.env src/db/seed.js",
     "db:fresh": "npx drizzle-kit migrate && node src/db/seed.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
+    "@uploadthing/react": "^7.3.3",
     "autoprefixer": "^10.4.27",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -28,7 +29,8 @@
     "react": "19.2.4",
     "react-day-picker": "^10.0.1",
     "react-dom": "19.2.4",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
