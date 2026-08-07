@@ -1,33 +1,29 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
-import MenuSlide from './MenuSlide';
+import { useState } from "react";
+import { Menu } from "lucide-react";
+import MenuSlide from "./MenuSlide";
 
-// 💡 CORREÇÃO: Passamos a desestruturar a prop { usuario } que vem lá do Header
-export default function MenuWrapper({ usuario }) {
+export default function MenuSlideWrapper({ usuario }) {
     const [isOpen, setIsOpen] = useState(false);
 
-    const toggleMenu = () => setIsOpen(!isOpen);
-
     return (
-        <div>
-            <button 
-                onClick={toggleMenu}
-                aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
-                className={`bg-tcc-azul text-tcc-azul-deep rounded-full size-9 flex items-center justify-center hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner focus:outline-none ${
-                    isOpen ? "fixed left-10 top-3.5 z-50" : "relative z-30"
-                }`}
+        <div className="flex items-center">
+            {/* Ícone de Hambúrguer visível no Header */}
+            <button
+                onClick={() => setIsOpen(true)}
+                className="p-2 text-white hover:text-tcc-azul-light transition-colors cursor-pointer"
+                aria-label="Abrir Menu"
             >
-                {isOpen ? (
-                    <X size={22} className='text-tcc-neutro-100 shrink-0'/>
-                ) : (
-                    <Menu size={22} className='text-tcc-neutro-100 shrink-0'/>
-                )}
+                <Menu size={28} />
             </button>
 
-            {/* 💡 CORREÇÃO: Repassando a propriedade 'usuario' para o MenuSlide interno */}
-            <MenuSlide isOpen={isOpen} onClose={toggleMenu} usuario={usuario} />
+            {/* Componente da gaveta lateral */}
+            <MenuSlide
+                isOpen={isOpen}
+                onClose={() => setIsOpen(false)}
+                usuario={usuario}
+            />
         </div>
     );
 }

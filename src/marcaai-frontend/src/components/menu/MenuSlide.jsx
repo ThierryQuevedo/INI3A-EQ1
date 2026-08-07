@@ -1,81 +1,94 @@
+"use client";
+
 import Image from "next/image";
-import { User, Calendar, BookOpen, Info, LayoutDashboard, Home } from "lucide-react";
+import { User, Calendar, BookOpen, Info, LayoutDashboard, Home, X } from "lucide-react";
 import Link from "next/link";
 
 export default function MenuSlide({ isOpen, onClose, usuario }) {
-    // 💡 SEGURANÇA: Se 'usuario' for null, evita o quebra utilizando o operador ?.
-    // E define valores padrão amigáveis para quem está deslogado.
     const nome = usuario?.nome || "Visitante";
     const email = usuario?.email || "Entre na sua conta";
     const tipo = usuario?.tipo || "visitante";
 
     return (
-        <div>
+        <>
+            {/* 1. Cortina / Fundo Escuro (Só aparece se isOpen === true) */}
             {isOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/40 z-45 transition-all transition-opacity duration-300"
+                    className="fixed inset-0 bg-black/60 z-40 transition-opacity duration-300"
                     onClick={onClose}
                 />
             )}
-            <div className={`fixed top-0 left-0 h-screen w-80 bg-tcc-azul-medium justify-center flex z-45 transform transition-transform duration-300 ease-in-out ${
-                isOpen ? "translate-x-0" : "-translate-x-full"
-            }`}>
-         
-                <div className="px-6 pb-6 pt-20 flex flex-col items-center relative w-full">
+
+            {/* 2. Gaveta do Menu */}
+            <div 
+                className="fixed top-0 left-0 h-screen w-80 bg-tcc-azul-medium flex flex-col z-50 transition-transform duration-300 ease-in-out shadow-2xl"
+                style={{ 
+                    transform: isOpen ? "translateX(0)" : "translateX(-100%)" 
+                }}
+            >
+                {/* Botão de Fechar (X) */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-white hover:text-tcc-azul-light transition-colors p-2 rounded-lg cursor-pointer z-10"
+                    aria-label="Fechar menu"
+                >
+                    <X size={26} />
+                </button>
+
+                <div className="px-6 pb-6 pt-14 flex flex-col items-center relative w-full h-full overflow-y-auto">
                     
-                    <div className="py-3 rounded-xl bg-tcc-azul-darker w-70 flex justify-center items-center flex-row">
+                    {/* Card do Usuário */}
+                    <div className="py-3 px-4 rounded-xl bg-tcc-azul-darker w-full flex justify-start items-center flex-row gap-3 mt-2">
                         <Image 
                             src="https://picsum.photos/200/200?random=2" 
-                            width={80} 
-                            height={80} 
+                            width={48} 
+                            height={48} 
                             alt="Avatar"
-                            className="rounded-full mr-2"
+                            className="rounded-full shrink-0"
                         />
-                        <div className="flex flex-col">
-                            <h1 className="text-2xl text-white">{nome}</h1>
-                            <h2 className="text-xs text-tcc-azul-light">{email}</h2>
+                        <div className="flex flex-col overflow-hidden">
+                            <h1 className="text-base font-bold text-white truncate">{nome}</h1>
+                            <h2 className="text-xs text-tcc-azul-light truncate">{email}</h2>
                         </div>
                     </div>
 
-                    <div className="flex mt-15 flex-col relative gap-2 flex-1 w-full items-center">
-                        {/* Novo: link para a home. Fica no topo por ser o "ponto zero" da navegação */}
-                        <Link href="/" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
-                            <Home size={50} className="text-white"/>
-                            <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Início</h1>
+                    {/* Links de Navegação */}
+                    <div className="flex mt-6 flex-col gap-2.5 w-full items-center">
+                        <Link href="/" onClick={onClose} className="py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3">
+                            <Home size={22} className="text-white"/>
+                            <span className="font-urbanist font-bold text-lg text-white">Início</span>
                         </Link>
 
-                        {/* Se estiver deslogado, manda para o login, se não, para o perfil */}
-                        <Link href={usuario ? "/usuario" : "/login"} onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
-                            <User size={50} className="text-white"/>
-                            <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Perfil</h1>
+                        <Link href={usuario ? "/usuario" : "/login"} onClick={onClose} className="py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3">
+                            <User size={22} className="text-white"/>
+                            <span className="font-urbanist font-bold text-lg text-white">Perfil</span>
                         </Link>
                         
-                        <Link href="/agenda" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
-                            <Calendar size={50} className="text-white"/>
-                            <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Agenda</h1>
+                        <Link href="/agenda" onClick={onClose} className="py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3">
+                            <Calendar size={22} className="text-white"/>
+                            <span className="font-urbanist font-bold text-lg text-white">Agenda</span>
                         </Link>
                         
-                        <Link href="/catalogo" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
-                            <BookOpen size={50} className="text-white"/>
-                            <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Catálogo</h1>
+                        <Link href="/catalogo" onClick={onClose} className="py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3">
+                            <BookOpen size={22} className="text-white"/>
+                            <span className="font-urbanist font-bold text-lg text-white">Catálogo</span>
                         </Link>
                         
-                        {/* 💡 Agora sim! Se for null, 'tipo' vira 'visitante' e não renderiza o botão do prestador nem quebra o app */}
                         {tipo === "prestador" && (
-                            <Link href="/dashboard" onClick={onClose} className="py-3 px-5 rounded-xl bg-tcc-laranja w-70 flex justify-start items-center flex-row hover:brightness-110 transition-all">
-                                <LayoutDashboard size={50} className="text-white"/>
-                                <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Painel</h1>
+                            <Link href="/dashboard" onClick={onClose} className="py-2.5 px-4 rounded-xl bg-tcc-laranja w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3">
+                                <LayoutDashboard size={22} className="text-white"/>
+                                <span className="font-urbanist font-bold text-lg text-white">Painel</span>
                             </Link>
                         )}
 
-                        <div className="mt-auto mb-10 py-3 px-5 rounded-xl bg-tcc-azul-dark w-70 flex justify-start items-center flex-row cursor-pointer hover:brightness-110 transition-all">
-                            <Info size={50} className="text-white"/>
-                            <h1 className="font-urbanist font-bold px-2 text-3xl text-white">Sobre nós</h1>
+                        <div className="mt-4 py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row cursor-pointer hover:brightness-110 transition-all gap-3">
+                            <Info size={22} className="text-white"/>
+                            <span className="font-urbanist font-bold text-lg text-white">Sobre nós</span>
                         </div>
                     </div>
-                    
+
                 </div>
             </div>
-        </div>
+        </>
     );
 }

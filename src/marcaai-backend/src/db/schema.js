@@ -5,9 +5,10 @@ export const usuarios = pgTable('usuarios', {
   nome: text('nome').notNull(),
   email: text('email').notNull().unique(),
   telefone: text('telefone').unique(),
+  urlImagem: text("url_imagem"),
   senha: text("senha").notNull(),
   tipo: text('tipo').notNull(),
-  admin: boolean('admin').default(false).notNull(), // Campo adicionado aqui
+  admin: boolean('admin').default(false).notNull(),
   criadoEm: timestamp('criado_em').defaultNow().notNull(),
 });
 
