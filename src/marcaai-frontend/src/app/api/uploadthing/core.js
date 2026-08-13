@@ -57,12 +57,9 @@ export const ourFileRouter = {
 
         await db
             .update(usuarios)
-            // ⚠️ ATENÇÃO: Troque 'urlBanner' pelo nome EXATO da coluna de banner no seu schema.
-            // Se no seu schema for outro nome (ex: bannerUrl, url_banner), ajuste abaixo:
             .set({ urlBanner: fileUrl }) 
             .where(eq(usuarios.email, metadata.userEmail));
 
-        // Força a página de configurações a atualizar os dados na tela
-        revalidatePath("/configuracoes");
+        revalidatePath("/usuario");
     })
 };

@@ -1,10 +1,8 @@
-
-import Image from "next/image";
 import { User, ArrowRight, Pencil, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
-import { db } from "../../../db/index"; 
-import { users } from "../../../db/schema.js"; 
-import { eq } from "drizzle-orm";
 import { getSession, decodeJwtPayload } from "../../actions/auth";
+
+import AvatarUpload from "../../../components/AvatarUpload"; 
+
 export default async function PaginaUsuario() {
   const cookie = await getSession();
   const usuario = await decodeJwtPayload(cookie);
@@ -29,18 +27,9 @@ export default async function PaginaUsuario() {
   return (
     <div className="min-h-screen bg-tcc-azul-deep font-sans flex flex-col antialiased selection:bg-tcc-laranja/30">
       <section className="bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep pt-16 pb-28 flex flex-col items-center justify-center relative">
-        <div className="bg-gradient-to-tr from-tcc-laranja to-amber-400 w-28 h-28 rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-tcc-azul-deep relative group transition-transform duration-300 hover:scale-105">
-          <div className=" w-28 h-28 rounded-full absolute cursor-pointer flex flex-col items-center justify-center">
-            <Pencil/>
-            <div className="bg-black opacity-30 w-full h-full rounded-full absolute"></div>
-          </div>
-          <span className="text-white text-4xl font-bold tracking-wider font-urbanist drop-shadow-md">
-            {inicialNome}
-          </span>
-          <div className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md border border-gray-200">
-            <User size={16} className="text-tcc-azul-darker" />
-          </div>
-        </div>
+        
+        {/* === AQUI ENTROU NOSSO COMPONENTE CLIENTE === */}
+        <AvatarUpload usuario={usuario} inicialNome={inicialNome} />
         
         <h1 className="text-white text-3xl font-bold tracking-wide font-urbanist drop-shadow-sm">
           {usuario.nome}
@@ -94,7 +83,7 @@ export default async function PaginaUsuario() {
           </div>
 
           <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium Order-2 sm:order-1">
+            <div className="flex items-center gap-2 text-sm text-gray-500 font-medium order-2 sm:order-1">
               <Calendar size={16} className="text-gray-400" />
               <span>Membro desde {dataCriacao}</span>
             </div>
@@ -107,11 +96,9 @@ export default async function PaginaUsuario() {
 
         </div>
       </main>
-
     </div>
   );
 }
-
 
 function LinhaPontilhada({ label, valor, isButton, icon }) {
   return (
