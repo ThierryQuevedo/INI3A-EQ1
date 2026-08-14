@@ -5,21 +5,32 @@ import { notFound } from 'next/navigation';
 
 import { db } from '../../../../db/index.js'; 
 import { servicos, usuarios, categorias, prestadores } from '../../../../db/schema.js';
-import { eq } from 'drizzle-orm';
-import BotaoVoltar from '../../../../components/botao/BotaoVoltar';
+import { eq, or, sql } from 'drizzle-orm'; //novos imports para o Drizzle ORM, eq é usado para comparar valores, or é usado para criar condições "ou" e sql é usado para escrever consultas SQL brutas.
+import BotaoVoltar from '../../../../components/botao/BotaoVoltar.jsx';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DetalheServico({ params }) {
   const resolvedParams = await params;
-  const idBruto = resolvedParams?.id;
-
-  const idNumero = parseInt(idBruto, 10);
+  // Muda de id para slug (ou lê id se o parâmetro ainda for [id])
+  const slug = resolvedParams?.slug || resolvedParams?.id;
   
-  if (!idBruto || isNaN(idNumero)) {
+  if (!slug) {
     return notFound();
   }
+
+// Identifica se a URL é um número (ex: /servicos/2) ou texto (ex: /servicos/chitao-borracharia)
+  const eNumero = !isNaN(parseInt(slug, 10));
+  const idNumero = eNumero ? parseInt(slug, 10) : null;
   
+  // Monta a condição de busca por texto de forma blindada caso servicos.slug não exista no schema JS
+  const condicaoTexto = servicos.slug
+    ? or(
+        eq(servicos.slug, slug),
+        sql`LOWER(REPLACE(REPLACE(${servicos.nome}, ' ', '-'), '&', 'e')) = ${slug.toLowerCase()}`
+      )
+    : sql`LOWER(REPLACE(REPLACE(${servicos.nome}, ' ', '-'), '&', 'e')) = ${slug.toLowerCase()}`;
+
   const resultadoBanco = await db
     .select({
       id: servicos.id,
@@ -29,7 +40,7 @@ export default async function DetalheServico({ params }) {
       duracaoEstimada: servicos.duracaoEstimada,
       categoriaNome: categorias.nome,
       prestadorId: servicos.prestadorId,
-      prestadorNome: usuarios.nome,
+      prestadorNome: usuarios.nome, 
       prestadorEmail: usuarios.email,
       prestadorTelefone: usuarios.telefone,
       prestadorBiografia: prestadores.biografia,
@@ -38,11 +49,12 @@ export default async function DetalheServico({ params }) {
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(prestadores, eq(servicos.prestadorId, prestadores.usuarioId))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(eq(servicos.id, idNumero)); 
+    .where(eNumero ? eq(servicos.id, idNumero) : condicaoTexto);
 
   if (!resultadoBanco || resultadoBanco.length === 0) {
-    return notFound();
+   return notFound();
   }
+
 
   const dadosDb = resultadoBanco[0];
 

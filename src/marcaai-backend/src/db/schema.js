@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, decimal, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar } from 'drizzle-orm/pg-core';
 
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
@@ -42,6 +42,7 @@ export const servicos = pgTable('servicos', {
     .notNull()
     .references(() => categorias.id),
   nome: text('nome').notNull(),
+  slug: varchar('slug', { length: 255 }), // para arrumar o /serviços/nome-do-serviço, precisa ter o slug, que é o nome do serviço em formato de URL
   descricao: text('descricao'),
   preco: decimal('preco', { precision: 10, scale: 2 }).notNull(),
   duracaoEstimada: integer('duracao_estimada').notNull(),

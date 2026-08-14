@@ -11,6 +11,12 @@ import { servicos, usuarios, categorias } from "../../db/schema.js";
 
 export const dynamic = 'force-dynamic';
 
+// Função utilitária para gerar o slug
+const gerarSlug = (texto) => 
+  texto 
+    ? texto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') 
+    : '';
+
 export default async function Home() {
   const token = await getSession();
   const usuario = await decodeJwtPayload(token);
@@ -110,7 +116,7 @@ export default async function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {servicosDestaque.map((servico) => (
-            <Link key={servico.id} href={`/servicos/${servico.id}`}>
+            <Link key={servico.id} href={`/servicos/${gerarSlug(servico.nomeServico)}`}>
               <CardServicoDestaque servico={servico} />
             </Link>
           ))}
