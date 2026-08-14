@@ -101,11 +101,11 @@ export async function executarLogin(estadoAnterior, formData) {
 
   revalidatePath('/', 'layout');
 
-  if (usuario && usuario.tipo === "prestador") {
-    redirect("/dashboard");
-  } else {
-    redirect("/");
-  }
+  return { 
+    erro: null, 
+    sucesso: true,
+    redirectTo: usuario && usuario.tipo === "prestador" ? "/dashboard" : "/" 
+  };
 }
 
 export async function executarCadastroServico(formData) {
