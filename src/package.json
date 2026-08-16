@@ -9,8 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:push": "drizzle-kit push",
-    "db:seed": "node --experimental-strip-types --env-file=.env src/db/seed.js",
-    "db:fresh": "npx drizzle-kit migrate && node --experimental-strip-types --env-file=.env src/db/seed.js"
+    "db:seed": "node --experimental-strip-types --env-file=.env db/seed.js",
+    "db:fresh": "npx drizzle-kit migrate && node --experimental-strip-types --env-file=.env db/seed.js"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",

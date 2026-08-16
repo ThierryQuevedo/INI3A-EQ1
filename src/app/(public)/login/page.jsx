@@ -5,7 +5,7 @@ import { useActionState } from "react";
 import { useRouter } from "next/navigation";
 import { login } from "@/app/actions/auth.actions";
 import Link from 'next/link';
-import logotipo from "../../../../public/images/Identidade visual marca ai/logotipo.png";
+import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png";
 import Image from "next/image";
 import { Eye, EyeOff } from 'lucide-react';
 

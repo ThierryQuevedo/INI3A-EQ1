@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import MenuWrapper from './MenuSlideWrapper';
 import PerfilDropdown from './MenuPerfilDropdown';
-import logotipo from '../../../../public/images/Identidade visual marca ai/logotipo.png';
+import logotipo from '../../../public/images/Identidade visual marca ai/logotipo.png';
 
 import { getSession } from "@/app/actions/auth.actions";
 

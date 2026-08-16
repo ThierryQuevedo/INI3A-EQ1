@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { cadastrar } from "@/app/actions/auth.actions";
 import Link from 'next/link';
 import Image from "next/image";
-import logotipo from "../../../../public/images/Identidade visual marca ai/logotipo.png"
+import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png"
 import { Eye, EyeOff } from 'lucide-react';
 
 const estadoInicial = { erro: null };

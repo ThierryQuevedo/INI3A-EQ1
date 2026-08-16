@@ -1,5 +1,5 @@
 import Link from "next/link";
-import logotipo from "../../../../public/images/Identidade visual marca ai/logotipo.png";
+import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png";
 import Image from "next/image";
 
 export default function Footer() {
