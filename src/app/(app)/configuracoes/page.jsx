@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 import { User, ArrowRight, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
 import { requireSession, atualizarNome, atualizarEmail, atualizarTelefone } from "@/app/actions/auth.actions";
 import AvatarUpload from "@/app/components/layout/AvatarUpload";
 import BannerUpload from "./BannerUpload";
 import CampoEditavel from "./CampoEditavel";
 import CampoSenha from "./CampoSenha";
+=======
+import { ArrowRight, Calendar } from "lucide-react";
+import { requireSession } from "@/app/actions/auth.actions";
+import AvatarUpload from "@/app/components/layout/AvatarUpload";
+import BannerUpload from "./BannerUpload";
+import DadosPerfilClient from "./DadosPerfilClient";
+>>>>>>> 956b9b0 (personalizacao de perfil completa)
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +53,7 @@ export default async function PaginaConfiguracoes() {
             </h2>
             <p className="text-xs text-gray-400 hidden sm:block">Gerencie seu perfil</p>
           </div>
+<<<<<<< HEAD
           <div className="space-y-6 flex-1">
             <CampoEditavel
               label="Nome completo"
@@ -78,6 +87,9 @@ export default async function PaginaConfiguracoes() {
               icon={<ShieldCheck size={18} className="text-gray-400" />}
             />
           </div>
+=======
+          <DadosPerfilClient usuario={usuario} />
+>>>>>>> 956b9b0 (personalizacao de perfil completa)
 
           <div className="mt-12 pt-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2 text-sm text-gray-500 font-medium order-2 sm:order-1">
@@ -100,6 +112,7 @@ export default async function PaginaConfiguracoes() {
     </div>
   );
 }
+<<<<<<< HEAD
 
 function LinhaPontilhada({ label, valor, icon }) {
   return (
@@ -122,3 +135,5 @@ function LinhaPontilhada({ label, valor, icon }) {
     </div>
   );
 }
+=======
+>>>>>>> 956b9b0 (personalizacao de perfil completa)
