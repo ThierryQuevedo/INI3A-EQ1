@@ -3,7 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { User, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { logout } from "@/app/actions/auth.actions";
+import AvatarUpload from "@/app/components/layout/AvatarUpload";
+import BannerUpload from "..";
 
 export default function PerfilDropdown({ user }) {
     const [aberto, setAberto] = useState(false);
@@ -11,7 +14,6 @@ export default function PerfilDropdown({ user }) {
     const [saindo, setSaindo] = useState(false);
     const menuRef = useRef(null);
 
-    // Fecha o menu ao clicar fora dele
     useEffect(() => {
         function handleClickFora(event) {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -48,7 +50,7 @@ export default function PerfilDropdown({ user }) {
                 className="bg-tcc-azul text-tcc-azul-deep rounded-full p-2 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner cursor-pointer"
                 title="Meu Perfil"
             >
-                <User size={22} className="text-tcc-neutro-100" />
+                {/* <AvatarUpload> */}
             </button>
 
             {aberto && (
