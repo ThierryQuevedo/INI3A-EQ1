@@ -14,11 +14,16 @@ export default async function ServicosPage() {
       preco: servicos.preco,
       duracao: servicos.duracaoEstimada,
       nomeProfissional: usuarios.nome,
+      categoriaId: servicos.categoriaId,
       nomeCategoria: categorias.nome,
     })
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id));
 
-  return <ServicosClient servicos={dadosBrutos} />;
+  const listaCategorias = await db
+    .select({ id: categorias.id, nome: categorias.nome })
+    .from(categorias);
+
+  return <ServicosClient servicos={dadosBrutos} categorias={listaCategorias} />;
 }

@@ -8,10 +8,11 @@ import CardServicoCatalogo from "@/app/components/features/servicos/CardServicoC
 import MenuFiltros from "@/app/components/features/servicos/MenuFiltros";
 import Link from "next/link";
 
-export default function ServicosClient({ servicos = [] }) {
+export default function ServicosClient({ servicos = [], categorias = [] }) {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     const [termoBusca, setTermoBusca] = useState('');
+    const [categoriaFiltro, setCategoriaFiltro] = useState('');
 
     const toggleFilterMenu = () => setIsFilterOpen(!isFilterOpen);
 
@@ -22,11 +23,15 @@ export default function ServicosClient({ servicos = [] }) {
         const nomePrestador = servico.nomeProfissional?.toLowerCase() || '';
         const nomeCategoria = servico.nomeCategoria?.toLowerCase() || '';
 
-        return (
+        const correspondeBusca =
             nomeServico.includes(termo) ||
             nomePrestador.includes(termo) ||
-            nomeCategoria.includes(termo)
-        );
+            nomeCategoria.includes(termo);
+
+        const correspondeCategoria =
+            !categoriaFiltro || String(servico.categoriaId) === categoriaFiltro;
+
+        return correspondeBusca && correspondeCategoria;
     });
 
     return (
@@ -45,7 +50,13 @@ export default function ServicosClient({ servicos = [] }) {
                         >
                             <FunnelPlus/> Filtros
                         </Button>
-                        <MenuFiltros isOpen={isFilterOpen} onClose={toggleFilterMenu} />
+                        <MenuFiltros
+                            isOpen={isFilterOpen}
+                            onClose={toggleFilterMenu}
+                            categorias={categorias}
+                            categoriaSelecionada={categoriaFiltro}
+                            onAplicarFiltros={setCategoriaFiltro}
+                        />
                     </div>
 
                     <Input
