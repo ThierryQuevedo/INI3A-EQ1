@@ -5,14 +5,14 @@ import { User, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions/auth.actions";
-import AvatarUpload from "@/app/components/layout/AvatarUpload";
-import BannerUpload from "..";
+import {userBannerImage , userPerfilImage} from "../../../lib/userImages";
 
 export default function PerfilDropdown({ user }) {
     const [aberto, setAberto] = useState(false);
     const [confirmandoSaida, setConfirmandoSaida] = useState(false);
     const [saindo, setSaindo] = useState(false);
     const menuRef = useRef(null);
+
 
     useEffect(() => {
         function handleClickFora(event) {
@@ -50,7 +50,7 @@ export default function PerfilDropdown({ user }) {
                 className="bg-tcc-azul text-tcc-azul-deep rounded-full p-2 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner cursor-pointer"
                 title="Meu Perfil"
             >
-                {/* <AvatarUpload> */}
+                <Image clasn src={user?.urlImagem} width={112} height={112} alt="Foto de perfil" className="w-full h-full rounded-full object-cover" />
             </button>
 
             {aberto && (

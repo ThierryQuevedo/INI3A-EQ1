@@ -7,7 +7,7 @@ import { atualizarFotoPerfil } from "@/app/actions/auth.actions";
 
 export default function AvatarUpload({ usuario, inicialNome }) {
   const [mostrarUpload, setMostrarUpload] = useState(false);
-  const [imageUrl, setImageUrl] = useState(usuario.urlImagem || null);
+  const [imageUrl, setImageUrl] = useState(usuario?.urlImagem || null);
 
   return (
     <div className="relative flex flex-col items-center">
