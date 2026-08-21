@@ -1,11 +1,9 @@
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import { User, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions/auth.actions";
-import {userBannerImage , userPerfilImage} from "../../../lib/userImages";
 
 export default function PerfilDropdown({ user }) {
     const [aberto, setAberto] = useState(false);
@@ -47,10 +45,10 @@ export default function PerfilDropdown({ user }) {
         <div className="relative" ref={menuRef}>
             <button
                 onClick={() => setAberto((prev) => !prev)}
-                className="bg-tcc-azul text-tcc-azul-deep rounded-full p-2 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner cursor-pointer"
+                className="bg-tcc-azul text-tcc-azul-deep h-14  rounded-full p-1 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner cursor-pointer"
                 title="Meu Perfil"
             >
-                <Image clasn src={user?.urlImagem} width={112} height={112} alt="Foto de perfil" className="w-full h-full rounded-full object-cover" />
+                <img src={user?.urlImagem} className="w-full h-full aspect-square rounded-full object-cover" width={40} height={50} alt="Foto de perfil"  />
             </button>
 
             {aberto && (

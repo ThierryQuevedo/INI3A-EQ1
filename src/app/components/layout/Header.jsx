@@ -19,7 +19,7 @@ export default async function Header() {
 
             <Link
                 href="/"
-                className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-extrabold tracking-tight z-10"
+                className="absolute left-1/2 right-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-extrabold tracking-tight z-10"
             >
                 <Image src={logotipo} className='w-45' alt='logotipo marcaai' />
             </Link>

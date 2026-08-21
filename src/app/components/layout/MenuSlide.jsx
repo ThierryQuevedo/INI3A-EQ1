@@ -11,7 +11,6 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
 
     return (
         <>
-            {/* 1. Cortina / Fundo Escuro (Só aparece se isOpen === true) */}
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black/60 z-40 transition-opacity duration-300"
@@ -19,14 +18,14 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
                 />
             )}
 
-            {/* 2. Gaveta do Menu */}
+
             <div
                 className="fixed top-0 left-0 h-screen w-80 bg-tcc-azul-medium flex flex-col z-50 transition-transform duration-300 ease-in-out shadow-2xl"
                 style={{
                     transform: isOpen ? "translateX(0)" : "translateX(-100%)"
                 }}
             >
-                {/* Botão de Fechar (X) */}
+
                 <button
                     onClick={onClose}
                     className="absolute top-4 right-4 text-white hover:text-tcc-azul-light transition-colors p-2 rounded-lg cursor-pointer z-10"
@@ -37,15 +36,20 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
 
                 <div className="px-6 pb-6 pt-14 flex flex-col items-center relative w-full h-full overflow-y-auto">
 
-                    {/* Card do Usuário */}
+
                     <div className="py-3 px-4 rounded-xl bg-tcc-azul-darker w-full flex justify-start items-center flex-row gap-3 mt-2">
-                        <Image
-                            src="https://picsum.photos/200/200?random=2"
-                            width={48}
-                            height={48}
-                            alt="Avatar"
-                            className="rounded-full shrink-0"
-                        />
+                        
+                        {usuario? 
+                            (<Image
+                                src={usuario?.urlImagem}
+                                width={48}
+                                height={48}
+                                alt="Avatar"
+                                className="rounded-full shrink-0"/>) : <User width={48}
+                                height={48}/>
+                        }
+
+
                         <div className="flex flex-col overflow-hidden">
                             <h1 className="text-base font-bold text-white truncate">{nome}</h1>
                             <h2 className="text-xs text-tcc-azul-light truncate">{email}</h2>
