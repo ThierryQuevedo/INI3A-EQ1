@@ -7,13 +7,10 @@ import { db } from '@/db';
 import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
-import { requireSession } from '@/app/actions/auth.actions';
 
 export const dynamic = 'force-dynamic';
 
 export default async function DetalheServico({ params }) {
-  await requireSession();
-
   const { slug } = await params;
 
   if (!slug) {

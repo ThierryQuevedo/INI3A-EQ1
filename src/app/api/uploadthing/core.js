@@ -19,7 +19,7 @@ export const ourFileRouter = {
         const usuario = await getSession();
         if (!usuario) throw new Error("Sessão não encontrada");
 
-        return { userEmail: usuario.email };
+        return { userId: usuario.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
         const fileUrl = file.ufsUrl || file.url;
@@ -27,7 +27,7 @@ export const ourFileRouter = {
         await db
             .update(usuarios)
             .set({ urlImagem: fileUrl })
-            .where(eq(usuarios.email, metadata.userEmail));
+            .where(eq(usuarios.id, metadata.userId));
 
         revalidatePath("/configuracoes");
     }),
@@ -43,7 +43,7 @@ export const ourFileRouter = {
         const usuario = await getSession();
         if (!usuario) throw new Error("Sessão não encontrada");
 
-        return { userEmail: usuario.email };
+        return { userId: usuario.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
         const fileUrl = file.ufsUrl || file.url;
@@ -51,7 +51,7 @@ export const ourFileRouter = {
         await db
             .update(usuarios)
             .set({ urlBanner: fileUrl })
-            .where(eq(usuarios.email, metadata.userEmail));
+            .where(eq(usuarios.id, metadata.userId));
 
         revalidatePath("/configuracoes");
     })

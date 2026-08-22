@@ -1,7 +1,9 @@
-import { User, ArrowRight, Pencil, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
-import { requireSession } from "@/app/actions/auth.actions";
+import { User, ArrowRight, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
+import { requireSession, atualizarNome, atualizarEmail, atualizarTelefone } from "@/app/actions/auth.actions";
 import AvatarUpload from "@/app/components/layout/AvatarUpload";
 import BannerUpload from "./BannerUpload";
+import CampoEditavel from "./CampoEditavel";
+import CampoSenha from "./CampoSenha";
 
 export const dynamic = 'force-dynamic';
 
@@ -44,34 +46,35 @@ export default async function PaginaConfiguracoes() {
             <p className="text-xs text-gray-400 hidden sm:block">Gerencie seu perfil</p>
           </div>
           <div className="space-y-6 flex-1">
-            <LinhaPontilhada
+            <CampoEditavel
               label="Nome completo"
+              name="nome"
               valor={usuario.nome}
-              isButton={true}
+              action={atualizarNome}
               icon={<User size={18} className="text-gray-400" />}
             />
-            <LinhaPontilhada
+            <CampoEditavel
               label="E-mail principal"
+              name="email"
+              type="email"
               valor={usuario.email}
-              isButton={true}
+              action={atualizarEmail}
               icon={<Mail size={18} className="text-gray-400" />}
             />
-            <LinhaPontilhada
+            <CampoSenha
               label="Senha de acesso"
-              valor="••••••••••••"
-              isButton={true}
               icon={<ShieldCheck size={18} className="text-gray-400" />}
             />
-            <LinhaPontilhada
+            <CampoEditavel
               label="Telefone / WhatsApp"
-              valor={usuario.telefone || "Não cadastrado"}
-              isButton={true}
+              name="telefone"
+              valor={usuario.telefone}
+              action={atualizarTelefone}
               icon={<Phone size={18} className="text-gray-400" />}
             />
             <LinhaPontilhada
               label="Nível de Acesso"
               valor={usuario.tipo === 'prestador' ? 'Prestador de Serviços' : 'Cliente da Plataforma'}
-              isButton={false}
               icon={<ShieldCheck size={18} className="text-gray-400" />}
             />
           </div>
@@ -82,7 +85,11 @@ export default async function PaginaConfiguracoes() {
               <span>Membro desde {dataCriacao}</span>
             </div>
 
-            <button className="bg-tcc-laranja hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-xl w-full sm:w-auto sm:min-w-[200px] flex justify-between items-center transition-all shadow-md shadow-tcc-laranja/20 hover:shadow-lg active:scale-95 cursor-pointer order-1 sm:order-2 text-sm">
+            <button
+              disabled
+              title="Em breve"
+              className="bg-tcc-laranja/50 text-white font-bold py-3 px-6 rounded-xl w-full sm:w-auto sm:min-w-[200px] flex justify-between items-center order-1 sm:order-2 text-sm opacity-60 cursor-not-allowed"
+            >
               <span>Ver Histórico</span>
               <ArrowRight size={18} />
             </button>
@@ -94,7 +101,7 @@ export default async function PaginaConfiguracoes() {
   );
 }
 
-function LinhaPontilhada({ label, valor, isButton, icon }) {
+function LinhaPontilhada({ label, valor, icon }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-end w-full gap-2 group">
 
@@ -111,12 +118,6 @@ function LinhaPontilhada({ label, valor, isButton, icon }) {
         <span className={`text-base font-medium ${valor === "Não cadastrado" ? "text-gray-400 italic" : "text-gray-800"}`}>
           {valor}
         </span>
-
-        {isButton && (
-          <button className="bg-gray-50 hover:bg-tcc-laranja hover:text-white p-2 rounded-lg text-gray-500 shadow-sm border border-gray-200 cursor-pointer transition-all duration-200 flex items-center justify-center" title={`Editar ${label}`}>
-            <Pencil size={14} />
-          </button>
-        )}
       </div>
     </div>
   );

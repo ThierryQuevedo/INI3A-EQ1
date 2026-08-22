@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, sessoes, prestadores } from '@/db/schema';
 
@@ -198,6 +198,145 @@ export async function requireAdmin() {
     redirect('/dashboard');
   }
   return usuario;
+}
+
+export async function atualizarNome(estadoAnterior: unknown, formData: FormData) {
+  try {
+    const usuario = await getSession();
+    if (!usuario) {
+      return { erro: 'Não autorizado' };
+    }
+
+    const nome = formData.get('nome');
+    if (!nome || String(nome).trim() === '') {
+      return { erro: 'Informe um nome válido.' };
+    }
+
+    await db.update(usuarios).set({ nome: String(nome) }).where(eq(usuarios.id, usuario.id));
+
+    revalidatePath('/configuracoes');
+    revalidatePath('/', 'layout');
+
+    return { erro: null, sucesso: true };
+  } catch (error) {
+    console.error('Erro ao atualizar nome:', error);
+    return { erro: 'Ocorreu um erro ao atualizar o nome. Tente novamente.' };
+  }
+}
+
+export async function atualizarEmail(estadoAnterior: unknown, formData: FormData) {
+  try {
+    const usuario = await getSession();
+    if (!usuario) {
+      return { erro: 'Não autorizado' };
+    }
+
+    const email = formData.get('email');
+    if (!email || String(email).trim() === '') {
+      return { erro: 'Informe um e-mail válido.' };
+    }
+
+    const existente = await db
+      .select({ id: usuarios.id })
+      .from(usuarios)
+      .where(and(eq(usuarios.email, String(email)), ne(usuarios.id, usuario.id)))
+      .limit(1);
+
+    if (existente.length > 0) {
+      return { erro: 'Já existe uma conta com este e-mail.' };
+    }
+
+    await db.update(usuarios).set({ email: String(email) }).where(eq(usuarios.id, usuario.id));
+
+    revalidatePath('/configuracoes');
+    revalidatePath('/', 'layout');
+
+    return { erro: null, sucesso: true };
+  } catch (error) {
+    console.error('Erro ao atualizar e-mail:', error);
+    return { erro: 'Ocorreu um erro ao atualizar o e-mail. Tente novamente.' };
+  }
+}
+
+export async function atualizarTelefone(estadoAnterior: unknown, formData: FormData) {
+  try {
+    const usuario = await getSession();
+    if (!usuario) {
+      return { erro: 'Não autorizado' };
+    }
+
+    const telefone = formData.get('telefone');
+    if (!telefone || String(telefone).trim() === '') {
+      return { erro: 'Informe um telefone válido.' };
+    }
+
+    const existente = await db
+      .select({ id: usuarios.id })
+      .from(usuarios)
+      .where(and(eq(usuarios.telefone, String(telefone)), ne(usuarios.id, usuario.id)))
+      .limit(1);
+
+    if (existente.length > 0) {
+      return { erro: 'Este telefone já está sendo usado por outra conta.' };
+    }
+
+    await db.update(usuarios).set({ telefone: String(telefone) }).where(eq(usuarios.id, usuario.id));
+
+    revalidatePath('/configuracoes');
+
+    return { erro: null, sucesso: true };
+  } catch (error) {
+    console.error('Erro ao atualizar telefone:', error);
+    return { erro: 'Ocorreu um erro ao atualizar o telefone. Tente novamente.' };
+  }
+}
+
+export async function atualizarSenha(estadoAnterior: unknown, formData: FormData) {
+  try {
+    const usuario = await getSession();
+    if (!usuario) {
+      return { erro: 'Não autorizado' };
+    }
+
+    const senhaAtual = formData.get('senhaAtual');
+    const novaSenha = formData.get('novaSenha');
+    const confirmarSenha = formData.get('confirmarSenha');
+
+    if (!senhaAtual || !novaSenha || !confirmarSenha) {
+      return { erro: 'Preencha todos os campos.' };
+    }
+
+    if (String(novaSenha) !== String(confirmarSenha)) {
+      return { erro: 'A nova senha e a confirmação não coincidem.' };
+    }
+
+    const resultado = await db
+      .select({ senha: usuarios.senha })
+      .from(usuarios)
+      .where(eq(usuarios.id, usuario.id))
+      .limit(1);
+
+    const linha = resultado[0];
+    if (!linha) {
+      return { erro: 'Não autorizado' };
+    }
+
+    const senhaValida = await bcrypt.compare(String(senhaAtual), linha.senha);
+    if (!senhaValida) {
+      return { erro: 'Senha atual incorreta.' };
+    }
+
+    const novaSenhaHash = await bcrypt.hash(String(novaSenha), 10);
+
+    await db.update(usuarios).set({ senha: novaSenhaHash }).where(eq(usuarios.id, usuario.id));
+
+    revalidatePath('/configuracoes');
+
+    return { erro: null, sucesso: true };
+  } catch (error) {
+    console.error('Erro ao atualizar senha:', error);
+    return { erro: 'Ocorreu um erro ao atualizar a senha. Tente novamente.' };
+  }
 }
 
 export async function atualizarFotoPerfil(urlImagem: string) {

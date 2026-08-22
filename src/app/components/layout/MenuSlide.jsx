@@ -39,15 +39,17 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
 
                     <div className="py-3 px-4 rounded-xl bg-tcc-azul-darker w-full flex justify-start items-center flex-row gap-3 mt-2">
                         
-                        {usuario? 
-                            (<Image
-                                src={usuario?.urlImagem}
+                        {usuario?.urlImagem ? (
+                            <Image
+                                src={usuario.urlImagem}
                                 width={48}
                                 height={48}
                                 alt="Avatar"
-                                className="rounded-full shrink-0"/>) : <User width={48}
-                                height={48}/>
-                        }
+                                className="rounded-full shrink-0"
+                            />
+                        ) : (
+                            <User width={48} height={48} />
+                        )}
 
 
                         <div className="flex flex-col overflow-hidden">
@@ -85,10 +87,10 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
                             </Link>
                         )}
 
-                        <div className="mt-4 py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row cursor-pointer hover:brightness-110 transition-all gap-3">
+                        <Link href="/sobre" onClick={onClose} className="mt-4 py-2.5 px-4 rounded-xl bg-tcc-azul-dark w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3">
                             <Info size={22} className="text-white"/>
                             <span className="font-urbanist font-bold text-lg text-white">Sobre nós</span>
-                        </div>
+                        </Link>
                     </div>
 
                 </div>

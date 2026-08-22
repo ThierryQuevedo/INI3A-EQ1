@@ -50,6 +50,7 @@ export default function CadastrarPage() {
               type="text"
               name="nome"
               required
+              placeholder="Ex: Maria da Silva"
               className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all"
             />
           </div>
@@ -62,6 +63,7 @@ export default function CadastrarPage() {
               type="email"
               name="email"
               required
+              placeholder="seuemail@exemplo.com"
               className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all"
             />
           </div>
@@ -74,6 +76,7 @@ export default function CadastrarPage() {
               type="text"
               name="cel"
               required
+              placeholder="(11) 91234-5678"
               className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all"
             />
           </div>
@@ -87,6 +90,7 @@ export default function CadastrarPage() {
                 type={showPassword ? "text" : "password"}
                 name="senha"
                 required
+                placeholder="Crie uma senha"
                 className="w-full bg-gray-50 border border-tcc-neutro-300 rounded-md py-3 px-4 pr-12 text-tcc-neutro-700 outline-none focus:ring-2 focus:ring-tcc-laranja focus:border-transparent transition-all"
               />
 

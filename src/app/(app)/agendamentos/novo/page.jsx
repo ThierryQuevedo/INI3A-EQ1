@@ -2,6 +2,7 @@
 import { Suspense, useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { confirmarAgendamentoAction, listarAgendamentosPorPrestador } from '@/app/actions/agendamentos.actions';
+import { getSession } from '@/app/actions/auth.actions';
 import { buscarServico } from '@/app/actions/servicos.actions';
 import { listarDisponibilidades } from '@/app/actions/disponibilidades.actions';
 import Calendario from '@/app/components/features/agendamentos/Calendario';
@@ -77,6 +78,14 @@ function AgendarPageInner() {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
+
+  useEffect(() => {
+    async function verificarSessao() {
+      const usuario = await getSession();
+      if (!usuario) router.push('/login');
+    }
+    verificarSessao();
+  }, [router]);
 
   useEffect(() => {
     if (!servicoId) return;

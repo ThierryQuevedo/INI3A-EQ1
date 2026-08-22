@@ -23,7 +23,7 @@ export default function Home() {
           </p>
 
           <div className="pt-2">
-            <Link href="/cadastro">
+            <Link href="/servicos">
               <button className="w-full sm:w-auto bg-tcc-laranja hover:bg-tcc-laranja-dark text-white font-bold px-7 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-lg shadow-tcc-laranja/10 group cursor-pointer">
                 Ver profissionais disponíveis
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -48,7 +48,7 @@ export default function Home() {
 
         <div className="flex flex-wrap gap-2.5">
           {["Barbearia & Cabelo", "Estética & Manicure", "Aulas Particulares", "Manutenção & Mecânica", "Saúde & Bem-estar", "Consultorias"].map((category, idx) => (
-            <Link href="/cadastro"
+            <Link href="/servicos"
               key={idx}
               className="bg-tcc-azul-darker/20 hover:bg-white hover:text-tcc-azul-deep text-tcc-neutro-200 font-medium text-xs px-4 py-2.5 rounded-lg border border-tcc-azul-darker/60 transition-all cursor-pointer"
             >
