@@ -1,0 +1,97 @@
+:root {
+
+  --color-tcc-azul-lightest: #DCE5FE;
+  --color-tcc-azul-light: #A1BDFD;
+  --color-tcc-azul-medium: #5696FC;
+  --color-tcc-azul: #1471D5; /* DEFAULT */
+  --color-tcc-azul-dark: #0B4F98;
+  --color-tcc-azul-darker: #042F5F;
+  --color-tcc-azul-deep: #01112A;
+
+  --color-tcc-laranja-soft: #FFEDE6;
+  --color-tcc-laranja-pale: #FECCB4;
+  --color-tcc-laranja: #FD953A; /* DEFAULT */
+  --color-tcc-laranja-dark: #CC7313;
+  --color-tcc-laranja-deep: #98540B;
+  --color-tcc-laranja-wood: #673705;
+  --color-tcc-laranja-black: #3A1D01;
+
+  --color-tcc-neutro-100: #E5E6E7;
+  --color-tcc-neutro-200: #BCBEC2;
+  --color-tcc-neutro-300: #94979E;
+  --color-tcc-neutro-400: #707378;
+  --color-tcc-neutro-500: #4E5054;
+  --color-tcc-neutro-600: #2E3032;
+  --color-tcc-neutro-700: #111213;
+
+  --color-tcc-white: #FFFFFF;
+  --color-tcc-danger: #DC2626;
+
+  /* Semânticos  */                
+
+  --color-primary: var(--color-tcc-azul);
+  --color-primary-hover: var(--color-tcc-azul-dark);
+  --color-primary-light: var(--color-tcc-azul-light);
+
+  --color-accent: var(--color-tcc-laranja);
+  --color-accent-hover: var(--color-tcc-laranja-dark);
+  --color-accent-light: var(--color-tcc-laranja-pale);
+
+  --color-background: #F7F8FC;
+  --color-surface: var(--color-tcc-white);
+  --color-border: var(--color-tcc-neutro-100);
+
+  --color-text-primary: #1A1A2E;
+  --color-text-secondary: var(--color-tcc-neutro-400);
+  --color-text-inverse: var(--color-tcc-white);
+
+  --color-success: #16A34A;
+  --color-danger: var(--color-tcc-danger);
+  --color-focus-ring: var(--color-tcc-azul-medium);
+  
+  /*tipografia   */
+
+  --font-family-base: "Inter", sans-serif;
+  --font-family-heading: "Urbanist", sans-serif;
+  --font-family-alt: "Sora", sans-serif;
+
+  --font-size-caption: 0.75rem;
+  --font-size-body-sm: 0.875rem;
+  --font-size-body: 1rem;
+  --font-size-body-lg: 1.125rem;
+  --font-size-h6: 1.25rem;  
+  --font-size-h5: 1.5rem;  
+  --font-size-h4: 1.875rem;
+  --font-size-h3: 2.25rem;
+  --font-size-h2: 3rem;
+  --font-size-h1: 3.75rem;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /*Espacamento*/
+
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-sm: 1rem;
+  --space-md: 1.5rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  /* Border radius*/
+  --radius-sm: 0.25rem; 
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem; 
+  --radius-full: 9999px;
+}
