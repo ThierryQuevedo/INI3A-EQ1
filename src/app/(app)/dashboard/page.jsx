@@ -79,12 +79,12 @@ export default async function Dashboard() {
 
   function statusLabel(status) {
     const map = {
-      pendente:   { label: 'Pendente',   bg: 'bg-yellow-100', text: 'text-yellow-700' },
-      confirmado: { label: 'Confirmado', bg: 'bg-blue-100',   text: 'text-blue-700'   },
-      concluido:  { label: 'Feito',      bg: 'bg-green-100',  text: 'text-green-700'  },
-      cancelado:  { label: 'Cancelado',  bg: 'bg-red-100',    text: 'text-red-700'    },
+      pendente:   { label: 'Pendente',   bg: 'bg-warning/15', text: 'text-warning' },
+      confirmado: { label: 'Confirmado', bg: 'bg-tcc-azul/10', text: 'text-tcc-azul' },
+      concluido:  { label: 'Feito',      bg: 'bg-success/15', text: 'text-success' },
+      cancelado:  { label: 'Cancelado',  bg: 'bg-destructive/10', text: 'text-destructive' },
     };
-    return map[status] ?? { label: status, bg: 'bg-gray-100', text: 'text-gray-700' };
+    return map[status] ?? { label: status, bg: 'bg-muted', text: 'text-muted-foreground' };
   }
 
   function CardAgendamento({ ag }) {
@@ -93,26 +93,26 @@ export default async function Dashboard() {
     const podeCancelar  = ag.status !== 'cancelado' && ag.status !== 'concluido';
 
     return (
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between gap-4">
+      <div className="bg-card p-4 rounded-2xl shadow-soft border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex gap-6 items-center flex-1">
-          <div className="text-center min-w-[48px]">
-            <span className="text-blue-600 font-bold text-sm block">{formatarHora(ag.dataHora)}</span>
-            <span className="text-gray-400 text-[10px]">{formatarData(ag.dataHora)}</span>
+          <div className="text-center min-w-[52px]">
+            <span className="text-tcc-azul font-bold text-body block">{formatarHora(ag.dataHora)}</span>
+            <span className="text-muted-foreground text-caption">{formatarData(ag.dataHora)}</span>
           </div>
           <div>
-            <p className="font-bold text-gray-800">{ag.clienteNome}</p>
-            <p className="text-xs text-gray-400">{ag.servicoNome} • {ag.duracaoEstimada} min</p>
+            <p className="font-bold text-foreground">{ag.clienteNome}</p>
+            <p className="text-body-sm text-muted-foreground">{ag.servicoNome} • {ag.duracaoEstimada} min</p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className={`${bg} ${text} px-3 py-1 rounded-lg text-xs font-bold uppercase`}>
+          <span className={`${bg} ${text} px-3 h-8 inline-flex items-center rounded-full text-caption font-bold uppercase`}>
             {label}
           </span>
 
           {podeConfirmar && (
             <form action={atualizarStatusAgendamento.bind(null, ag.id, 'confirmado')}>
-              <button type="submit" className="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-colors">
+              <button type="submit" className="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer">
                 Confirmar
               </button>
             </form>
@@ -127,20 +127,20 @@ export default async function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main className="p-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <main className="p-6 sm:p-8 max-w-7xl mx-auto">
 
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
           <div>
-            <p className="text-gray-500 text-sm">Painel do prestador</p>
-            <h1 className="text-3xl font-bold text-tcc-azul-dark">{nome}</h1>
+            <p className="text-muted-foreground text-body-sm">Painel do prestador</p>
+            <h1 className="text-h4 font-bold text-tcc-azul-dark dark:text-tcc-azul-light">{nome}</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/disponibilidades"
-              className="bg-white hover:bg-gray-50 text-[#0B4F98] border border-[#0B4F98]/20 text-sm font-bold px-4 py-2 rounded-xl transition-colors flex items-center gap-2"
+              className="bg-card hover:bg-muted text-tcc-azul-dark dark:text-tcc-azul-light border border-tcc-azul-dark/20 text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <rect x="3" y="4" width="18" height="18" rx="2" />
                 <line x1="16" y1="2" x2="16" y2="6" />
                 <line x1="8" y1="2" x2="8" y2="6" />
@@ -150,44 +150,44 @@ export default async function Dashboard() {
             </Link>
             <Link
               href="/servicos/novo"
-              className="bg-[#0B4F98] hover:bg-[#0B4F98]/90 text-white text-sm font-bold px-4 py-2 rounded-xl transition-colors flex items-center gap-2"
+              className="bg-tcc-azul-dark hover:bg-tcc-azul-darker text-white text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
                 <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
               </svg>
               Novo serviço
             </Link>
-            <span className="bg-orange-500 text-white px-4 py-1 rounded-full text-sm flex items-center gap-2">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span> Online
+            <span className="bg-tcc-laranja text-white px-4 h-11 rounded-full text-body-sm font-semibold flex items-center gap-2">
+              <span className="w-2 h-2 bg-white rounded-full animate-pulse" aria-hidden="true"></span> Online
             </span>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-xl border-l-4 border-blue-600 shadow-sm">
-            <h3 className="text-blue-600 text-4xl font-bold">{agendamentosHoje.length}</h3>
-            <p className="text-gray-500">agendamentos hoje</p>
+          <div className="bg-card p-6 rounded-2xl border-l-4 border-tcc-azul shadow-soft">
+            <h3 className="text-tcc-azul text-h4 font-bold">{agendamentosHoje.length}</h3>
+            <p className="text-muted-foreground">agendamentos hoje</p>
           </div>
-          <div className="bg-white p-6 rounded-xl border-l-4 border-orange-500 shadow-sm">
-            <h3 className="text-orange-500 text-4xl font-bold">R$ —</h3>
-            <p className="text-gray-500">este mês</p>
+          <div className="bg-card p-6 rounded-2xl border-l-4 border-tcc-laranja shadow-soft">
+            <h3 className="text-tcc-laranja text-h4 font-bold">R$ —</h3>
+            <p className="text-muted-foreground">este mês</p>
           </div>
-          <div className="bg-white p-6 rounded-xl border-l-4 border-green-500 shadow-sm">
-            <p className="text-green-600 font-semibold text-sm">Avaliação</p>
-            <h3 className="text-green-600 text-4xl font-bold">— <span className="text-2xl">★</span></h3>
-            <p className="text-gray-500">— avaliações</p>
+          <div className="bg-card p-6 rounded-2xl border-l-4 border-success shadow-soft">
+            <p className="text-success font-semibold text-body-sm">Avaliação</p>
+            <h3 className="text-success text-h4 font-bold">— <span className="text-h6">★</span></h3>
+            <p className="text-muted-foreground">— avaliações</p>
           </div>
-          <div className="bg-white p-6 rounded-xl border-l-4 border-gray-800 shadow-sm">
-            <h3 className="text-gray-800 text-4xl font-bold">—</h3>
-            <p className="text-gray-500">Clientes atendidos</p>
+          <div className="bg-card p-6 rounded-2xl border-l-4 border-foreground shadow-soft">
+            <h3 className="text-foreground text-h4 font-bold">—</h3>
+            <p className="text-muted-foreground">Clientes atendidos</p>
           </div>
         </div>
 
         <section className="mb-10">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">Agenda de hoje</h2>
+          <h2 className="text-h6 font-bold mb-4 text-foreground">Agenda de hoje</h2>
           <div className="space-y-3">
             {agendamentosHoje.length === 0 ? (
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center text-gray-400 text-sm">
+              <div className="bg-card p-6 rounded-2xl shadow-soft border border-border text-center text-muted-foreground text-body-sm">
                 Nenhum agendamento para hoje.
               </div>
             ) : (
@@ -198,16 +198,16 @@ export default async function Dashboard() {
 
         <section className="mb-10">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Próximos agendamentos</h2>
+            <h2 className="text-h6 font-bold text-foreground">Próximos agendamentos</h2>
             {agendamentosFuturos.length > 0 && (
-              <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">
+              <span className="bg-secondary text-secondary-foreground text-caption font-bold px-3 h-7 inline-flex items-center rounded-full">
                 {agendamentosFuturos.length} agendamento{agendamentosFuturos.length !== 1 ? 's' : ''}
               </span>
             )}
           </div>
           <div className="space-y-3">
             {agendamentosFuturos.length === 0 ? (
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center text-gray-400 text-sm">
+              <div className="bg-card p-6 rounded-2xl shadow-soft border border-border text-center text-muted-foreground text-body-sm">
                 Nenhum agendamento futuro.
               </div>
             ) : (
@@ -218,14 +218,18 @@ export default async function Dashboard() {
 
         <section>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-800">Destaques da comunidade</h2>
-            <Link href="/servicos" className="text-xs font-medium text-tcc-azul hover:underline">
+            <h2 className="text-h6 font-bold text-foreground">Destaques da comunidade</h2>
+            <Link href="/servicos" className="text-body-sm font-medium text-tcc-azul hover:underline">
               Ver catálogo completo
             </Link>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
             {servicosDestaque.map((servico) => (
-              <Link key={servico.id} href={`/servicos/${servico.slug || servico.id}`}>
+              <Link
+                key={servico.id}
+                href={`/servicos/${servico.slug || servico.id}`}
+                className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
                 <CardServicoDestaque servico={servico} />
               </Link>
             ))}

@@ -13,7 +13,7 @@ export default function BotaoCancelarAgendamento({ action }) {
     >
       <button
         type="submit"
-        className="bg-red-100 hover:bg-red-200 text-red-600 text-xs font-bold px-3 py-1.5 rounded-lg transition-colors"
+        className="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
       >
         Cancelar
       </button>

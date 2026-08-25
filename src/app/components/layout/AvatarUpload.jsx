@@ -25,25 +25,29 @@ export default function AvatarUpload({ usuario, inicialNome }) {
           </span>
         )}
 
-        <div
+        <button
+          type="button"
           onClick={() => setMostrarUpload(true)}
-          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer flex flex-col items-center justify-center"
+          aria-label="Alterar foto de perfil"
+          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 rounded-full cursor-pointer flex flex-col items-center justify-center"
         >
-          <Pencil className="text-white" />
-        </div>
+          <Pencil className="text-white" aria-hidden="true" />
+        </button>
 
-        <div className="absolute bottom-0 right-0 bg-white p-1.5 rounded-full shadow-md border border-gray-200">
-          <User size={16} className="text-tcc-azul-darker" />
+        <div className="absolute bottom-0 right-0 bg-card p-1.5 rounded-full shadow-soft border border-border">
+          <User size={16} className="text-tcc-azul-darker" aria-hidden="true" />
         </div>
       </div>
 
       {mostrarUpload && (
-        <div className="absolute top-32 z-50 bg-white p-4 rounded-xl shadow-2xl border border-gray-100 flex flex-col items-center w-72">
+        <div role="dialog" aria-label="Enviar nova foto de perfil" className="absolute top-32 z-50 bg-card p-4 rounded-xl shadow-elevated border border-border flex flex-col items-center w-72">
           <button
+            type="button"
             onClick={() => setMostrarUpload(false)}
-            className="self-end text-gray-500 hover:text-red-500 mb-2 transition-colors"
+            aria-label="Fechar"
+            className="self-end h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-destructive mb-2 transition-colors cursor-pointer"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
 
           <UploadDropzone

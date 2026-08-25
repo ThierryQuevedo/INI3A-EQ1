@@ -378,10 +378,10 @@ export default function DisponibilidadePage() {
   }
 
   if (carregandoServicos) return (
-    <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-full border-4 border-[#0B4F98] border-t-transparent animate-spin" />
-        <span className="text-[#0B4F98] font-semibold text-sm">Carregando seus serviços...</span>
+        <div className="w-10 h-10 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
+        <span className="text-tcc-azul-dark font-semibold text-body-sm">Carregando seus serviços...</span>
       </div>
     </div>
   );
@@ -389,13 +389,13 @@ export default function DisponibilidadePage() {
   // Prestador sem nenhum serviço cadastrado ainda
   if (servicos.length === 0) {
     return (
-      <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl p-10 flex flex-col items-center gap-4 shadow-sm text-center max-w-sm">
-          <div className="w-16 h-16 bg-[#0B4F98]/10 rounded-full flex items-center justify-center text-[#0B4F98]">
-            <IconBriefcase width={28} height={28} />
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-soft text-center max-w-sm">
+          <div className="w-16 h-16 bg-tcc-azul-dark/10 rounded-full flex items-center justify-center text-tcc-azul-dark">
+            <IconBriefcase width={28} height={28} aria-hidden="true" />
           </div>
-          <h2 className="text-lg font-bold text-[#1a1a2e]">Nenhum serviço cadastrado</h2>
-          <p className="text-sm text-gray-500">Cadastre um serviço primeiro para poder configurar a disponibilidade dele.</p>
+          <h2 className="text-h6 font-bold text-foreground">Nenhum serviço cadastrado</h2>
+          <p className="text-body-sm text-muted-foreground">Cadastre um serviço primeiro para poder configurar a disponibilidade dele.</p>
         </div>
       </div>
     );
@@ -411,7 +411,7 @@ export default function DisponibilidadePage() {
 
   return (
     <div
-      className="min-h-screen bg-[#F7F8FC] py-8 px-4 font-sans"
+      className="min-h-screen bg-background py-8 px-4 font-sans"
       onClick={() => setBlocoSelecionado(null)}
     >
       <div className="max-w-6xl mx-auto">
@@ -419,27 +419,27 @@ export default function DisponibilidadePage() {
         <div className="mb-6">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-sm text-[#0B4F98] font-semibold mb-3 hover:opacity-70 transition-opacity"
+            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-tcc-azul-dark font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
               <polyline points="15 18 9 12 15 6" />
             </svg>
             Voltar
           </button>
-          <h1 className="text-2xl font-extrabold text-[#1a1a2e]">Minha disponibilidade</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-h4 font-extrabold text-foreground">Minha disponibilidade</h1>
+          <p className="text-body-sm text-muted-foreground mt-1">
             Arraste na grade para criar blocos contínuos. Clique no bloco para abrir o menu de exclusão e edição.
           </p>
         </div>
 
         {erro && (
-          <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm font-semibold rounded-xl px-4 py-3 shadow-sm">{erro}</div>
+          <div role="alert" className="mb-4 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm font-semibold rounded-xl px-4 py-3 shadow-soft">{erro}</div>
         )}
 
         {/* Seletor de serviço — cada serviço tem sua própria agenda */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4" onClick={(e) => e.stopPropagation()}>
-          <label className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 mb-2">
-            <IconBriefcase width={13} height={13} /> Serviço
+        <div className="bg-card rounded-2xl p-4 shadow-soft mb-4" onClick={(e) => e.stopPropagation()}>
+          <label className="text-caption font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
+            <IconBriefcase width={13} height={13} aria-hidden="true" /> Serviço
           </label>
           <div className="flex gap-2 flex-wrap">
             {servicos.map((s) => {
@@ -448,10 +448,11 @@ export default function DisponibilidadePage() {
                 <button
                   key={s.id}
                   onClick={() => setServicoSelecionadoId(s.id)}
-                  className={`px-4 py-2.5 rounded-xl text-sm font-bold transition-all border-2 ${
+                  aria-pressed={ativo}
+                  className={`px-4 h-10 rounded-full text-body-sm font-bold transition-all duration-200 border-2 cursor-pointer ${
                     ativo
-                      ? 'bg-[#0B4F98] border-[#0B4F98] text-white shadow-sm'
-                      : 'bg-[#F7F8FC] border-transparent text-[#1a1a2e] hover:border-[#0B4F98]/30'
+                      ? 'bg-tcc-azul-dark border-tcc-azul-dark text-white shadow-soft'
+                      : 'bg-background border-transparent text-foreground hover:border-tcc-azul-dark/30'
                   }`}
                 >
                   {s.nome}
@@ -461,12 +462,13 @@ export default function DisponibilidadePage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-4 shadow-sm mb-4 flex items-center gap-4 flex-wrap" onClick={(e) => e.stopPropagation()}>
-          <label className="text-xs font-semibold text-gray-500">Duração do incremento</label>
+        <div className="bg-card rounded-2xl p-4 shadow-soft mb-4 flex items-center gap-4 flex-wrap" onClick={(e) => e.stopPropagation()}>
+          <label htmlFor="passo-incremento" className="text-caption font-semibold text-muted-foreground">Duração do incremento</label>
           <select
+            id="passo-incremento"
             value={passoModo}
             onChange={(e) => setPassoModo(e.target.value)}
-            className="rounded-xl border border-gray-200 bg-[#F7F8FC] px-3 py-2 text-sm font-semibold text-[#1a1a2e] focus:outline-none focus:border-[#0B4F98]"
+            className="h-10 rounded-xl border border-input bg-background px-3 text-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             {PASSOS_DISPONIVEIS.map((p) => (
               <option key={p} value={p}>{p} min</option>
@@ -476,23 +478,25 @@ export default function DisponibilidadePage() {
 
           {passoModo === 'custom' && (
             <div className="flex items-center gap-2">
+              <label htmlFor="passo-custom" className="sr-only-status">Minutos personalizados</label>
               <input
+                id="passo-custom"
                 type="number"
                 min="5"
                 max="240"
                 value={passoCustom}
                 onChange={(e) => setPassoCustom(e.target.value)}
-                className="w-20 rounded-xl border border-gray-200 bg-[#F7F8FC] px-3 py-2 text-sm font-semibold text-[#1a1a2e] focus:outline-none focus:border-[#0B4F98]"
+                className="w-20 h-10 rounded-xl border border-input bg-background px-3 text-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
-              <span className="text-xs font-semibold text-gray-500">minutos</span>
+              <span className="text-caption font-semibold text-muted-foreground">minutos</span>
             </div>
           )}
         </div>
 
-        <div className={`bg-white rounded-2xl p-3 shadow-sm overflow-x-auto touch-none select-none relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
+        <div className={`bg-card rounded-2xl p-3 shadow-soft overflow-x-auto touch-none select-none relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
           {loading && (
             <div className="absolute inset-0 flex items-center justify-center z-50">
-              <div className="w-8 h-8 rounded-full border-4 border-[#0B4F98] border-t-transparent animate-spin" />
+              <div className="w-8 h-8 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
             </div>
           )}
           <div className="flex min-w-[850px]">
@@ -501,7 +505,7 @@ export default function DisponibilidadePage() {
               {linhasHora.map(({ linha, label }) => (
                 <div
                   key={linha}
-                  className="absolute right-2 text-[10px] text-gray-400 font-medium -translate-y-1/2"
+                  className="absolute right-2 text-[11px] text-muted-foreground font-medium -translate-y-1/2"
                   style={{ top: 24 + linha * ROW_HEIGHT }}
                 >
                   {label}
@@ -516,8 +520,8 @@ export default function DisponibilidadePage() {
               const linhaMaxArraste = arrastandoAqui ? Math.max(arraste.inicioLinha, arraste.atualLinha) : null;
 
               return (
-                <div key={dia} className="flex-1 min-w-[110px] border-l border-gray-100 relative">
-                  <div className="text-center text-[11px] font-semibold text-gray-500 py-1.5 border-b border-gray-100 sticky top-0 bg-white z-10">
+                <div key={dia} className="flex-1 min-w-[110px] border-l border-border relative">
+                  <div className="text-center text-caption font-semibold text-muted-foreground py-1.5 border-b border-border sticky top-0 bg-card z-10">
                     {nome}
                   </div>
                   <div
@@ -530,7 +534,7 @@ export default function DisponibilidadePage() {
                     {linhasHora.map(({ linha }) => (
                       <div
                         key={`hora-${linha}`}
-                        className="absolute left-0 right-0 border-t border-gray-100"
+                        className="absolute left-0 right-0 border-t border-border"
                         style={{ top: linha * ROW_HEIGHT }}
                       />
                     ))}
@@ -540,20 +544,20 @@ export default function DisponibilidadePage() {
                         key={linha}
                         onPointerDown={(e) => iniciarArraste(e, dia, linha)}
                         onPointerEnter={() => moverArraste(dia, linha)}
-                        className="absolute left-0 right-0 hover:bg-[#0B4F98]/10 cursor-pointer transition-colors"
+                        className="absolute left-0 right-0 hover:bg-tcc-azul-dark/10 cursor-pointer transition-colors duration-150"
                         style={{ top: linha * ROW_HEIGHT, height: ROW_HEIGHT, touchAction: 'none' }}
                       />
                     ))}
 
                     {arrastandoAqui && (
                       <div
-                        className="absolute left-0.5 right-0.5 bg-[#0B4F98]/25 border-2 border-dashed border-[#0B4F98] rounded-md pointer-events-none z-20 flex items-center justify-center overflow-hidden"
+                        className="absolute left-0.5 right-0.5 bg-tcc-azul-dark/25 border-2 border-dashed border-tcc-azul-dark rounded-md pointer-events-none z-20 flex items-center justify-center overflow-hidden"
                         style={{
                           top: linhaMinArraste * ROW_HEIGHT,
                           height: (linhaMaxArraste - linhaMinArraste + 1) * ROW_HEIGHT,
                         }}
                       >
-                        <span className="text-[9px] font-bold text-[#0B4F98] bg-white/90 rounded px-1 whitespace-nowrap shadow-sm">
+                        <span className="text-[10px] font-bold text-tcc-azul-dark bg-white/90 rounded px-1 whitespace-nowrap shadow-soft">
                           {minutosParaHHMM(linhaParaMinutos(linhaMinArraste))}–{minutosParaHHMM(linhaParaMinutos(linhaMaxArraste + 1))}
                         </span>
                       </div>
@@ -570,15 +574,26 @@ export default function DisponibilidadePage() {
                       return (
                         <div
                           key={b.id}
+                          role="button"
+                          tabIndex={0}
+                          aria-pressed={isSelecionado}
+                          aria-label={`Bloco de ${b.horaInicio} às ${b.horaFim}`}
                           onClick={(e) => {
                             e.stopPropagation();
                             setBlocoSelecionado(isSelecionado ? null : b.id);
                           }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              setBlocoSelecionado(isSelecionado ? null : b.id);
+                            }
+                          }}
                           onPointerDown={(e) => e.stopPropagation()}
-                          className={`absolute left-0.5 right-0.5 text-white rounded-md cursor-pointer transition-all overflow-visible ${
+                          className={`absolute left-0.5 right-0.5 text-white rounded-md cursor-pointer transition-all duration-150 overflow-visible ${
                             isSelecionado
-                              ? 'bg-[#0B4F98] ring-2 ring-[#FD953A] ring-offset-1 z-40 shadow-md'
-                              : 'bg-[#0B4F98] z-30 hover:bg-[#093e77] shadow-sm'
+                              ? 'bg-tcc-azul-dark ring-2 ring-tcc-laranja ring-offset-1 z-40 shadow-card'
+                              : 'bg-tcc-azul-dark z-30 hover:bg-tcc-azul-darker shadow-soft'
                           }`}
                           style={{ top, height: Math.max(altura, 3) }}
                         >
@@ -588,50 +603,50 @@ export default function DisponibilidadePage() {
 
                           {isSelecionado && (
                             <div
-                              className="absolute -top-16 left-1/2 -translate-x-1/2 bg-slate-900 text-white rounded-xl shadow-2xl border border-slate-700 p-2 flex items-center gap-2.5 z-50 whitespace-nowrap"
+                              className="absolute -top-16 left-1/2 -translate-x-1/2 bg-tcc-neutro-700 text-white rounded-xl shadow-elevated border border-tcc-neutro-600 p-2 flex items-center gap-2.5 z-50 whitespace-nowrap"
                               onClick={(e) => e.stopPropagation()}
                               onPointerDown={(e) => e.stopPropagation()}
                             >
                               <button
                                 onClick={() => replicarParaDia(b, -1)}
-                                className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[#FD953A] hover:bg-slate-700 transition-colors"
-                                title="Copiar para dia anterior"
+                                aria-label="Copiar para dia anterior"
+                                className="w-9 h-9 rounded-lg bg-tcc-neutro-600 flex items-center justify-center text-tcc-laranja hover:bg-tcc-neutro-500 transition-colors cursor-pointer"
                               >
-                                <IconArrowLeft />
+                                <IconArrowLeft aria-hidden="true" />
                               </button>
 
-                              <div className="flex flex-col gap-1 items-center bg-slate-800 rounded-lg p-1.5">
-                                <span className="text-[9px] font-extrabold text-slate-400 uppercase leading-none tracking-widest">Início</span>
+                              <div className="flex flex-col gap-1 items-center bg-tcc-neutro-600 rounded-lg p-1.5">
+                                <span className="text-[10px] font-extrabold text-tcc-neutro-300 uppercase leading-none tracking-widest">Início</span>
                                 <div className="flex gap-1.5">
-                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'aumentar')} className="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-sky-700 text-white rounded"><IconChevronUp /></button>
-                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'diminuir')} className="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-sky-700 text-white rounded"><IconChevronDown /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'aumentar')} aria-label="Antecipar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronUp aria-hidden="true" /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'diminuir')} aria-label="Atrasar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronDown aria-hidden="true" /></button>
                                 </div>
                               </div>
 
-                              <div className="flex flex-col gap-1 items-center bg-slate-800 rounded-lg p-1.5">
-                                <span className="text-[9px] font-extrabold text-slate-400 uppercase leading-none tracking-widest">Fim</span>
+                              <div className="flex flex-col gap-1 items-center bg-tcc-neutro-600 rounded-lg p-1.5">
+                                <span className="text-[10px] font-extrabold text-tcc-neutro-300 uppercase leading-none tracking-widest">Fim</span>
                                 <div className="flex gap-1.5">
-                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'diminuir')} className="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-sky-700 text-white rounded"><IconChevronUp /></button>
-                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'aumentar')} className="w-6 h-6 flex items-center justify-center bg-slate-700 hover:bg-sky-700 text-white rounded"><IconChevronDown /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'diminuir')} aria-label="Antecipar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronUp aria-hidden="true" /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'aumentar')} aria-label="Atrasar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronDown aria-hidden="true" /></button>
                                 </div>
                               </div>
 
                               <button
                                 onClick={() => replicarParaDia(b, 1)}
-                                className="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-[#FD953A] hover:bg-slate-700 transition-colors"
-                                title="Copiar para próximo dia"
+                                aria-label="Copiar para próximo dia"
+                                className="w-9 h-9 rounded-lg bg-tcc-neutro-600 flex items-center justify-center text-tcc-laranja hover:bg-tcc-neutro-500 transition-colors cursor-pointer"
                               >
-                                <IconArrowRight />
+                                <IconArrowRight aria-hidden="true" />
                               </button>
 
-                              <span className="w-px h-8 bg-slate-700 mx-0.5" />
+                              <span className="w-px h-8 bg-tcc-neutro-600 mx-0.5" aria-hidden="true" />
 
                               <button
                                 onClick={() => handleRemover(b.id)}
-                                className="px-3 h-8 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-600 hover:text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
-                                title="Apagar este horário"
+                                aria-label="Apagar este horário"
+                                className="px-3 h-9 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive hover:text-white font-bold text-caption flex items-center gap-1.5 transition-colors cursor-pointer"
                               >
-                                <IconTrash />
+                                <IconTrash aria-hidden="true" />
                                 <span>Apagar</span>
                               </button>
                             </div>

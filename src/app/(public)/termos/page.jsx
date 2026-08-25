@@ -2,19 +2,19 @@ export default function TermosPage() {
   return (
     <div className="min-h-screen bg-tcc-azul-deep text-tcc-neutro-100 font-sans antialiased">
       <div className="max-w-4xl mx-auto px-6 py-16">
-        <span className="text-xs font-bold uppercase tracking-widest text-tcc-azul-light font-urbanist">
+        <span className="text-caption font-bold uppercase tracking-widest text-tcc-azul-light font-display">
           Legal
         </span>
-        <h1 className="text-3xl lg:text-4xl font-black font-urbanist tracking-tight text-white leading-[1.15] mt-2 mb-6">
+        <h1 className="text-h4 lg:text-h3 font-black font-display tracking-tight text-white mt-2 mb-6">
           Termos de Uso
         </h1>
 
-        <div className="bg-tcc-azul-darker/40 p-8 rounded-2xl border border-tcc-azul-darker/5 space-y-4">
-          <p className="text-tcc-neutro-300 text-sm md:text-base leading-relaxed font-light">
+        <div className="bg-tcc-azul-darker/40 backdrop-blur-sm p-8 rounded-2xl border border-white/10 shadow-card space-y-4">
+          <p className="text-tcc-neutro-300 text-body-sm md:text-body-lg leading-relaxed">
             Este é um texto de exemplo. Os termos de uso definitivos do Marca Aí serão publicados
             aqui em breve.
           </p>
-          <p className="text-tcc-neutro-300 text-sm md:text-base leading-relaxed font-light">
+          <p className="text-tcc-neutro-300 text-body-sm md:text-body-lg leading-relaxed">
             Conteúdo definitivo em construção.
           </p>
         </div>

@@ -86,39 +86,42 @@ export default async function DetalheServico({ params }) {
             </div>
 
             <div className="flex flex-col justify-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-tcc-laranja-pale mb-1">
+              <span className="text-caption font-bold uppercase tracking-widest text-tcc-laranja-pale mb-1">
                 {servico.categoria}
               </span>
-              <h1 className="text-3xl font-extrabold font-urbanist tracking-tight mb-2">
+              <h1 className="text-h4 font-extrabold font-display tracking-tight mb-2">
                 {servico.nome}
               </h1>
               <p className="text-tcc-azul-light font-medium mb-3">Por: {servico.prestador.nome}</p>
 
               <div className="bg-tcc-azul-dark w-fit mx-auto md:mx-0 px-4 py-1.5 rounded-full flex items-center gap-2 border border-tcc-azul/40">
-                <span className="text-sm font-bold text-tcc-laranja">{servico.avaliacaoMedia.toFixed(1)}</span>
-                <div className="flex text-tcc-laranja scale-90">
+                <span className="text-body-sm font-bold text-tcc-laranja" aria-hidden="true">{servico.avaliacaoMedia.toFixed(1)}</span>
+                <div className="flex text-tcc-laranja scale-90" aria-hidden="true">
                   <span>★ ★ ★ ★ ½</span>
                 </div>
-                <span className="text-xs text-tcc-azul-lightest">(32 avaliações)</span>
+                <span className="text-caption text-tcc-azul-lightest" role="img" aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, 32 avaliações`}>
+                  (32 avaliações)
+                </span>
               </div>
             </div>
           </div>
 
-          <Link href={`/agendamentos/novo?servico=${servico.id}`} className="w-full md:w-auto">
-            <button className="w-full md:w-auto bg-tcc-laranja text-white hover:bg-tcc-laranja-dark active:scale-98 font-bold px-8 py-4 rounded-2xl shadow-lg transition-all flex items-center justify-center gap-2 text-lg cursor-pointer">
-              <Calendar size={22} /> Agendar Horário
-            </button>
+          <Link
+            href={`/agendamentos/novo?servico=${servico.id}`}
+            className="w-full md:w-auto bg-tcc-laranja text-white hover:bg-tcc-laranja-dark active:scale-[0.98] font-bold px-8 h-14 rounded-full shadow-elevated transition-all duration-200 ease-apple flex items-center justify-center gap-2 text-body-lg cursor-pointer"
+          >
+            <Calendar size={22} aria-hidden="true" /> Agendar Horário
           </Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
 
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-tcc-azul-darker/40 p-8 rounded-3xl shadow-inner">
-              <h2 className="text-xl font-bold font-urbanist border-b border-tcc-azul-dark pb-3 mb-4 flex items-center gap-2">
-                <Award size={20} className="text-tcc-laranja" /> Detalhes do Serviço
+            <div className="bg-tcc-azul-darker/40 p-8 rounded-3xl shadow-card">
+              <h2 className="text-h6 font-bold font-display border-b border-tcc-azul-dark pb-3 mb-4 flex items-center gap-2">
+                <Award size={20} className="text-tcc-laranja" aria-hidden="true" /> Detalhes do Serviço
               </h2>
-              <p className="text-tcc-azul-lightest leading-relaxed font-light whitespace-pre-line">
+              <p className="text-tcc-azul-lightest leading-relaxed whitespace-pre-line">
                 {servico.descricao}
               </p>
             </div>
@@ -126,46 +129,46 @@ export default async function DetalheServico({ params }) {
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-tcc-azul-darker/40 p-5 rounded-2xl flex items-center gap-4">
                 <div className="bg-tcc-laranja/10 p-3 rounded-xl text-tcc-laranja">
-                  <DollarSign size={24} />
+                  <DollarSign size={24} aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-xs text-tcc-azul-light font-medium">Valor do serviço</p>
-                  <p className="text-xl font-bold text-white">R$ {parseFloat(servico.preco).toFixed(2).replace('.', ',')}</p>
+                  <p className="text-caption text-tcc-azul-light font-medium">Valor do serviço</p>
+                  <p className="text-h6 font-bold text-white">R$ {parseFloat(servico.preco).toFixed(2).replace('.', ',')}</p>
                 </div>
               </div>
 
               <div className="bg-tcc-azul-darker/40 p-5 rounded-2xl flex items-center gap-4">
                 <div className="bg-tcc-azul/20 p-3 rounded-xl text-tcc-azul-medium">
-                  <Clock size={24} />
+                  <Clock size={24} aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-xs text-tcc-azul-light font-medium">Tempo estimado</p>
-                  <p className="text-xl font-bold text-white">{servico.duracaoEstimada} min</p>
+                  <p className="text-caption text-tcc-azul-light font-medium">Tempo estimado</p>
+                  <p className="text-h6 font-bold text-white">{servico.duracaoEstimada} min</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="space-y-6">
-            <div className="bg-tcc-azul-darker/40 p-6 rounded-3xl shadow-md">
-              <h2 className="text-lg font-bold font-urbanist border-b border-tcc-azul-dark pb-3 mb-4">
+            <div className="bg-tcc-azul-darker/40 p-6 rounded-3xl shadow-card">
+              <h2 className="text-body-lg font-bold font-display border-b border-tcc-azul-dark pb-3 mb-4">
                 Sobre o Profissional
               </h2>
-              <p className="text-sm text-tcc-azul-lightest leading-relaxed mb-6 font-light">
+              <p className="text-body-sm text-tcc-azul-lightest leading-relaxed mb-6">
                 {servico.prestador.biografia}
               </p>
 
-              <h3 className="text-xs font-bold uppercase tracking-wider text-tcc-azul-light mb-3">
+              <h3 className="text-caption font-bold uppercase tracking-wider text-tcc-azul-light mb-3">
                 Canais de Contato
               </h3>
 
               <div className="space-y-3">
-                <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-3 text-sm text-tcc-azul-lightest hover:text-tcc-azul-medium transition-colors p-2.5 rounded-xl bg-tcc-azul-deep/50 border border-tcc-azul-dark/30">
-                  <Phone size={16} className="text-tcc-laranja" />
+                <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-3 text-body-sm text-tcc-azul-lightest hover:text-white transition-colors p-3 rounded-xl bg-tcc-azul-deep/50 border border-tcc-azul-dark/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-light">
+                  <Phone size={16} className="text-tcc-laranja" aria-hidden="true" />
                   <span>{servico.prestador.telefone}</span>
                 </a>
-                <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-3 text-sm text-tcc-azul-lightest hover:text-tcc-azul-medium transition-colors p-2.5 rounded-xl bg-tcc-azul-deep/50 border border-tcc-azul-dark/30 overflow-hidden text-ellipsis">
-                  <Mail size={16} className="text-tcc-laranja" />
+                <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-3 text-body-sm text-tcc-azul-lightest hover:text-white transition-colors p-3 rounded-xl bg-tcc-azul-deep/50 border border-tcc-azul-dark/30 overflow-hidden text-ellipsis focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-light">
+                  <Mail size={16} className="text-tcc-laranja" aria-hidden="true" />
                   <span className="truncate">{servico.prestador.email}</span>
                 </a>
               </div>

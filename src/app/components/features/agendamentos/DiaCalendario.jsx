@@ -9,18 +9,18 @@ export default function DiaCalendario({
 }) {
   const desabilitado = passado || !disponivel;
 
-  let classes = "relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center text-lg sm:text-xl font-bold transition-all duration-150 ";
+  let classes = "relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center text-body-lg sm:text-h6 font-bold transition-all duration-200 ease-apple ";
 
   if (selecionado) {
-    classes += "bg-[#0B4F98] text-white shadow-md shadow-[#0B4F98]/30 scale-105";
+    classes += "bg-tcc-azul-dark text-white shadow-card scale-105";
   } else if (desabilitado) {
-    classes += "text-gray-300 cursor-not-allowed";
+    classes += "text-muted-foreground/50 cursor-not-allowed";
   } else {
-    classes += "bg-[#F7F8FC] text-[#1a1a2e] hover:bg-[#0B4F98]/10 hover:text-[#0B4F98] cursor-pointer";
+    classes += "bg-background text-foreground hover:bg-tcc-azul-dark/10 hover:text-tcc-azul-dark cursor-pointer";
   }
 
   if (hoje && !selecionado) {
-    classes += " ring-2 ring-[#FD953A] ring-offset-1";
+    classes += " ring-2 ring-tcc-laranja ring-offset-1 ring-offset-card";
   }
 
   const titulo = desabilitado
@@ -33,11 +33,13 @@ export default function DiaCalendario({
       disabled={desabilitado}
       onClick={onClick}
       title={titulo}
+      aria-label={`Dia ${numero}, ${titulo}`}
+      aria-pressed={selecionado}
       className={classes}
     >
       <span>{numero}</span>
       {!desabilitado && (
-        <span className={`w-2 h-2 rounded-full mt-1 ${selecionado ? "bg-white" : "bg-[#FD953A]"}`} />
+        <span className={`w-2 h-2 rounded-full mt-1 ${selecionado ? "bg-white" : "bg-tcc-laranja"}`} aria-hidden="true" />
       )}
     </button>
   );

@@ -10,28 +10,32 @@ export default function BannerUpload({ usuario }) {
 
   return (
     <div className="relative w-full">
-      <div className="w-full h-40 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center relative group border border-gray-200">
+      <div className="w-full h-40 bg-muted rounded-2xl overflow-hidden flex items-center justify-center relative group border border-border">
         {bannerUrl ? (
-          <img src={bannerUrl} alt="Banner" className="w-full h-full object-cover" />
+          <img src={bannerUrl} alt="Banner do perfil" className="w-full h-full object-cover" />
         ) : (
-          <span className="text-gray-400 text-sm">Sem banner (1200x400)</span>
+          <span className="text-muted-foreground text-body-sm">Sem banner (1200x400)</span>
         )}
 
-        <div
+        <button
+          type="button"
           onClick={() => setMostrarUpload(true)}
-          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer flex items-center justify-center"
+          aria-label="Alterar banner do perfil"
+          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 cursor-pointer flex items-center justify-center"
         >
-          <Pencil className="text-white" />
-        </div>
+          <Pencil className="text-white" aria-hidden="true" />
+        </button>
       </div>
 
       {mostrarUpload && (
-        <div className="mt-3 bg-white p-4 rounded-xl shadow-2xl border border-gray-100 flex flex-col items-center w-full">
+        <div role="dialog" aria-label="Enviar novo banner" className="mt-3 bg-card p-4 rounded-xl shadow-elevated border border-border flex flex-col items-center w-full">
           <button
+            type="button"
             onClick={() => setMostrarUpload(false)}
-            className="self-end text-gray-500 hover:text-red-500 mb-2 transition-colors"
+            aria-label="Fechar"
+            className="self-end h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-destructive mb-2 transition-colors cursor-pointer"
           >
-            <X size={20} />
+            <X size={20} aria-hidden="true" />
           </button>
 
           <UploadDropzone

@@ -6,13 +6,13 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
   return (
     <div className="min-h-screen bg-tcc-azul-deep flex items-center justify-center p-4 antialiased">
-      <div className="w-full max-w-xl bg-white rounded-2xl shadow-xl border border-tcc-neutro-200/40 p-8 md:p-10">
+      <div className="w-full max-w-xl bg-card rounded-2xl shadow-elevated border border-border p-8 md:p-10">
 
         <div className="text-center mb-8">
-          <h2 className="text-2xl md:text-3xl font-sora font-bold text-tcc-azul-darker tracking-tight">
+          <h2 className="text-h5 md:text-h4 font-sora font-bold text-foreground tracking-tight">
             Novo Serviço
           </h2>
-          <p className="text-xs md:text-sm font-inter text-tcc-neutro-400 mt-2">
+          <p className="text-caption md:text-body-sm font-inter text-tcc-neutro-400 mt-2">
             Cadastre um serviço na plataforma preenchendo as especificações abaixo.
           </p>
         </div>
@@ -21,7 +21,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="nome" className="text-sm font-inter font-medium text-tcc-neutro-600">
-              Nome do serviço <span className="text-tcc-laranja-dark">*</span>
+              Nome do serviço <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
             </label>
             <input
               type="text"
@@ -35,7 +35,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="categoriaId" className="text-sm font-inter font-medium text-tcc-neutro-600">
-              Categoria <span className="text-tcc-laranja-dark">*</span>
+              Categoria <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
             </label>
             <div className="relative">
               <select
@@ -65,7 +65,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
           {categoriaSelecionada === 'outro' && (
             <div className="flex flex-col gap-1.5">
               <label htmlFor="novaCategoria" className="text-sm font-inter font-medium text-tcc-neutro-600">
-                Qual é a nova categoria? <span className="text-tcc-laranja-dark">*</span>
+                Qual é a nova categoria? <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
               </label>
               <input
                 type="text"
@@ -82,7 +82,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="preco" className="text-sm font-inter font-medium text-tcc-neutro-600">
-                Preço (R$) <span className="text-tcc-laranja-dark">*</span>
+                Preço (R$) <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-tcc-neutro-400 font-inter text-sm pointer-events-none">
@@ -103,7 +103,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="duracaoEstimada" className="text-sm font-inter font-medium text-tcc-neutro-600">
-                Duração estimada <span className="text-tcc-laranja-dark">*</span>
+                Duração estimada <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
               </label>
               <div className="relative">
                 <input
@@ -115,7 +115,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
                   className="w-full pr-16 pl-4 py-3 rounded-xl bg-tcc-neutro-100/60 border border-tcc-neutro-200 text-tcc-neutro-700 font-inter text-sm focus:outline-none focus:border-tcc-azul focus:ring-4 focus:ring-tcc-azul-lightest transition-all"
                   required
                 />
-                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-tcc-neutro-400 font-inter text-xs pointer-events-none">
+                <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-tcc-neutro-400 font-inter text-caption pointer-events-none">
                   minutos
                 </span>
               </div>
@@ -128,7 +128,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
               <label htmlFor="descricao" className="text-sm font-inter font-medium text-tcc-neutro-600">
                 Descrição
               </label>
-              <span className="text-xs text-tcc-neutro-300 font-inter">Opcional</span>
+              <span className="text-caption text-tcc-neutro-400 font-inter">Opcional</span>
             </div>
             <textarea
               id="descricao"
@@ -141,7 +141,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
           <button
             type="submit"
-            className="w-full mt-3 py-3.5 bg-tcc-laranja hover:bg-tcc-laranja-dark text-white font-urbanist font-bold text-base rounded-xl shadow-md transition-all transform active:scale-[0.99] cursor-pointer text-center"
+            className="w-full mt-3 h-13 bg-tcc-laranja hover:bg-tcc-laranja-dark text-white font-display font-bold text-body-lg rounded-full shadow-soft transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer text-center"
           >
             Cadastrar Serviço
           </button>

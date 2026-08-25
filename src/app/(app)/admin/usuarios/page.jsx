@@ -3,6 +3,7 @@ import { usuarios } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import { requireAdmin } from '@/app/actions/auth.actions';
+import BotaoExcluirConfirm from '@/app/components/ui/BotaoExcluirConfirm';
 
 export default async function page() {
     await requireAdmin();
@@ -19,39 +20,44 @@ export default async function page() {
     }
 
     return (
-        <div className='flex' style={{ flexDirection: 'column', gap: '20px', padding: '20px' }}>
-            <h1 className='text-center font-bold'>CRUD USUÁRIOS</h1>
+        <div className="min-h-screen bg-background py-10 px-4 sm:px-6">
+            <div className="max-w-6xl mx-auto flex flex-col gap-6">
+                <h1 className="text-h4 font-bold text-foreground">Usuários</h1>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                    <tr style={{ borderBottom: '2px solid #ccc' }}>
-                        <th style={{ padding: '10px' }}>ID</th>
-                        <th style={{ padding: '10px' }}>Nome</th>
-                        <th style={{ padding: '10px' }}>Email</th>
-                        <th style={{ padding: '10px' }}>Telefone</th>
-                        <th style={{ padding: '10px' }}>Tipo</th>
-                        <th style={{ padding: '10px' }}>Criado em</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {listaUsuarios.map((user) => (
-                        <tr key={user.id} style={{ borderBottom: '1px solid #eee' }}>
-                            <td style={{ padding: '10px' }}>{user.id}</td>
-                            <td style={{ padding: '10px' }}>{user.nome}</td>
-                            <td style={{ padding: '10px' }}>{user.email}</td>
-                            <td style={{ padding: '10px' }}>{user.telefone}</td>
-                            <td style={{ padding: '10px' }}>{user.tipo}</td>
-                            <td>{user.criadoEm.toLocaleString('pt-BR')}</td>
-                            <td style={{ padding: '10px' }}>
-                                <form action={deleteUser} style={{ margin: 0 }}>
-                                    <input type="hidden" name='id' value={user.id} />
-                                    <button type='submit' className='bg-orange-400 px-4 py-2 transition-all rounded-lg hover:bg-orange-500 hover:text-white '>Excluir</button>
-                                </form>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                <div className="bg-card rounded-2xl border border-border shadow-soft overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-border bg-muted/50">
+                                <th scope="col" className="p-4 text-caption font-bold uppercase tracking-wide text-muted-foreground">ID</th>
+                                <th scope="col" className="p-4 text-caption font-bold uppercase tracking-wide text-muted-foreground">Nome</th>
+                                <th scope="col" className="p-4 text-caption font-bold uppercase tracking-wide text-muted-foreground">Email</th>
+                                <th scope="col" className="p-4 text-caption font-bold uppercase tracking-wide text-muted-foreground">Telefone</th>
+                                <th scope="col" className="p-4 text-caption font-bold uppercase tracking-wide text-muted-foreground">Tipo</th>
+                                <th scope="col" className="p-4 text-caption font-bold uppercase tracking-wide text-muted-foreground">Criado em</th>
+                                <th scope="col" className="p-4"><span className="sr-only-status">Ações</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {listaUsuarios.map((user) => (
+                                <tr key={user.id} className="border-b border-border last:border-0">
+                                    <td className="p-4 text-body-sm text-muted-foreground">{user.id}</td>
+                                    <td className="p-4 text-body-sm text-foreground font-medium">{user.nome}</td>
+                                    <td className="p-4 text-body-sm text-foreground">{user.email}</td>
+                                    <td className="p-4 text-body-sm text-foreground">{user.telefone}</td>
+                                    <td className="p-4 text-body-sm text-foreground capitalize">{user.tipo}</td>
+                                    <td className="p-4 text-body-sm text-muted-foreground whitespace-nowrap">{user.criadoEm.toLocaleString('pt-BR')}</td>
+                                    <td className="p-4 text-right">
+                                        <form action={deleteUser} className="inline">
+                                            <input type="hidden" name="id" value={user.id} />
+                                            <BotaoExcluirConfirm mensagem={`Excluir o usuário "${user.nome}"? Esta ação não pode ser desfeita.`}>Excluir</BotaoExcluirConfirm>
+                                        </form>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     );
 }

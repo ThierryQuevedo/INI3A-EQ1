@@ -18,8 +18,15 @@ export default function PerfilDropdown({ user }) {
                 setAberto(false);
             }
         }
+        function handleKeyDown(event) {
+            if (event.key === "Escape") setAberto(false);
+        }
         document.addEventListener("mousedown", handleClickFora);
-        return () => document.removeEventListener("mousedown", handleClickFora);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("mousedown", handleClickFora);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
     }, []);
 
     function pedirConfirmacaoSaida() {
@@ -45,53 +52,61 @@ export default function PerfilDropdown({ user }) {
         <div className="relative" ref={menuRef}>
             <button
                 onClick={() => setAberto((prev) => !prev)}
-                className="bg-tcc-azul text-tcc-azul-deep h-14  rounded-full p-1 hover:bg-tcc-azul-medium hover:scale-110 transition-all duration-200 shadow-inner cursor-pointer"
-                title="Meu Perfil"
+                className="bg-tcc-azul text-tcc-azul-deep h-11 w-11 rounded-full p-0.5 hover:bg-tcc-azul-medium transition-all duration-200 shadow-inner cursor-pointer overflow-hidden flex items-center justify-center"
+                aria-label="Menu do perfil"
+                aria-haspopup="menu"
+                aria-expanded={aberto}
             >
-                <img src={user?.urlImagem} className="w-full h-full aspect-square rounded-full object-cover" width={40} height={50} alt="Foto de perfil"  />
+                {user?.urlImagem ? (
+                    <img src={user.urlImagem} className="w-full h-full aspect-square rounded-full object-cover" width={44} height={44} alt="" />
+                ) : (
+                    <UserRound size={22} className="text-white" aria-hidden="true" />
+                )}
             </button>
 
             {aberto && (
-                <div className="absolute right-0 top-full mt-3 w-56 bg-white rounded-2xl shadow-lg border border-tcc-neutro-100/30 overflow-hidden z-50">
+                <div role="menu" className="absolute right-0 top-full mt-3 w-56 bg-card rounded-2xl shadow-elevated border border-border overflow-hidden z-50">
                     <Link
                         href="/configuracoes"
+                        role="menuitem"
                         onClick={() => setAberto(false)}
-                        className="flex items-center gap-3 px-5 py-3 text-tcc-neutro-700 hover:bg-tcc-neutro-100/40 transition-colors"
+                        className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                     >
-                        <UserRound size={18} className="text-tcc-azul-dark" />
-                        <span className="text-sm font-semibold">Perfil</span>
+                        <UserRound size={18} className="text-tcc-azul-dark" aria-hidden="true" />
+                        <span className="text-body-sm font-semibold">Perfil</span>
                     </Link>
 
                     <button
                         type="button"
+                        role="menuitem"
                         onClick={pedirConfirmacaoSaida}
-                        className="w-full flex items-center gap-3 px-5 py-3 text-tcc-laranja hover:bg-tcc-neutro-100/40 transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-3 px-5 py-3.5 text-tcc-laranja hover:bg-muted transition-colors cursor-pointer"
                     >
-                        <LogOut size={18} />
-                        <span className="text-sm font-bold">Sair</span>
+                        <LogOut size={18} aria-hidden="true" />
+                        <span className="text-body-sm font-bold">Sair</span>
                     </button>
                 </div>
             )}
 
             {confirmandoSaida && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
-                    <div className="bg-white rounded-2xl p-6 shadow-lg max-w-sm w-full">
-                        <h2 className="text-base font-extrabold text-tcc-neutro-700 mb-2">Sair da conta?</h2>
-                        <p className="text-sm text-gray-500 mb-6">
+                    <div role="alertdialog" aria-modal="true" aria-labelledby="sair-titulo" className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full">
+                        <h2 id="sair-titulo" className="text-base font-extrabold text-foreground mb-2">Sair da conta?</h2>
+                        <p className="text-body-sm text-muted-foreground mb-6">
                             Você precisará entrar novamente para acessar sua conta.
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={cancelarSaida}
                                 disabled={saindo}
-                                className="flex-1 rounded-xl py-3 text-sm font-bold text-tcc-neutro-700 bg-tcc-neutro-100/40 hover:bg-tcc-neutro-100/70 transition-colors disabled:opacity-60"
+                                className="flex-1 rounded-xl h-11 text-body-sm font-bold text-foreground bg-muted hover:bg-muted/70 transition-colors disabled:opacity-60 cursor-pointer"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={confirmarSaida}
                                 disabled={saindo}
-                                className="flex-1 rounded-xl py-3 text-sm font-bold text-white bg-tcc-laranja hover:bg-tcc-laranja-dark transition-colors disabled:opacity-60"
+                                className="flex-1 rounded-xl h-11 text-body-sm font-bold text-white bg-tcc-laranja hover:bg-tcc-laranja-dark transition-colors disabled:opacity-60 cursor-pointer"
                             >
                                 {saindo ? "Saindo..." : "Sair"}
                             </button>

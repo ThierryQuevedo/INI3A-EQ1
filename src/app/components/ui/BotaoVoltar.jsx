@@ -19,7 +19,7 @@ export default function BotaoVoltar({ fallbackHref = '/servicos' }) {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-2 text-sm font-semibold text-tcc-azul-lightest hover:text-white bg-tcc-azul-darker/60 hover:bg-tcc-azul-darker px-4 py-2 rounded-xl border border-tcc-azul-dark/50 transition-all duration-200 cursor-pointer"
+      className="inline-flex items-center gap-2 h-11 text-body-sm font-semibold text-foreground bg-card hover:bg-muted px-4 rounded-full border border-border shadow-soft transition-colors duration-200 ease-apple cursor-pointer"
     >
       <ArrowLeft size={16} />
       Voltar

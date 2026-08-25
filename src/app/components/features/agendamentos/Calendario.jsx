@@ -61,25 +61,27 @@ export default function Calendario({
           type="button"
           onClick={irParaMesAnterior}
           disabled={bloqueiaMesAnterior}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-[#0B4F98] hover:bg-[#0B4F98]/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+          aria-label="Mês anterior"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-tcc-azul-dark dark:text-tcc-azul-light hover:bg-tcc-azul-dark/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
 
-        <h2 className="text-center text-xl sm:text-2xl font-extrabold text-[#1a1a2e]">
+        <h2 className="text-center text-h6 sm:text-h5 font-extrabold text-foreground">
           {NOMES_MESES[mes]} {ano}
         </h2>
 
         <button
           type="button"
           onClick={irParaProximoMes}
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-[#0B4F98] hover:bg-[#0B4F98]/10 transition-colors"
+          aria-label="Próximo mês"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-tcc-azul-dark dark:text-tcc-azul-light hover:bg-tcc-azul-dark/10 transition-colors duration-200 cursor-pointer"
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-3 text-center text-xs sm:text-sm font-bold uppercase tracking-wide text-gray-400">
+      <div className="grid grid-cols-7 gap-2 sm:gap-3 mb-3 text-center text-caption sm:text-body-sm font-bold uppercase tracking-wide text-muted-foreground">
         {DIAS_SEMANA_LABEL.map((d) => <div key={d}>{d}</div>)}
       </div>
 
@@ -105,15 +107,15 @@ export default function Calendario({
         })}
       </div>
 
-      <div className="flex items-center gap-5 mt-6 pt-5 border-t border-gray-100 text-xs text-gray-400 font-medium">
+      <div className="flex flex-wrap items-center gap-5 mt-6 pt-5 border-t border-border text-caption text-muted-foreground font-medium">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#FD953A]" /> Disponível
+          <span className="w-2.5 h-2.5 rounded-full bg-tcc-laranja" aria-hidden="true" /> Disponível
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded ring-2 ring-[#FD953A]" /> Hoje
+          <span className="w-3.5 h-3.5 rounded ring-2 ring-tcc-laranja" aria-hidden="true" /> Hoje
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded bg-gray-200" /> Indisponível
+          <span className="w-3.5 h-3.5 rounded bg-muted" aria-hidden="true" /> Indisponível
         </div>
       </div>
     </div>

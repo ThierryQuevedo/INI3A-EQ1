@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Image from "next/image";
 import { User, Calendar, BookOpen, Info, LayoutDashboard, Home, X } from "lucide-react";
 import Link from "next/link";
@@ -9,18 +10,31 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
     const email = usuario?.email || "Entre na sua conta";
     const tipo = usuario?.tipo || "visitante";
 
+    useEffect(() => {
+        if (!isOpen) return;
+        function handleKeyDown(event) {
+            if (event.key === "Escape") onClose();
+        }
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [isOpen, onClose]);
+
     return (
         <>
             {isOpen && (
                 <div
                     className="fixed inset-0 bg-black/60 z-40 transition-opacity duration-300"
                     onClick={onClose}
+                    aria-hidden="true"
                 />
             )}
 
 
             <div
-                className="fixed top-0 left-0 h-screen w-80 bg-tcc-azul-medium flex flex-col z-50 transition-transform duration-300 ease-in-out shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Menu de navegação"
+                className="fixed top-0 left-0 h-screen w-80 max-w-[85vw] bg-tcc-azul-medium flex flex-col z-50 transition-transform duration-300 ease-in-out shadow-2xl"
                 style={{
                     transform: isOpen ? "translateX(0)" : "translateX(-100%)"
                 }}
@@ -28,10 +42,10 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
 
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-white hover:text-tcc-azul-light transition-colors p-2 rounded-lg cursor-pointer z-10"
+                    className="absolute top-4 right-4 h-11 w-11 flex items-center justify-center text-white hover:bg-black/10 hover:text-tcc-azul-light transition-colors duration-200 rounded-full cursor-pointer z-10"
                     aria-label="Fechar menu"
                 >
-                    <X size={26} />
+                    <X size={24} aria-hidden="true" />
                 </button>
 
                 <div className="px-6 pb-6 pt-14 flex flex-col items-center relative w-full h-full overflow-y-auto">
@@ -54,7 +68,7 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
 
                         <div className="flex flex-col overflow-hidden">
                             <h1 className="text-base font-bold text-white truncate">{nome}</h1>
-                            <h2 className="text-xs text-tcc-azul-light truncate">{email}</h2>
+                            <h2 className="text-caption text-tcc-azul-light truncate">{email}</h2>
                         </div>
                     </div>
 

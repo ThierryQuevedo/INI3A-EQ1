@@ -37,18 +37,20 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
     return (
         <div className="bg-tcc-azul-deep min-h-screen flex flex-col items-center relative">
 
-            <h1 className='font-urbanist text-white font-bold text-4xl my-8'>Catálogo de Serviços</h1>
+            <h1 className='font-display text-white font-bold text-h3 my-8'>Catálogo de Serviços</h1>
 
-            <div className='flex flex-col w-[95vw] max-w-[1600px] min-h-[85vh] bg-tcc-azul-darker rounded-2xl overflow-hidden pb-10 shadow-lg'>
+            <div className='flex flex-col w-[95vw] max-w-[1600px] min-h-[85vh] bg-tcc-azul-darker rounded-3xl overflow-hidden pb-10 shadow-elevated'>
 
-                <div className='flex flex-row justify-center m-5 gap-2'>
+                <div className='flex flex-col sm:flex-row justify-center m-5 gap-2'>
 
                     <div className="relative">
                         <Button
-                            className="bg-tcc-laranja text-white flex gap-2 items-center cursor-pointer"
+                            variant="accent"
                             onClick={toggleFilterMenu}
+                            aria-haspopup="dialog"
+                            aria-expanded={isFilterOpen}
                         >
-                            <FunnelPlus/> Filtros
+                            <FunnelPlus aria-hidden="true" /> Filtros
                         </Button>
                         <MenuFiltros
                             isOpen={isFilterOpen}
@@ -59,28 +61,34 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                         />
                     </div>
 
+                    <label htmlFor="busca-servicos" className="sr-only-status">Buscar por serviço, prestador ou categoria</label>
                     <Input
-                        className="bg-tcc-azul-light h-10 flex-1 text-white placeholder-gray-400"
+                        id="busca-servicos"
+                        className="bg-white/10 border-white/15 h-11 flex-1 text-white placeholder:text-tcc-neutro-300"
                         placeholder="Buscar por serviço, prestador ou categoria..."
                         value={termoBusca}
                         onChange={(e) => setTermoBusca(e.target.value)}
                     />
 
-                    <Button className="bg-tcc-laranja text-white flex gap-2 items-center cursor-pointer">
-                        <Search size={18} /> Buscar
+                    <Button variant="accent">
+                        <Search size={18} aria-hidden="true" /> Buscar
                     </Button>
                 </div>
 
                 <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-5 w-full'>
                     {servicosFiltrados.length === 0 ? (
-                        <p className="text-tcc-azul-light mt-10 font-medium col-span-full text-center">
+                        <p className="text-tcc-azul-light mt-10 font-medium col-span-full text-center text-body">
                             {servicos.length === 0
                                 ? "Nenhum serviço cadastrado no momento."
                                 : "Nenhum resultado encontrado para a sua busca."}
                         </p>
                     ) : (
                         servicosFiltrados.map((servico) => (
-                            <Link key={servico.id} href={`/servicos/${servico.slug || servico.id}`}>
+                            <Link
+                                key={servico.id}
+                                href={`/servicos/${servico.slug || servico.id}`}
+                                className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-light focus-visible:ring-offset-2 focus-visible:ring-offset-tcc-azul-darker"
+                            >
                                 <CardServicoCatalogo servico={servico} avaliacao={4.3} />
                             </Link>
                         ))

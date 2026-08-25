@@ -12,10 +12,11 @@ export default function MenuSlideWrapper({ usuario }) {
             {/* Ícone de Hambúrguer visível no Header */}
             <button
                 onClick={() => setIsOpen(true)}
-                className="p-2 text-white hover:text-tcc-azul-light transition-colors cursor-pointer"
-                aria-label="Abrir Menu"
+                className="h-11 w-11 flex items-center justify-center rounded-full text-white hover:bg-white/10 hover:text-tcc-azul-light transition-colors duration-200 cursor-pointer"
+                aria-label="Abrir menu"
+                aria-expanded={isOpen}
             >
-                <Menu size={28} />
+                <Menu size={26} aria-hidden="true" />
             </button>
 
             {/* Componente da gaveta lateral */}

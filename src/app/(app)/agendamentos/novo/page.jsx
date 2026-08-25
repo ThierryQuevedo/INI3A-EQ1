@@ -53,8 +53,8 @@ const PERIODOS = [
 export default function AgendarPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-4 border-[#0B4F98] border-t-transparent animate-spin" />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-10 h-10 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
       </div>
     }>
       <AgendarPageInner />
@@ -227,50 +227,50 @@ function AgendarPageInner() {
   const gruposPeriodo = useMemo(() => agruparPorPeriodo(slotsDoDia), [slotsDoDia]);
 
   if (loading) return (
-    <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-full border-4 border-[#0B4F98] border-t-transparent animate-spin" />
-        <span className="text-[#0B4F98] font-semibold text-sm">Carregando disponibilidade...</span>
+        <div className="w-10 h-10 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
+        <span className="text-tcc-azul-dark font-semibold text-body-sm">Carregando disponibilidade...</span>
       </div>
     </div>
   );
 
   if (sucesso) return (
-    <div className="min-h-screen bg-[#F7F8FC] flex items-center justify-center">
-      <div className="bg-white rounded-2xl p-10 flex flex-col items-center gap-4 shadow-sm">
-        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <div className="min-h-screen bg-background flex items-center justify-center" role="status">
+      <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-elevated">
+        <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-success" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
-        <h2 className="text-xl font-bold text-[#1a1a2e]">Agendamento confirmado!</h2>
-        <p className="text-sm text-gray-500">Redirecionando para sua agenda...</p>
+        <h2 className="text-h6 font-bold text-foreground">Agendamento confirmado!</h2>
+        <p className="text-body-sm text-muted-foreground">Redirecionando para sua agenda...</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#F7F8FC] py-10 px-4">
+    <div className="min-h-screen bg-background py-10 px-4">
       <div className="max-w-2xl mx-auto">
 
         <div className="mb-8">
-          <button onClick={() => router.back()} className="flex items-center gap-2 text-sm text-[#0B4F98] font-semibold mb-4 hover:opacity-70 transition-opacity">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          <button onClick={() => router.back()} className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-tcc-azul-dark dark:text-tcc-azul-light font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
             Voltar
           </button>
-          <h1 className="text-2xl font-extrabold text-[#1a1a2e]">Escolha um horário</h1>
+          <h1 className="text-h4 font-extrabold text-foreground">Escolha um horário</h1>
           {servico && (
-            <p className="text-sm text-gray-500 mt-1">
-              {servico.nome} · {servico.duracaoEstimada} min · <span className="text-[#0B4F98] font-semibold">R$ {Number(servico.preco).toFixed(2)}</span>
+            <p className="text-body-sm text-muted-foreground mt-1">
+              {servico.nome} · {servico.duracaoEstimada} min · <span className="text-tcc-azul-dark dark:text-tcc-azul-light font-semibold">R$ {Number(servico.preco).toFixed(2)}</span>
             </p>
           )}
         </div>
 
         {erro && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+          <div role="alert" className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm rounded-xl px-4 py-3">
             {erro}
           </div>
         )}
 
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-4 flex justify-center">
+        <div className="bg-card rounded-2xl p-6 shadow-soft mb-4 flex justify-center">
           <Calendario
             mes={mesAtual}
             ano={anoAtual}
@@ -282,12 +282,12 @@ function AgendarPageInner() {
         </div>
 
         {diaSelecionado && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm mb-4">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
+          <div className="bg-card rounded-2xl p-6 shadow-soft mb-4">
+            <h2 className="text-caption font-bold text-muted-foreground uppercase tracking-widest mb-4">
               Horários — {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
             </h2>
             {slotsDoDia.length === 0 ? (
-              <p className="text-sm text-gray-400">Nenhum horário disponível neste dia.</p>
+              <p className="text-body-sm text-muted-foreground">Nenhum horário disponível neste dia.</p>
             ) : (
               <div className="space-y-5">
                 {PERIODOS.map(({ chave, label, Icon }) => {
@@ -295,20 +295,21 @@ function AgendarPageInner() {
                   if (slotsPeriodo.length === 0) return null;
                   return (
                     <div key={chave}>
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
-                        <Icon />
+                      <div className="flex items-center gap-1.5 text-caption font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                        <Icon aria-hidden="true" />
                         {label}
-                        <span className="text-gray-300 font-medium normal-case tracking-normal">· {slotsPeriodo.length} horário{slotsPeriodo.length > 1 ? 's' : ''}</span>
+                        <span className="text-muted-foreground/70 font-medium normal-case tracking-normal">· {slotsPeriodo.length} horário{slotsPeriodo.length > 1 ? 's' : ''}</span>
                       </div>
                       <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                         {slotsPeriodo.map((slot) => (
                           <button
                             key={slot}
                             onClick={() => setHorarioSelecionado(slot)}
-                            className={`rounded-xl py-2.5 text-sm font-bold border-2 transition-all
+                            aria-pressed={horarioSelecionado === slot}
+                            className={`rounded-xl h-11 text-body-sm font-bold border-2 transition-all duration-200 ease-apple cursor-pointer
                               ${horarioSelecionado === slot
-                                ? 'border-[#FD953A] bg-[#FD953A] text-white shadow-sm scale-[1.02]'
-                                : 'border-transparent bg-[#F7F8FC] text-[#1a1a2e] hover:border-[#FD953A]/40'}
+                                ? 'border-tcc-laranja bg-tcc-laranja text-white shadow-soft scale-[1.02]'
+                                : 'border-transparent bg-muted text-foreground hover:border-tcc-laranja/40'}
                             `}
                           >
                             {slot}
@@ -324,37 +325,37 @@ function AgendarPageInner() {
         )}
 
         {diaSelecionado && horarioSelecionado && (
-          <div className="bg-white rounded-2xl p-6 shadow-sm sticky bottom-4">
-            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Resumo</h2>
+          <div className="bg-card rounded-2xl p-6 shadow-elevated mb-4 sticky bottom-4">
+            <h2 className="text-caption font-bold text-muted-foreground uppercase tracking-widest mb-4">Resumo</h2>
             <div className="flex flex-col gap-2 mb-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Serviço</span>
-                <span className="font-semibold text-[#1a1a2e]">{servico?.nome}</span>
+              <div className="flex justify-between text-body-sm">
+                <span className="text-muted-foreground">Serviço</span>
+                <span className="font-semibold text-foreground">{servico?.nome}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Data</span>
-                <span className="font-semibold text-[#1a1a2e]">
+              <div className="flex justify-between text-body-sm">
+                <span className="text-muted-foreground">Data</span>
+                <span className="font-semibold text-foreground">
                   {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Horário</span>
-                <span className="font-semibold text-[#1a1a2e]">{horarioSelecionado}</span>
+              <div className="flex justify-between text-body-sm">
+                <span className="text-muted-foreground">Horário</span>
+                <span className="font-semibold text-foreground">{horarioSelecionado}</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Duração</span>
-                <span className="font-semibold text-[#1a1a2e]">{servico?.duracaoEstimada} min</span>
+              <div className="flex justify-between text-body-sm">
+                <span className="text-muted-foreground">Duração</span>
+                <span className="font-semibold text-foreground">{servico?.duracaoEstimada} min</span>
               </div>
-              <div className="h-px bg-gray-100 my-1" />
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Total</span>
-                <span className="font-bold text-[#0B4F98] text-base">R$ {Number(servico?.preco).toFixed(2)}</span>
+              <div className="h-px bg-border my-1" />
+              <div className="flex justify-between text-body-sm">
+                <span className="text-muted-foreground">Total</span>
+                <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light text-body">R$ {Number(servico?.preco).toFixed(2)}</span>
               </div>
             </div>
             <button
               onClick={confirmarAgendamento}
               disabled={enviando}
-              className="w-full bg-[#0B4F98] text-white rounded-xl py-4 text-sm font-bold shadow-lg shadow-[#0B4F98]/20 hover:bg-[#0B4F98]/90 transition-all active:scale-[0.98] disabled:opacity-60"
+              className="w-full bg-tcc-azul-dark text-white rounded-full h-13 text-body-sm font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer"
             >
               {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
             </button>
