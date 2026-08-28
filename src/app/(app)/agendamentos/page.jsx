@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireSession } from '@/app/actions/auth.actions';
 import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
+import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 
 export const dynamic = 'force-dynamic';
 
@@ -61,42 +62,55 @@ export default async function AgendamentosPage() {
             {meusAgendamentos.map((item) => (
               <div
                 key={item.id}
-                className="bg-card rounded-2xl shadow-soft border border-border p-5 flex flex-col md:flex-row md:items-center md:justify-between hover:shadow-card transition-shadow duration-200"
+                className="bg-card rounded-2xl shadow-soft border border-border p-5 hover:shadow-card transition-shadow duration-200"
               >
 
-                <div className="flex items-start gap-4">
-                  <div className="bg-secondary p-3 rounded-xl text-center min-w-[100px]">
-                    <p className="text-caption font-bold text-tcc-azul-dark dark:text-tcc-azul-light uppercase">Horário</p>
-                    <p className="text-h6 font-extrabold text-tcc-azul-darker dark:text-white">{formatarHora(item.dataHora)}</p>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-secondary p-3 rounded-xl text-center min-w-[100px]">
+                      <p className="text-caption font-bold text-tcc-azul-dark dark:text-tcc-azul-light uppercase">Horário</p>
+                      <p className="text-h6 font-extrabold text-tcc-azul-darker dark:text-white">{formatarHora(item.dataHora)}</p>
+                    </div>
+
+                    <div>
+                      <h3 className="text-body-lg font-bold text-foreground">{item.servicoNome}</h3>
+                      <p className="text-body-sm text-muted-foreground capitalize">{formatarData(item.dataHora)}</p>
+
+                      {usuarioLogado.tipo === 'cliente' && (
+                        <div className="mt-2 text-body-sm text-foreground">
+                          <p>Prestador: <span className="font-medium">{item.prestadorNome}</span></p>
+                          <p className="text-success font-semibold mt-0.5">R$ {Number(item.servicoPreco).toFixed(2)}</p>
+                        </div>
+                      )}
+
+                      {usuarioLogado.tipo === 'prestador' && (
+                        <div className="mt-2 text-body-sm text-foreground">
+                          <p>Cliente: <span className="font-medium">{item.clienteNome}</span></p>
+                          {item.clienteTelefone && (
+                            <p className="text-muted-foreground text-caption mt-0.5">Tel: {item.clienteTelefone}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div>
-                    <h3 className="text-body-lg font-bold text-foreground">{item.servicoNome}</h3>
-                    <p className="text-body-sm text-muted-foreground capitalize">{formatarData(item.dataHora)}</p>
-
-                    {usuarioLogado.tipo === 'cliente' && (
-                      <div className="mt-2 text-body-sm text-foreground">
-                        <p>Prestador: <span className="font-medium">{item.prestadorNome}</span></p>
-                        <p className="text-success font-semibold mt-0.5">R$ {Number(item.servicoPreco).toFixed(2)}</p>
-                      </div>
-                    )}
-
-                    {usuarioLogado.tipo === 'prestador' && (
-                      <div className="mt-2 text-body-sm text-foreground">
-                        <p>Cliente: <span className="font-medium">{item.clienteNome}</span></p>
-                        {item.clienteTelefone && (
-                          <p className="text-muted-foreground text-caption mt-0.5">Tel: {item.clienteTelefone}</p>
-                        )}
-                      </div>
-                    )}
+                  <div className="mt-4 md:mt-0">
+                    <span className={`px-3 h-8 inline-flex items-center rounded-full text-caption font-semibold ${getStatusBadge(item.status)}`}>
+                      {item.status}
+                    </span>
                   </div>
                 </div>
 
-                <div className="mt-4 md:mt-0">
-                  <span className={`px-3 h-8 inline-flex items-center rounded-full text-caption font-semibold ${getStatusBadge(item.status)}`}>
-                    {item.status}
-                  </span>
-                </div>
+                {usuarioLogado.tipo === 'cliente' && item.status === 'concluido' && (
+                  <AvaliacaoServico
+                    agendamentoId={item.id}
+                    avaliacaoExistente={
+                      item.avaliacaoNota
+                        ? { nota: item.avaliacaoNota, comentario: item.avaliacaoComentario }
+                        : null
+                    }
+                  />
+                )}
 
               </div>
             ))}

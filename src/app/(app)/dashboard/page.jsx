@@ -90,6 +90,7 @@ export default async function Dashboard() {
   function CardAgendamento({ ag }) {
     const { label, bg, text } = statusLabel(ag.status);
     const podeConfirmar = ag.status === 'pendente';
+    const podeConcluir  = ag.status === 'confirmado';
     const podeCancelar  = ag.status !== 'cancelado' && ag.status !== 'concluido';
 
     return (
@@ -114,6 +115,14 @@ export default async function Dashboard() {
             <form action={atualizarStatusAgendamento.bind(null, ag.id, 'confirmado')}>
               <button type="submit" className="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer">
                 Confirmar
+              </button>
+            </form>
+          )}
+
+          {podeConcluir && (
+            <form action={atualizarStatusAgendamento.bind(null, ag.id, 'concluido')}>
+              <button type="submit" className="bg-tcc-azul hover:bg-tcc-azul-dark text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer">
+                Concluir
               </button>
             </form>
           )}

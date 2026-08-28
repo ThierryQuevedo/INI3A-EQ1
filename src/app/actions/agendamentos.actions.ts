@@ -2,9 +2,13 @@
 
 import { revalidatePath } from 'next/cache';
 import { eq, and, gte, asc } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
-import { agendamentos, servicos, usuarios } from '@/db/schema';
+import { agendamentos, servicos, usuarios, avaliacoes } from '@/db/schema';
 import { getSession } from './auth.actions';
+import { enviarEmail, emailServicoConcluidoHtml } from '@/lib/email';
+
+const prestadorUsuarios = alias(usuarios, 'prestador_usuarios');
 
 export async function criarAgendamento({
   clienteId,
@@ -55,8 +59,45 @@ export async function confirmarAgendamentoAction({
 export async function atualizarStatusAgendamento(id: number, status: string) {
   await db.update(agendamentos).set({ status }).where(eq(agendamentos.id, id));
 
+  if (status === 'concluido') {
+    await notificarClienteServicoConcluido(id).catch((error) => {
+      console.error('Erro ao notificar cliente sobre conclusão do serviço:', error);
+    });
+  }
+
   revalidatePath('/dashboard');
   revalidatePath('/agendamentos');
+}
+
+async function notificarClienteServicoConcluido(agendamentoId: number) {
+  const [info] = await db
+    .select({
+      clienteNome: usuarios.nome,
+      clienteEmail: usuarios.email,
+      servicoNome: servicos.nome,
+      prestadorNome: prestadorUsuarios.nome,
+    })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
+    .innerJoin(prestadorUsuarios, eq(servicos.prestadorId, prestadorUsuarios.id))
+    .where(eq(agendamentos.id, agendamentoId))
+    .limit(1);
+
+  if (!info) return;
+
+  const linkAvaliacao = `${process.env.SITE_URL || 'http://localhost:3000'}/agendamentos`;
+
+  await enviarEmail({
+    to: info.clienteEmail,
+    subject: `Seu serviço "${info.servicoNome}" foi concluído`,
+    html: emailServicoConcluidoHtml({
+      clienteNome: info.clienteNome,
+      servicoNome: info.servicoNome,
+      prestadorNome: info.prestadorNome,
+      linkAvaliacao,
+    }),
+  });
 }
 
 export async function listarAgendamentos() {
@@ -92,10 +133,13 @@ export async function listarMeusAgendamentos() {
       servicoNome: servicos.nome,
       servicoPreco: servicos.preco,
       prestadorNome: usuarios.nome,
+      avaliacaoNota: avaliacoes.notaParaPrestador,
+      avaliacaoComentario: avaliacoes.comentarioPrestador,
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
     .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .leftJoin(avaliacoes, eq(avaliacoes.agendamentoId, agendamentos.id))
     .where(eq(agendamentos.clienteId, usuario.id))
     .orderBy(asc(agendamentos.dataHora));
 }
