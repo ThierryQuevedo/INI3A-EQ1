@@ -59,7 +59,7 @@ export default function CardServicoCatalogo({ servico, avaliacao = 5 }) {
       </div>
 
       {/* Nome do serviço + preço */}
-      <div className="flex flex-col items-center w-full bg-muted rounded-lg px-2 py-1.5 mt-auto border border-border">
+      <div className="flex flex-col items-center w-full bg-muted rounded-t-lg rounded-b-lg px-2 py-1.5 mt-auto border border-border">
         <span
           className="text-caption text-muted-foreground truncate w-full text-center"
           title={servico?.nomeServico}
