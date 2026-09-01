@@ -59,3 +59,5 @@ run.bat
 ```
 
 A aplicação estará disponível no seu navegador em: **http://localhost:3000**
+
+Para acessar o site: **http://eq.projetoscti.com.br/26-marcaai**
