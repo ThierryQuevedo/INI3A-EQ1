@@ -44,6 +44,7 @@ export const servicos = pgTable('servicos', {
     .notNull()
     .references(() => categorias.id),
   nome: text('nome').notNull(),
+  urlImagem: text('url_imagem'),
   slug: varchar('slug', { length: 255 }),
   descricao: text('descricao'),
   preco: decimal('preco', { precision: 10, scale: 2 }).notNull(),

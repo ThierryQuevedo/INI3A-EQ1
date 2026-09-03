@@ -23,6 +23,7 @@ export default async function Home() {
       slug: servicos.slug,
       nomeServico: servicos.nome,
       preco: servicos.preco,
+      urlImagem: servicos.urlImagem,
       duracao: servicos.duracaoEstimada,
       nomeProfissional: usuarios.nome,
       nomeCategoria: categorias.nome,

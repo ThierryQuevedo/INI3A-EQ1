@@ -2,8 +2,7 @@ import { Star, StarHalf } from 'lucide-react';
 import Image from "next/image";
 
 export default function CardServicoDestaque({ servico, avaliacao = 5 }) {
-  const imagemUrl = `https://picsum.photos/200/200?random=${servico?.id || 1}`;
-
+  const imagemUrl = servico.urlImagem || `https://picsum.photos/200/200?random=${servico?.id || 1}`;
   return (
     <div className="w-50 h-50 relative rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated hover:scale-[1.02] transition-all duration-300 ease-apple">
       <Image
