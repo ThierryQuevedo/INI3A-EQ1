@@ -2,7 +2,7 @@ name: Deploy Automático
 
 on:
   push:
-    branches: [ main ] # Se a sua branch principal for 'master', mude aqui
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -16,8 +16,10 @@ jobs:
           port: ${{ secrets.PORT }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /var/www/equipes/26-marcaai
+            git config --global --add safe.directory /var/www/equipes/26-marcaai/INI3A-EQ1
+            cd /var/www/equipes/26-marcaai/INI3A-EQ1
             git pull origin main
+            cd src
             npm install
             npx drizzle-kit push
             pm2 restart all
