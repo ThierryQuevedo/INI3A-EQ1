@@ -1,0 +1,23 @@
+name: Deploy Automático
+
+on:
+  push:
+    branches: [ main ] # Se a sua branch principal for 'master', mude aqui
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conectar via SSH e Atualizar
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/equipes/26-marcaai
+            git pull origin main
+            npm install
+            npx drizzle-kit push
+            pm2 restart all
