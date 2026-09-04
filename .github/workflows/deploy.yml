@@ -1,0 +1,27 @@
+name: Deploy Automático
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Conectar via SSH e Atualizar
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            git config --global --add safe.directory /var/www/equipes/26-marcaai/INI3A-EQ1
+            cd /var/www/equipes/26-marcaai/INI3A-EQ1
+            git fetch origin main
+            git reset --hard origin/main
+            cd src
+            npm install
+            npx drizzle-kit push
+            npm run build
+            pm2 restart marcaai
