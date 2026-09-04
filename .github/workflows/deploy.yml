@@ -23,3 +23,4 @@ jobs:
             npm install
             npx drizzle-kit push
             pm2 restart all
+            pm2 save
