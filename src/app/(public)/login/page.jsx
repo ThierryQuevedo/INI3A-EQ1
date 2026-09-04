@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useActionState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { login } from "@/app/actions/auth.actions";
 import Link from 'next/link';
 import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png";
@@ -11,10 +11,14 @@ import { Eye, EyeOff } from 'lucide-react';
 
 const estadoInicial = { erro: null };
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, isPending] = useActionState(login, estadoInicial);
+
+  const erroGoogle = searchParams.get("erro") === "google";
+  const mensagemErro = state?.erro || (erroGoogle ? "Falha ao autenticar com o Google." : null);
 
   useEffect(() => {
     if (state?.sucesso && state?.redirectTo) {
@@ -31,9 +35,9 @@ export default function LoginPage() {
           Entrar na conta Marca Aí
         </h1>
 
-        {state?.erro && (
+        {mensagemErro && (
           <div role="alert" className="mb-4 p-3 bg-destructive/10 border border-destructive/40 text-destructive text-body-sm rounded-lg text-center">
-            {state.erro}
+            {mensagemErro}
           </div>
         )}
 
@@ -91,6 +95,13 @@ export default function LoginPage() {
           </button>
         </form>
 
+        <a
+          href="/api/auth/google"
+          className="w-full h-13 mt-4 flex items-center justify-center gap-2 rounded-2xl font-bold border-2 border-input bg-card text-muted-foreground hover:border-tcc-neutro-300 transition-all duration-200 ease-apple cursor-pointer text-center"
+        >
+          Entrar com Google
+        </a>
+
         <div className="text-center mt-6">
           <Link href="/cadastro" className="text-body-sm text-tcc-azul hover:underline font-medium">
             Ainda não tem uma conta? Cadastre-se
@@ -99,5 +110,13 @@ export default function LoginPage() {
 
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   );
 }
