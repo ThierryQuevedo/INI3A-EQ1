@@ -1,4 +1,7 @@
 # Marca Aí
+<p align="center">
+  <img src="./src/public/images/Identidade visual marca ai/marcaai.png" alt="Logo Marca Aí" width="200">
+</p>
 
 Sistema de agendamentos online integrado com banco de dados PostgreSQL utilizando Drizzle ORM.
 
