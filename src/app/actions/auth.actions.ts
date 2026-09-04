@@ -3,14 +3,11 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, sessoes, prestadores } from '@/db/schema';
-
-const SESSION_COOKIE = 'marcaai_session';
-const SESSION_DURATION_MS = 1000 * 60 * 60 * 24; 
+import { SESSION_COOKIE, criarSessao } from '@/lib/session';
 
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
   try {
@@ -91,23 +88,7 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
       return { erro: 'E-mail ou senha inválidos.' };
     }
 
-    const sessionId = crypto.randomBytes(32).toString('hex');
-    const expiraEm = new Date(Date.now() + SESSION_DURATION_MS);
-
-    await db.insert(sessoes).values({
-      id: sessionId,
-      usuarioId: usuario.id,
-      expiraEm,
-    });
-
-    const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE, sessionId, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      expires: expiraEm,
-      path: '/',
-    });
+    await criarSessao(usuario.id);
 
     revalidatePath('/', 'layout');
 

@@ -156,6 +156,13 @@ export default function CadastrarPage() {
           </button>
         </form>
 
+        <a
+          href="/api/auth/google"
+          className="w-full h-13 mt-4 flex items-center justify-center gap-2 rounded-2xl font-bold border-2 border-input bg-card text-muted-foreground hover:border-tcc-neutro-300 transition-all duration-200 ease-apple cursor-pointer text-center"
+        >
+          Entrar com Google
+        </a>
+
         <div className="text-center mt-6">
           <Link href="/login" className="text-body-sm text-tcc-azul hover:underline font-medium">
             Já tem uma conta? Faça login
