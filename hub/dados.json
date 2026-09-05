@@ -4,7 +4,7 @@
   "ano": 2026,
   "turma": "A",
   "curso": "Técnico em Informática",
-  "tecnologia_principal": "NextJS",
+  "tecnologia_principal": "Next.JS",
   "tecnologias": [
     "PostgreSQL",
     "TailwindCSS",
