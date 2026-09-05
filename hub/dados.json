@@ -1,0 +1,61 @@
+{
+  "nome": "Marca Aí",
+  "slogan": "Uma frase curta e marcante que resume a proposta de valor do projeto.",
+  "ano": 2026,
+  "turma": "A",
+  "curso": "Técnico em Informática",
+  "tecnologia_principal": "NextJS",
+  "tecnologias": [
+    "PostgreSQL",
+    "TailwindCSS",
+    "JavaScript"
+  ],
+  "objetivo": "Descreva aqui em um ou dois parágrafos qual problema real o projeto resolve e qual o público-alvo beneficiado.",
+  "video_url": "https://www.youtube.com/watch?v=exemplo-video-comercial",
+  "repositorio_url": "https://github.com/ThierryQuevedo/INI3A-EQ1.git",
+  "deploy_url": "https://exemplo.projetoscti.com.br",
+  "url_atual": "http://eq.projetoscti.com.br/26-marcaai",
+  "autores": [
+    {
+      "nome": "Caio Henrique Manetti Garcia",
+      "email": "caio.h.garcia@unesp.br",
+      "papel": "Product Owner (PO)"
+    },
+    {
+      "nome": "Lucas Trigo Alves da Silva",
+      "email": "lucas.trigo@unesp.br",
+      "papel": "Scrum Master"
+    },
+    {
+      "nome": "Thierry Quevedo dos Santos",
+      "email": "thierry.quevedo@unesp.br",
+      "papel": "Tech Leader"
+    },
+    {
+      "nome": "André Moraes Nakatsuchi",
+      "email": "andre.nakatsuchi@unesp.br",
+      "papel": "Desenvolvedor"
+    },
+    {
+      "nome": "Renato Alves Arques",
+      "email": "renato.arques@unesp.br",
+      "papel": "Desenvolvedor"
+    },
+    {
+      "nome": "Otávio Ninin Ferreira",
+      "email": "otavio.ninin@unesp.br",
+      "papel": "Desenvolvedor"
+    },
+    {
+      "nome": "Vítor Bersano Sacuma",
+      "email": "vitor.sacuma@unesp.br",
+      "papel": "Desenvolvedor"
+    }
+  ],
+  "orientadores": [
+    {
+      "nome": "Prof. Vítor Assis Pegorari Camargo",
+      "email": "vitor.a.camargo@unesp.br"
+    }
+  ]
+}
