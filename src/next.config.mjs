@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: '/26-marcaai',
-  trailingSlash: true, // <--- Isso faz o Next.js aceitar a barra do Apache sem dar 404
+  trailingSlash: true, 
   devIndicators: {
     appIsrStatus: false,
     buildActivity: false,

@@ -1,15 +1,29 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import { User, LogOut, UserRound } from "lucide-react";
+import { useState, useRef, useEffect, useSyncExternalStore } from "react";
+import { User, LogOut, UserRound, Sun, Moon} from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { logout } from "@/app/actions/auth.actions";
+
+
+const subscribeNoop = () => () => {};
 
 export default function PerfilDropdown({ user }) {
     const [aberto, setAberto] = useState(false);
     const [confirmandoSaida, setConfirmandoSaida] = useState(false);
     const [saindo, setSaindo] = useState(false);
     const menuRef = useRef(null);
+
+    //tema
+    const { resolvedTheme, setTheme } = useTheme();
+      const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
+    
+      if (!mounted) {
+        return <span className={`inline-block h-11 w-11 ${className}`} aria-hidden="true" />;
+      }
+    
+      const isDark = resolvedTheme === "dark";
 
 
     useEffect(() => {
@@ -72,10 +86,19 @@ export default function PerfilDropdown({ user }) {
                         onClick={() => setAberto(false)}
                         className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                     >
-                        <UserRound size={18} className="text-tcc-azul-dark" aria-hidden="true" />
+                        <UserRound size={18} className="text-tcc-" aria-hidden="true" />
                         <span className="text-body-sm font-semibold">Perfil</span>
                     </Link>
-
+                    <button
+                          type="button"
+                        onClick={() => setTheme(isDark ? "light" : "dark")}
+                        aria-label={isDark ? "Ativar tema claro" : "Ativar tema escuro"}
+                        aria-pressed={isDark}
+                
+                        className="flex w-full items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors">
+                        {isDark ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
+                        <span className="text-body-sm font-semibold">Mudar tema</span>
+                    </button>
                     <button
                         type="button"
                         role="menuitem"
@@ -85,6 +108,7 @@ export default function PerfilDropdown({ user }) {
                         <LogOut size={18} aria-hidden="true" />
                         <span className="text-body-sm font-bold">Sair</span>
                     </button>
+
                 </div>
             )}
 

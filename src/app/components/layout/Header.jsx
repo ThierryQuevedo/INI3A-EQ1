@@ -34,8 +34,6 @@ export default async function Header() {
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-4 pointer-events-auto">
-                        <ThemeToggle className="text-tcc-azul-lightest" />
-
                         {user ? (
                             <div className="flex items-center gap-3 sm:gap-4">
                                 {user.tipo === "prestador" && (
