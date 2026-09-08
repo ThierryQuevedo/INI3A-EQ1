@@ -90,10 +90,16 @@ cd src
 npm install
 ```
 
-No Windows, também é possível rodar o atalho da raiz:
+No Windows:
 
 ```bat
 instalarDependencias.bat
+```
+
+No Linux/macOS
+
+```bash
+./instalarDependencias.sh
 ```
 
 ---
