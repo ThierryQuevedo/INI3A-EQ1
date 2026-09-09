@@ -9,6 +9,15 @@ export default function AvatarUpload({ usuario, inicialNome }) {
   const [mostrarUpload, setMostrarUpload] = useState(false);
   const [imageUrl, setImageUrl] = useState(usuario?.urlImagem || null);
 
+  const getUploadUrl = () => {
+    if (typeof window === "undefined") return "/api/uploadthing";
+
+    const isSubpath = window.location.pathname.startsWith("/26-marcaai");
+    return isSubpath
+      ? `${window.location.origin}/26-marcaai/api/uploadthing`
+      : `${window.location.origin}/api/uploadthing`;
+  };
+
   return (
     <div className="relative flex flex-col items-center">
       <div className="bg-gradient-to-tr from-tcc-laranja to-amber-400 w-28 h-28 rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-tcc-azul-deep relative group transition-transform duration-300 hover:scale-105">
@@ -52,13 +61,15 @@ export default function AvatarUpload({ usuario, inicialNome }) {
 
           <UploadDropzone
             endpoint="profilePicture"
-            url={`${process.env.NEXT_PUBLIC_APP_URL}/api/uploadthing`}
+            url={getUploadUrl()}
+            config={{
+              url: getUploadUrl(),
+            }}
             onClientUploadComplete={(res) => {
               if (res && res.length > 0) {
                 const novaUrl = res[0].ufsUrl || res[0].url;
                 setImageUrl(novaUrl);
                 setMostrarUpload(false);
-
               }
             }}
             onUploadError={(error) => {

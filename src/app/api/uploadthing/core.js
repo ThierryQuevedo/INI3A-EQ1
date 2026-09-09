@@ -1,5 +1,4 @@
 import { createUploadthing } from "uploadthing/next";
-import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { usuarios } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -16,20 +15,31 @@ export const ourFileRouter = {
         }
     })
     .middleware(async () => {
-        const usuario = await getSession();
-        if (!usuario) throw new Error("Sessão não encontrada");
+        try {
+            const usuario = await getSession();
+            if (!usuario) throw new Error("Sessão não encontrada");
 
-        return { userId: usuario.id };
+            return { userId: usuario.id };
+        } catch (error) {
+            console.error("Erro no middleware (profilePicture):", error);
+            throw error;
+        }
     })
     .onUploadComplete(async ({ metadata, file }) => {
-        const fileUrl = file.ufsUrl || file.url;
+        try {
+            const fileUrl = file.ufsUrl || file.url;
 
-        await db
-            .update(usuarios)
-            .set({ urlImagem: fileUrl })
-            .where(eq(usuarios.id, metadata.userId));
+            await db
+                .update(usuarios)
+                .set({ urlImagem: fileUrl })
+                .where(eq(usuarios.id, metadata.userId));
 
-        revalidatePath("/26-marcaai/configuracoes");
+            console.log("Foto de perfil atualizada no DB com sucesso:", fileUrl);
+            return { uploadedBy: metadata.userId };
+        } catch (error) {
+            console.error("Erro no callback (profilePicture):", error);
+            throw error; // Repassa o erro de forma tratada
+        }
     }),
 
     // --- BANNER ---
@@ -40,19 +50,30 @@ export const ourFileRouter = {
         }
     })
     .middleware(async () => {
-        const usuario = await getSession();
-        if (!usuario) throw new Error("Sessão não encontrada");
+        try {
+            const usuario = await getSession();
+            if (!usuario) throw new Error("Sessão não encontrada");
 
-        return { userId: usuario.id };
+            return { userId: usuario.id };
+        } catch (error) {
+            console.error("Erro no middleware (bannerImage):", error);
+            throw error;
+        }
     })
     .onUploadComplete(async ({ metadata, file }) => {
-        const fileUrl = file.ufsUrl || file.url;
+        try {
+            const fileUrl = file.ufsUrl || file.url;
 
-        await db
-            .update(usuarios)
-            .set({ urlBanner: fileUrl })
-            .where(eq(usuarios.id, metadata.userId));
+            await db
+                .update(usuarios)
+                .set({ urlBanner: fileUrl })
+                .where(eq(usuarios.id, metadata.userId));
 
-        revalidatePath("/26-marcaai/configuracoes");
+            console.log("Banner atualizado no DB com sucesso:", fileUrl);
+            return { uploadedBy: metadata.userId };
+        } catch (error) {
+            console.error("Erro no callback (bannerImage):", error);
+            throw error;
+        }
     })
 };
