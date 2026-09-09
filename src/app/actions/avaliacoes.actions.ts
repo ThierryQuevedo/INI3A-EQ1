@@ -1,10 +1,12 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { avaliacoes, agendamentos } from '@/db/schema';
 import { getSession } from './auth.actions';
+import { notificarNovaAvaliacao } from '@/lib/notificacoes';
 
 export async function avaliarServico({
   agendamentoId,
@@ -55,6 +57,14 @@ export async function avaliarServico({
       comentarioPrestador: comentarioNormalizado,
     });
   }
+
+  // Vale tanto para uma avaliação nova quanto para uma edição.
+  after(() =>
+    notificarNovaAvaliacao(Number(agendamentoId), {
+      nota: notaNumero,
+      comentario: comentarioNormalizado,
+    })
+  );
 
   revalidatePath('/agendamentos');
   return { erro: null, sucesso: true };

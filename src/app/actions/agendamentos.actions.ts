@@ -1,14 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { after } from 'next/server';
 import { eq, and, gte, asc } from 'drizzle-orm';
-import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import { agendamentos, servicos, usuarios, avaliacoes } from '@/db/schema';
 import { getSession } from './auth.actions';
-import { enviarEmail, emailServicoConcluidoHtml } from '@/lib/email';
-
-const prestadorUsuarios = alias(usuarios, 'prestador_usuarios');
+import {
+  notificarAgendamentoCancelado,
+  notificarAgendamentoConfirmado,
+  notificarNovoAgendamento,
+  notificarServicoConcluido,
+} from '@/lib/notificacoes';
 
 export async function criarAgendamento({
   clienteId,
@@ -52,6 +55,10 @@ export async function confirmarAgendamentoAction({
     })
     .returning();
 
+  // `after` deixa o e-mail sair depois que a resposta já foi enviada: o cliente
+  // não espera o SMTP e uma falha de envio não afeta o agendamento.
+  after(() => notificarNovoAgendamento(novo.id));
+
   revalidatePath('/agendamentos');
   return novo;
 }
@@ -59,45 +66,20 @@ export async function confirmarAgendamentoAction({
 export async function atualizarStatusAgendamento(id: number, status: string) {
   await db.update(agendamentos).set({ status }).where(eq(agendamentos.id, id));
 
-  if (status === 'concluido') {
-    await notificarClienteServicoConcluido(id).catch((error) => {
-      console.error('Erro ao notificar cliente sobre conclusão do serviço:', error);
-    });
+  switch (status) {
+    case 'confirmado':
+      after(() => notificarAgendamentoConfirmado(id));
+      break;
+    case 'cancelado':
+      after(() => notificarAgendamentoCancelado(id));
+      break;
+    case 'concluido':
+      after(() => notificarServicoConcluido(id));
+      break;
   }
 
   revalidatePath('/dashboard');
   revalidatePath('/agendamentos');
-}
-
-async function notificarClienteServicoConcluido(agendamentoId: number) {
-  const [info] = await db
-    .select({
-      clienteNome: usuarios.nome,
-      clienteEmail: usuarios.email,
-      servicoNome: servicos.nome,
-      prestadorNome: prestadorUsuarios.nome,
-    })
-    .from(agendamentos)
-    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
-    .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
-    .innerJoin(prestadorUsuarios, eq(servicos.prestadorId, prestadorUsuarios.id))
-    .where(eq(agendamentos.id, agendamentoId))
-    .limit(1);
-
-  if (!info) return;
-
-  const linkAvaliacao = `${process.env.SITE_URL || 'http://localhost:3000'}/agendamentos`;
-
-  await enviarEmail({
-    to: info.clienteEmail,
-    subject: `Seu serviço "${info.servicoNome}" foi concluído`,
-    html: emailServicoConcluidoHtml({
-      clienteNome: info.clienteNome,
-      servicoNome: info.servicoNome,
-      prestadorNome: info.prestadorNome,
-      linkAvaliacao,
-    }),
-  });
 }
 
 export async function listarAgendamentos() {
