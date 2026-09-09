@@ -8,6 +8,7 @@ import Link from 'next/link';
 import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png";
 import Image from "next/image";
 import { Eye, EyeOff } from 'lucide-react';
+import GoogleIcon from "../../components/Icons/GoogleIcons";
 
 const estadoInicial = { erro: null };
 
@@ -95,12 +96,13 @@ function LoginForm() {
           </button>
         </form>
 
-        <a
+        <Link
           href="/api/auth/google"
           className="w-full h-13 mt-4 flex items-center justify-center gap-2 rounded-2xl font-bold border-2 border-input bg-card text-muted-foreground hover:border-tcc-neutro-300 transition-all duration-200 ease-apple cursor-pointer text-center"
         >
-          Entrar com Google
-        </a>
+          <GoogleIcon size={20} />
+          <span>Entrar com Google</span>
+        </Link>
 
         <div className="text-center mt-6">
           <Link href="/cadastro" className="text-body-sm text-tcc-azul hover:underline font-medium">
