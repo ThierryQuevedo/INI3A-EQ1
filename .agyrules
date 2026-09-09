@@ -1,0 +1,12 @@
+# Diretrizes do Projeto
+
+## Idioma e Estilo
+- Responda sempre em Português do Brasil.
+
+## Regras de Código
+- Use sempre javascript em vez TypeScript.
+- Não remova bibliotecas sem autorização explícita.
+- NUNCA mexer com o repositorio(git/github), nem se envolver com os commits
+
+## Testes e Segurança
+- Nunca inclua chaves de API ou senhas em texto puro no código.

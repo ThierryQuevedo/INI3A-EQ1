@@ -29,7 +29,7 @@ export const ourFileRouter = {
             .set({ urlImagem: fileUrl })
             .where(eq(usuarios.id, metadata.userId));
 
-        revalidatePath("/configuracoes");
+        revalidatePath("/26-marcaai/configuracoes");
     }),
 
     // --- BANNER ---
@@ -53,6 +53,6 @@ export const ourFileRouter = {
             .set({ urlBanner: fileUrl })
             .where(eq(usuarios.id, metadata.userId));
 
-        revalidatePath("/configuracoes");
+        revalidatePath("/26-marcaai/configuracoes");
     })
 };

@@ -31,9 +31,9 @@ export default function CardServicoCatalogo({ servico, avaliacao = 5 }) {
       {/* Nome do profissional */}
       <h3
         className="font-bold text-body-sm text-foreground text-center leading-tight w-full truncate px-1"
-        title={servico?.nomeProfissional}
+        title={servico?.nomeServico}
       >
-        {servico?.nomeProfissional || "Profissional"}
+        {servico?.nomeServico || "Serviço"}
       </h3>
 
       {/* Estrelas de avaliação */}
@@ -62,9 +62,9 @@ export default function CardServicoCatalogo({ servico, avaliacao = 5 }) {
       <div className="flex flex-col items-center w-full bg-muted rounded-t-lg rounded-b-lg px-2 py-1.5 mt-auto border border-border">
         <span
           className="text-caption text-muted-foreground truncate w-full text-center"
-          title={servico?.nomeServico}
+          title={servico?.nomeProfissional}
         >
-          {servico?.nomeServico || "Serviço"}
+          {servico?.nomeProfissional || "Nome do Profissional"}
         </span>
         <span className="text-body-sm font-bold text-tcc-laranja mt-0.5">
           R$ {servico?.preco || "0,00"}

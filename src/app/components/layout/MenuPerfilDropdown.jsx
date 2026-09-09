@@ -1,11 +1,10 @@
 "use client";
 import { useState, useRef, useEffect, useSyncExternalStore } from "react";
-import { User, LogOut, UserRound, Sun, Moon} from "lucide-react";
+import { User, LogOut, UserRound, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { logout } from "@/app/actions/auth.actions";
-
 
 const subscribeNoop = () => () => {};
 
@@ -15,16 +14,9 @@ export default function PerfilDropdown({ user }) {
     const [saindo, setSaindo] = useState(false);
     const menuRef = useRef(null);
 
-    //tema
+    // tema
     const { resolvedTheme, setTheme } = useTheme();
-      const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
-    
-      if (!mounted) {
-        return <span className={`inline-block h-11 w-11 ${className}`} aria-hidden="true" />;
-      }
-    
-      const isDark = resolvedTheme === "dark";
-
+    const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
 
     useEffect(() => {
         function handleClickFora(event) {
@@ -42,6 +34,12 @@ export default function PerfilDropdown({ user }) {
             document.removeEventListener("keydown", handleKeyDown);
         };
     }, []);
+
+    if (!mounted) {
+        return <span className="inline-block h-11 w-11" aria-hidden="true" />;
+    }
+
+    const isDark = resolvedTheme === "dark";
 
     function pedirConfirmacaoSaida() {
         setAberto(false);
@@ -72,14 +70,23 @@ export default function PerfilDropdown({ user }) {
                 aria-expanded={aberto}
             >
                 {user?.urlImagem ? (
-                    <img src={user.urlImagem} className="w-full h-full aspect-square rounded-full object-cover" width={44} height={44} alt="" />
+                    <img
+                        src={user.urlImagem}
+                        className="w-full h-full aspect-square rounded-full object-cover"
+                        width={44}
+                        height={44}
+                        alt=""
+                    />
                 ) : (
                     <UserRound size={22} className="text-white" aria-hidden="true" />
                 )}
             </button>
 
             {aberto && (
-                <div role="menu" className="absolute right-0 top-full mt-3 w-56 bg-card rounded-2xl shadow-elevated border border-border overflow-hidden z-50">
+                <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-3 w-56 bg-card rounded-2xl shadow-elevated border border-border overflow-hidden z-50"
+                >
                     <Link
                         href="/configuracoes"
                         role="menuitem"
@@ -90,13 +97,17 @@ export default function PerfilDropdown({ user }) {
                         <span className="text-body-sm font-semibold">Perfil</span>
                     </Link>
                     <button
-                          type="button"
+                        type="button"
                         onClick={() => setTheme(isDark ? "light" : "dark")}
                         aria-label={isDark ? "Ativar tema claro" : "Ativar tema escuro"}
                         aria-pressed={isDark}
-                
-                        className="flex w-full items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors">
-                        {isDark ? <Sun size={20} strokeWidth={1.75} /> : <Moon size={20} strokeWidth={1.75} />}
+                        className="flex w-full items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
+                    >
+                        {isDark ? (
+                            <Sun size={20} strokeWidth={1.75} />
+                        ) : (
+                            <Moon size={20} strokeWidth={1.75} />
+                        )}
                         <span className="text-body-sm font-semibold">Mudar tema</span>
                     </button>
                     <button
@@ -108,14 +119,20 @@ export default function PerfilDropdown({ user }) {
                         <LogOut size={18} aria-hidden="true" />
                         <span className="text-body-sm font-bold">Sair</span>
                     </button>
-
                 </div>
             )}
 
             {confirmandoSaida && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
-                    <div role="alertdialog" aria-modal="true" aria-labelledby="sair-titulo" className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full">
-                        <h2 id="sair-titulo" className="text-base font-extrabold text-foreground mb-2">Sair da conta?</h2>
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-100 px-4">
+                    <div
+                        role="alertdialog"
+                        aria-modal="true"
+                        aria-labelledby="sair-titulo"
+                        className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full"
+                    >
+                        <h2 id="sair-titulo" className="text-base font-extrabold text-foreground mb-2">
+                            Sair da conta?
+                        </h2>
                         <p className="text-body-sm text-muted-foreground mb-6">
                             Você precisará entrar novamente para acessar sua conta.
                         </p>

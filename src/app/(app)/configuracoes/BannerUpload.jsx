@@ -40,6 +40,7 @@ export default function BannerUpload({ usuario }) {
 
           <UploadDropzone
             endpoint="bannerImage"
+            url={`${process.env.NEXT_PUBLIC_APP_URL}/api/uploadthing`}
             onClientUploadComplete={(res) => {
               if (res && res.length > 0) {
                 const novaUrl = res[0].ufsUrl || res[0].url;

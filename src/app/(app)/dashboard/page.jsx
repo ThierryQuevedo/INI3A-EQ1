@@ -96,7 +96,7 @@ export default async function Dashboard() {
     return (
       <div className="bg-card p-4 rounded-2xl shadow-soft border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex gap-6 items-center flex-1">
-          <div className="text-center min-w-[52px]">
+          <div className="text-center min-w-52">
             <span className="text-tcc-azul font-bold text-body block">{formatarHora(ag.dataHora)}</span>
             <span className="text-muted-foreground text-caption">{formatarData(ag.dataHora)}</span>
           </div>
@@ -166,9 +166,6 @@ export default async function Dashboard() {
               </svg>
               Novo serviço
             </Link>
-            <span className="bg-tcc-laranja text-white px-4 h-11 rounded-full text-body-sm font-semibold flex items-center gap-2">
-              <span className="w-2 h-2 bg-white rounded-full animate-pulse" aria-hidden="true"></span> Online
-            </span>
           </div>
         </div>
 
