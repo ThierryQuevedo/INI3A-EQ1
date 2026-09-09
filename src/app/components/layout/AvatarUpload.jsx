@@ -14,7 +14,7 @@ export default function AvatarUpload({ usuario, inicialNome }) {
 
     const isSubpath = window.location.pathname.startsWith("/26-marcaai");
     return isSubpath
-      ? `${window.location.origin}/26-marcaai/api/uploadthing`
+      ? `${window.location.origin}/26-marcaai/api/uploadthing/`
       : `${window.location.origin}/api/uploadthing`;
   };
 
