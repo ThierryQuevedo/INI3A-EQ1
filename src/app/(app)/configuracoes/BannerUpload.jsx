@@ -8,16 +8,6 @@ export default function BannerUpload({ usuario }) {
   const [mostrarUpload, setMostrarUpload] = useState(false);
   const [bannerUrl, setBannerUrl] = useState(usuario?.urlBanner || null);
 
-  // Garante o retorno de uma URL válida em localhost e produção
-  const getUploadUrl = () => {
-    if (typeof window === "undefined") return "/api/uploadthing";
-
-    const isSubpath = window.location.pathname.startsWith("/26-marcaai");
-    return isSubpath
-      ? `${window.location.origin}/26-marcaai/api/uploadthing`
-      : `${window.location.origin}/api/uploadthing`;
-  };
-
   return (
     <div className="relative w-full">
       <div className="w-full h-40 bg-muted rounded-2xl overflow-hidden flex items-center justify-center relative group border border-border">
@@ -48,23 +38,22 @@ export default function BannerUpload({ usuario }) {
             <X size={20} aria-hidden="true" />
           </button>
 
-          <UploadDropzone
-            endpoint="profilePicture"
-            url={getUploadUrl()}
-            config={{
-              url: getUploadUrl(),
-            }}
-            onClientUploadComplete={(res) => {
-              if (res && res.length > 0) {
-                const novaUrl = res[0].ufsUrl || res[0].url;
-                setBannerUrl(novaUrl);
-                setMostrarUpload(false);
-              }
-            }}
-            onUploadError={(error) => {
-              alert(`Erro no upload: ${error.message}`);
-            }}
-          />
+<UploadDropzone
+  endpoint="profilePicture"
+  config={{
+    url: "/26-marcaai/api/uploadthing/", // Barra no final adicionada para respeitar o trailingSlash
+  }}
+  onClientUploadComplete={(res) => {
+    if (res && res.length > 0) {
+      const novaUrl = res[0].ufsUrl || res[0].url;
+      setAvatarUrl(novaUrl);
+      setMostrarUpload(false);
+    }
+  }}
+  onUploadError={(error) => {
+    alert(`Erro no upload: ${error.message}`);
+  }}
+/>
         </div>
       )}
     </div>

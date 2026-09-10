@@ -1,36 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, User, X } from "lucide-react";
+import { Camera, X } from "lucide-react";
 import { UploadDropzone } from "@uploadthing/react";
-import { atualizarFotoPerfil } from "@/app/actions/auth.actions";
 
-export default function AvatarUpload({ usuario, inicialNome }) {
+export default function AvatarUpload({ usuario }) {
   const [mostrarUpload, setMostrarUpload] = useState(false);
-  const [imageUrl, setImageUrl] = useState(usuario?.urlImagem || null);
+  const [avatarUrl, setAvatarUrl] = useState(usuario?.urlImagem || null);
 
-  const getUploadUrl = () => {
-    if (typeof window === "undefined") return "/api/uploadthing";
-
-    const isSubpath = window.location.pathname.startsWith("/26-marcaai");
-    return isSubpath
-      ? `${window.location.origin}/26-marcaai/api/uploadthing/`
-      : `${window.location.origin}/api/uploadthing`;
-  };
+  // Pega a origem atual dinamicamente + subcaminho + barra final
+  const uploadUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/26-marcaai/api/uploadthing/`
+    : "http://localhost:3000/26-marcaai/api/uploadthing/";
 
   return (
-    <div className="relative flex flex-col items-center">
-      <div className="bg-gradient-to-tr from-tcc-laranja to-amber-400 w-28 h-28 rounded-full flex items-center justify-center mb-4 shadow-xl border-4 border-tcc-azul-deep relative group transition-transform duration-300 hover:scale-105">
-
-        {imageUrl ? (
+    <div className="relative inline-block">
+      <div className="relative group w-28 h-28 rounded-full overflow-hidden border-4 border-background bg-muted flex items-center justify-center">
+        {avatarUrl ? (
           <img
-            src={imageUrl}
+            src={avatarUrl}
             alt="Foto de perfil"
-            className="w-full h-full rounded-full object-cover"
+            className="w-full h-full object-cover"
           />
         ) : (
-          <span className="text-white text-4xl font-bold tracking-wider font-urbanist drop-shadow-md">
-            {inicialNome}
+          <span className="text-3xl font-bold text-muted-foreground">
+            {usuario?.nome ? usuario.nome[0].toUpperCase() : "U"}
           </span>
         )}
 
@@ -38,37 +32,37 @@ export default function AvatarUpload({ usuario, inicialNome }) {
           type="button"
           onClick={() => setMostrarUpload(true)}
           aria-label="Alterar foto de perfil"
-          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 rounded-full cursor-pointer flex flex-col items-center justify-center"
+          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 cursor-pointer flex items-center justify-center"
         >
-          <Pencil className="text-white" aria-hidden="true" />
+          <Camera className="text-white" aria-hidden="true" />
         </button>
-
-        <div className="absolute bottom-0 right-0 bg-card p-1.5 rounded-full shadow-soft border border-border">
-          <User size={16} className="text-tcc-azul-darker" aria-hidden="true" />
-        </div>
       </div>
 
       {mostrarUpload && (
-        <div role="dialog" aria-label="Enviar nova foto de perfil" className="absolute top-32 z-50 bg-card p-4 rounded-xl shadow-elevated border border-border flex flex-col items-center w-72">
+        <div
+          role="dialog"
+          aria-label="Enviar nova foto de perfil"
+          className="absolute top-full left-0 mt-2 bg-card p-4 rounded-xl shadow-elevated border border-border flex flex-col items-center w-72 z-50"
+        >
           <button
             type="button"
             onClick={() => setMostrarUpload(false)}
             aria-label="Fechar"
-            className="self-end h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-destructive mb-2 transition-colors cursor-pointer"
+            className="self-end h-8 w-8 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-destructive mb-2 transition-colors cursor-pointer"
           >
-            <X size={20} aria-hidden="true" />
+            <X size={18} aria-hidden="true" />
           </button>
 
           <UploadDropzone
             endpoint="profilePicture"
-            url={getUploadUrl()}
+            url={uploadUrl} // Passe a prop url direto no nível raiz do componente
             config={{
-              url: getUploadUrl(),
+              url: uploadUrl, // E também dentro do config para cobrir todas as versões do SDK
             }}
             onClientUploadComplete={(res) => {
               if (res && res.length > 0) {
                 const novaUrl = res[0].ufsUrl || res[0].url;
-                setImageUrl(novaUrl);
+                setAvatarUrl(novaUrl);
                 setMostrarUpload(false);
               }
             }}
