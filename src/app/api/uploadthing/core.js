@@ -38,7 +38,7 @@ export const ourFileRouter = {
             return { uploadedBy: metadata.userId };
         } catch (error) {
             console.error("Erro no callback (profilePicture):", error);
-            throw error; // Repassa o erro de forma tratada
+            throw error; 
         }
     }),
 

@@ -41,7 +41,7 @@ export default function BannerUpload({ usuario }) {
 <UploadDropzone
   endpoint="profilePicture"
   config={{
-    url: "/26-marcaai/api/uploadthing/", // Barra no final adicionada para respeitar o trailingSlash
+    url: "/26-marcaai/api/uploadthing/", 
   }}
   onClientUploadComplete={(res) => {
     if (res && res.length > 0) {

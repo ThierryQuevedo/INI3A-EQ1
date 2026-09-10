@@ -55,9 +55,9 @@ export default function AvatarUpload({ usuario }) {
 
           <UploadDropzone
             endpoint="profilePicture"
-            url={uploadUrl} // Passe a prop url direto no nível raiz do componente
+            url={uploadUrl} 
             config={{
-              url: uploadUrl, // E também dentro do config para cobrir todas as versões do SDK
+              url: uploadUrl,
             }}
             onClientUploadComplete={(res) => {
               if (res && res.length > 0) {

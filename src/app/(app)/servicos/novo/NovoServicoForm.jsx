@@ -20,7 +20,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
         <form action={action} className="space-y-5">
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="nome" className="text-sm font-inter font-medium text-tcc-neutro-600">
+            <label htmlFor="nome" className="text-sm font-inter font-medium text-foreground">
               Nome do serviço <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
             </label>
             <input
@@ -28,13 +28,13 @@ export default function NovoServicoForm({ categorias = [], action }) {
               id="nome"
               name="nome"
               placeholder="Ex: Consultoria de Software"
-              className="w-full px-4 py-3 rounded-xl bg-tcc-neutro-100/60 border border-tcc-neutro-200 text-tcc-neutro-700 font-inter text-sm placeholder-tcc-neutro-300 focus:outline-none focus:border-tcc-azul focus:ring-4 focus:ring-tcc-azul-lightest transition-all"
+              className="w-full px-4 py-3 rounded-xl bg-tcc-neutro-100/60 border border-tcc-neutro-200 text-tcc-neutro-700 font-inter text-sm placeholder-tcc-neutro-500 focus:outline-none focus:border-tcc-azul focus:ring-4 focus:ring-tcc-azul-lightest transition-all"
               required
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="categoriaId" className="text-sm font-inter font-medium text-tcc-neutro-600">
+            <label htmlFor="categoriaId" className="text-sm font-inter font-medium text-foreground">
               Categoria <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
             </label>
             <div className="relative">
@@ -64,7 +64,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
           {categoriaSelecionada === 'outro' && (
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="novaCategoria" className="text-sm font-inter font-medium text-tcc-neutro-600">
+              <label htmlFor="novaCategoria" className="text-sm font-inter font-medium text-foreground">
                 Qual é a nova categoria? <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
               </label>
               <input
@@ -72,7 +72,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
                 id="novaCategoria"
                 name="novaCategoria"
                 placeholder="Digite o nome da categoria"
-                className="w-full px-4 py-3 rounded-xl bg-tcc-neutro-100/60 border border-tcc-neutro-200 text-tcc-neutro-700 font-inter text-sm placeholder-tcc-neutro-300 focus:outline-none focus:border-tcc-azul focus:ring-4 focus:ring-tcc-azul-lightest transition-all"
+                className="w-full px-4 py-3 rounded-xl bg-tcc-neutro-100/60 border border-tcc-neutro-200 text-tcc-neutro-700 font-inter text-sm placeholder-tcc-neutro-500 focus:outline-none focus:border-tcc-azul focus:ring-4 focus:ring-tcc-azul-lightest transition-all"
                 required={categoriaSelecionada === 'outro'}
               />
             </div>
@@ -81,7 +81,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="preco" className="text-sm font-inter font-medium text-tcc-neutro-600">
+              <label htmlFor="preco" className="text-sm font-inter font-medium text-foreground">
                 Preço (R$) <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
               </label>
               <div className="relative">
@@ -102,7 +102,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <label htmlFor="duracaoEstimada" className="text-sm font-inter font-medium text-tcc-neutro-600">
+              <label htmlFor="duracaoEstimada" className="text-sm font-inter font-medium text-foreground">
                 Duração estimada <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
               </label>
               <div className="relative">
@@ -125,7 +125,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
-              <label htmlFor="descricao" className="text-sm font-inter font-medium text-tcc-neutro-600">
+              <label htmlFor="descricao" className="text-sm font-inter font-medium text-foreground">
                 Descrição
               </label>
               <span className="text-caption text-tcc-neutro-400 font-inter">Opcional</span>
