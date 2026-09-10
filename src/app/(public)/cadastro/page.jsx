@@ -12,17 +12,92 @@ import GoogleIcon from "../../components/Icons/GoogleIcons";
 
 const estadoInicial = { erro: null };
 
+// Regex de validação
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Aplica máscara (XX) XXXXX-XXXX (ou XXXX-XXXX se for fixo) enquanto o usuário digita
+function mascararTelefone(valor) {
+  const digitos = valor.replace(/\D/g, "").slice(0, 11);
+
+  if (digitos.length <= 2) {
+    return digitos.replace(/^(\d*)/, "($1");
+  }
+  if (digitos.length <= 6) {
+    return digitos.replace(/^(\d{2})(\d*)/, "($1) $2");
+  }
+  if (digitos.length <= 10) {
+    // fixo: (XX) XXXX-XXXX
+    return digitos.replace(/^(\d{2})(\d{4})(\d*)/, "($1) $2-$3");
+  }
+  // celular: (XX) XXXXX-XXXX
+  return digitos.replace(/^(\d{2})(\d{5})(\d*)/, "($1) $2-$3");
+}
+
+function validarCampos({ nome, email, cel, senha }) {
+  const erros = {};
+
+  const nomeTrim = nome.trim();
+  if (!nomeTrim) {
+    erros.nome = "Informe seu nome completo.";
+  } else if (nomeTrim.split(/\s+/).length < 2) {
+    erros.nome = "Informe nome e sobrenome.";
+  } else if (nomeTrim.length < 3) {
+    erros.nome = "Nome muito curto.";
+  }
+
+  if (!email.trim()) {
+    erros.email = "Informe seu e-mail.";
+  } else if (!REGEX_EMAIL.test(email.trim())) {
+    erros.email = "E-mail inválido.";
+  }
+
+  const celDigitos = cel.replace(/\D/g, "");
+  if (!celDigitos) {
+    erros.cel = "Informe seu telefone.";
+  } else if (celDigitos.length < 10 || celDigitos.length > 11) {
+    erros.cel = "Telefone inválido. Ex: (11) 91234-5678";
+  }
+
+  if (!senha) {
+    erros.senha = "Crie uma senha.";
+  } else if (senha.length < 6) {
+    erros.senha = "A senha deve ter pelo menos 6 caracteres.";
+  }
+
+  return erros;
+}
+
 export default function CadastrarPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [categoria, setCategoria] = useState("cliente");
   const [state, formAction, isPending] = useActionState(cadastrar, estadoInicial);
 
+  const [campos, setCampos] = useState({ nome: "", email: "", cel: "", senha: "" });
+  const [erros, setErros] = useState({});
+
   useEffect(() => {
     if (state?.sucesso && state?.redirectTo) {
       router.push(state.redirectTo);
     }
   }, [state, router]);
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    const valorFinal = name === "cel" ? mascararTelefone(value) : value;
+
+    setCampos((prev) => ({ ...prev, [name]: valorFinal }));
+    setErros((prev) => (prev[name] ? { ...prev, [name]: null } : prev));
+  }
+
+  function handleSubmit(e) {
+    const novosErros = validarCampos(campos);
+    setErros(novosErros);
+
+    if (Object.keys(novosErros).length > 0) {
+      e.preventDefault();
+    }
+  }
 
   return (
     <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
@@ -39,7 +114,7 @@ export default function CadastrarPage() {
           </div>
         )}
 
-        <form action={formAction} className="space-y-5">
+        <form action={formAction} onSubmit={handleSubmit} noValidate className="space-y-5">
 
           <input type="hidden" name="tipo" value={categoria} />
 
@@ -51,10 +126,18 @@ export default function CadastrarPage() {
               id="nome"
               type="text"
               name="nome"
-              required
+              value={campos.nome}
+              onChange={handleChange}
+              aria-invalid={!!erros.nome}
+              aria-describedby={erros.nome ? "nome-erro" : undefined}
               placeholder="Ex: Maria da Silva"
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
+                erros.nome ? "border-destructive" : "border-input"
+              }`}
             />
+            {erros.nome && (
+              <p id="nome-erro" className="mt-1 text-body-sm text-destructive">{erros.nome}</p>
+            )}
           </div>
 
           <div>
@@ -65,10 +148,18 @@ export default function CadastrarPage() {
               id="email"
               type="email"
               name="email"
-              required
+              value={campos.email}
+              onChange={handleChange}
+              aria-invalid={!!erros.email}
+              aria-describedby={erros.email ? "email-erro" : undefined}
               placeholder="seuemail@exemplo.com"
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
+                erros.email ? "border-destructive" : "border-input"
+              }`}
             />
+            {erros.email && (
+              <p id="email-erro" className="mt-1 text-body-sm text-destructive">{erros.email}</p>
+            )}
           </div>
 
           <div>
@@ -79,10 +170,20 @@ export default function CadastrarPage() {
               id="cel"
               type="text"
               name="cel"
-              required
+              inputMode="numeric"
+              value={campos.cel}
+              onChange={handleChange}
+              aria-invalid={!!erros.cel}
+              aria-describedby={erros.cel ? "cel-erro" : undefined}
               placeholder="(11) 91234-5678"
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              maxLength={15}
+              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
+                erros.cel ? "border-destructive" : "border-input"
+              }`}
             />
+            {erros.cel && (
+              <p id="cel-erro" className="mt-1 text-body-sm text-destructive">{erros.cel}</p>
+            )}
           </div>
 
           <div>
@@ -94,9 +195,14 @@ export default function CadastrarPage() {
                 id="senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
-                required
+                value={campos.senha}
+                onChange={handleChange}
+                aria-invalid={!!erros.senha}
+                aria-describedby={erros.senha ? "senha-erro" : undefined}
                 placeholder="Crie uma senha"
-                className="w-full h-12 bg-background border border-input rounded-xl px-4 pr-12 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+                className={`w-full h-12 bg-background border rounded-xl px-4 pr-12 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
+                  erros.senha ? "border-destructive" : "border-input"
+                }`}
               />
 
               <button
@@ -112,6 +218,9 @@ export default function CadastrarPage() {
                 )}
               </button>
             </div>
+            {erros.senha && (
+              <p id="senha-erro" className="mt-1 text-body-sm text-destructive">{erros.senha}</p>
+            )}
           </div>
 
           <div className="pt-2">
@@ -124,9 +233,9 @@ export default function CadastrarPage() {
                 type="button"
                 onClick={() => setCategoria("cliente")}
                 aria-pressed={categoria === "cliente"}
-                className={`w-36 h-14 rounded-2xl font-bold text-body-lg border-2 transition-all duration-200 ease-apple cursor-pointer text-center ${
+                className={`w-36 h-14 rounded-2xl font-bold text-xl border-2 transition-all duration-200 ease-apple cursor-pointer text-center ${
                   categoria === "cliente"
-                    ? "border-tcc-azul bg-secondary text-tcc-azul-dark shadow-soft"
+                    ? "border-tcc-azul bg-secondary text-shadow-tcc-azul-medium shadow-soft"
                     : "border-input bg-card text-muted-foreground hover:border-tcc-neutro-300"
                 }`}
               >
@@ -137,9 +246,9 @@ export default function CadastrarPage() {
                 type="button"
                 onClick={() => setCategoria("prestador")}
                 aria-pressed={categoria === "prestador"}
-                className={`w-36 h-14 rounded-2xl font-bold text-body-lg border-2 transition-all duration-200 ease-apple cursor-pointer text-center ${
+                className={`w-36 h-14 rounded-2xl font-bold text-xl border-2 transition-all duration-200 ease-apple cursor-pointer text-center ${
                   categoria === "prestador"
-                    ? "border-tcc-azul bg-secondary text-tcc-azul-dark shadow-soft"
+                    ? "border-tcc-azul bg-secondary text-shadow-tcc-azul-medium shadow-soft"
                     : "border-input bg-card text-muted-foreground hover:border-tcc-neutro-300"
                 }`}
               >

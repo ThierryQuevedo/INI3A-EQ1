@@ -10,7 +10,7 @@ import Image from "next/image";
 import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from "../../components/Icons/GoogleIcons";
 
-const estadoInicial = { erro: null };
+const estadoInicial = { erro: null, errosCampos: {} };
 
 function LoginForm() {
   const router = useRouter();
@@ -18,8 +18,17 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, isPending] = useActionState(login, estadoInicial);
 
+  // Estados locais para os valores e validação do cliente
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [errosLocais, setErrosLocais] = useState({});
+
   const erroGoogle = searchParams.get("erro") === "google";
   const mensagemErro = state?.erro || (erroGoogle ? "Falha ao autenticar com o Google." : null);
+
+  // Unifica os erros do cliente (errosLocais) e do servidor (state)
+  const erroEmail = errosLocais.email || state?.errosCampos?.email;
+  const erroSenha = errosLocais.senha || state?.errosCampos?.senha;
 
   useEffect(() => {
     if (state?.sucesso && state?.redirectTo) {
@@ -27,11 +36,38 @@ function LoginForm() {
     }
   }, [state, router]);
 
+  const validarCampos = () => {
+    const novosErros = {};
+
+    if (!email) {
+      novosErros.email = "Informe o e-mail.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      novosErros.email = "Insira um e-mail válido.";
+    }
+
+    if (!senha) {
+      novosErros.senha = "Informe a senha.";
+    } else if (senha.length < 6) {
+      novosErros.senha = "A senha deve ter pelo menos 6 caracteres.";
+    }
+
+    setErrosLocais(novosErros);
+    return Object.keys(novosErros).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    if (!validarCampos()) {
+      e.preventDefault(); // Impede a execução do Server Action se houver erros no client
+    }
+  };
+
   return (
     <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
-      <Link href="/" className="w-56 mb-10"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
-      <div className="bg-card rounded-2xl shadow-elevated max-w-xl w-full p-8 md:p-12 border border-border">
+      <Link href="/" className="w-56 mb-10">
+        <Image src={logotipo} alt="Marca Aí — página inicial" priority />
+      </Link>
 
+      <div className="bg-card rounded-2xl shadow-elevated max-w-xl w-full p-8 md:p-12 border border-border">
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Entrar na conta Marca Aí
         </h1>
@@ -42,8 +78,8 @@ function LoginForm() {
           </div>
         )}
 
-        <form action={formAction} className="space-y-5">
-
+        <form action={formAction} onSubmit={handleSubmit} noValidate className="space-y-5">
+          {/* CAMPO DE E-MAIL */}
           <div>
             <label htmlFor="email" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
               E-mail
@@ -52,12 +88,26 @@ function LoginForm() {
               id="email"
               type="email"
               name="email"
-              required
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errosLocais.email) setErrosLocais((prev) => ({ ...prev, email: undefined }));
+              }}
               placeholder="seuemail@exemplo.com"
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 transition-all duration-200 ${
+                erroEmail
+                  ? "border-destructive focus-visible:ring-destructive"
+                  : "border-input focus-visible:ring-ring focus-visible:border-transparent"
+              }`}
             />
+            {erroEmail && (
+              <p className="mt-1.5 text-body-sm text-destructive font-medium">
+                {erroEmail}
+              </p>
+            )}
           </div>
 
+          {/* CAMPO DE SENHA */}
           <div>
             <label htmlFor="senha" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
               Senha
@@ -67,9 +117,17 @@ function LoginForm() {
                 id="senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
-                required
+                value={senha}
+                onChange={(e) => {
+                  setSenha(e.target.value);
+                  if (errosLocais.senha) setErrosLocais((prev) => ({ ...prev, senha: undefined }));
+                }}
                 placeholder="Sua senha"
-                className="w-full h-12 bg-background border border-input rounded-xl px-4 pr-12 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+                className={`w-full h-12 bg-background border rounded-xl px-4 pr-12 text-body text-foreground outline-none focus-visible:ring-2 transition-all duration-200 ${
+                  erroSenha
+                    ? "border-destructive focus-visible:ring-destructive"
+                    : "border-input focus-visible:ring-ring focus-visible:border-transparent"
+                }`}
               />
 
               <button
@@ -85,6 +143,11 @@ function LoginForm() {
                 )}
               </button>
             </div>
+            {erroSenha && (
+              <p className="mt-1.5 text-body-sm text-destructive font-medium">
+                {erroSenha}
+              </p>
+            )}
           </div>
 
           <button
@@ -109,7 +172,6 @@ function LoginForm() {
             Ainda não tem uma conta? Cadastre-se
           </Link>
         </div>
-
       </div>
     </div>
   );
