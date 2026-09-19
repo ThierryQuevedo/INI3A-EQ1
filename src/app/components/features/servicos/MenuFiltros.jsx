@@ -92,7 +92,7 @@ export default function MenuFiltros({
           <label className="flex items-center gap-3 cursor-pointer group py-2 -mx-2 px-2 rounded-lg hover:bg-muted transition-colors">
             <input type="checkbox" className="peer sr-only" />
             <div className="size-6 shrink-0 border-2 border-input rounded-md flex items-center justify-center peer-checked:bg-accent peer-checked:border-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 transition-colors">
-              <Check size={14} className="text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden="true" />
+              <Check size={14} className="text-accent-foreground opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden="true" />
             </div>
             <span className="text-foreground text-body-sm font-medium">Disponível</span>
           </label>
@@ -100,7 +100,7 @@ export default function MenuFiltros({
           <label className="flex items-center gap-3 cursor-pointer group py-2 -mx-2 px-2 rounded-lg hover:bg-muted transition-colors">
             <input type="checkbox" className="peer sr-only" />
             <div className="size-6 shrink-0 border-2 border-input rounded-md flex items-center justify-center peer-checked:bg-accent peer-checked:border-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 transition-colors">
-              <Check size={14} className="text-white opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden="true" />
+              <Check size={14} className="text-accent-foreground opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden="true" />
             </div>
             <span className="text-foreground text-body-sm font-medium">Sob demanda</span>
           </label>
@@ -118,7 +118,7 @@ export default function MenuFiltros({
         <button
           type="button"
           onClick={aplicarFiltros}
-          className="flex-1 h-11 bg-tcc-laranja text-white rounded-full font-semibold hover:bg-tcc-laranja-dark transition-colors cursor-pointer"
+          className="flex-1 h-11 bg-accent text-accent-foreground rounded-full font-semibold hover:bg-accent-hover transition-colors cursor-pointer"
         >
           Aplicar filtros
         </button>

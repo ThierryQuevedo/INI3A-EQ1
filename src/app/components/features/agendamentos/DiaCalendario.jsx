@@ -20,7 +20,7 @@ export default function DiaCalendario({
   }
 
   if (hoje && !selecionado) {
-    classes += " ring-2 ring-tcc-laranja ring-offset-1 ring-offset-card";
+    classes += " ring-2 ring-tcc-laranja-dark ring-offset-1 ring-offset-card";
   }
 
   const titulo = desabilitado
@@ -39,7 +39,7 @@ export default function DiaCalendario({
     >
       <span>{numero}</span>
       {!desabilitado && (
-        <span className={`w-2 h-2 rounded-full mt-1 ${selecionado ? "bg-white" : "bg-tcc-laranja"}`} aria-hidden="true" />
+        <span className={`w-2 h-2 rounded-full mt-1 ${selecionado ? "bg-white" : "bg-tcc-laranja-dark"}`} aria-hidden="true" />
       )}
     </button>
   );

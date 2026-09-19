@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { getSession } from '@/app/actions/auth.actions';
 import { listarServicosPorPrestador } from '@/app/actions/servicos.actions';
 import { listarDisponibilidades, criarDisponibilidade, deletarDisponibilidade } from '@/app/actions/disponibilidades.actions';
+import Skeleton from '@/app/components/ui/Skeleton';
 
 const DIAS_ABREV = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const HORA_GRADE_INICIO = 0;
@@ -378,10 +379,13 @@ export default function DisponibilidadePage() {
   }
 
   if (carregandoServicos) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
-        <span className="text-tcc-azul-dark font-semibold text-body-sm">Carregando seus serviços...</span>
+    <div className="min-h-screen bg-background py-8 px-4 font-sans">
+      <div className="max-w-6xl mx-auto">
+        <Skeleton className="h-9 w-64 mb-2" />
+        <Skeleton className="h-4 w-80 mb-6" />
+        <Skeleton className="h-16 rounded-2xl mb-4" />
+        <Skeleton className="h-16 rounded-2xl mb-4" />
+        <Skeleton className="h-[500px] rounded-2xl" />
       </div>
     </div>
   );

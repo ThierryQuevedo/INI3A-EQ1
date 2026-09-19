@@ -141,7 +141,7 @@ export default function NovoServicoForm({ categorias = [], action }) {
 
           <button
             type="submit"
-            className="w-full mt-3 h-13 bg-tcc-laranja hover:bg-tcc-laranja-dark text-white font-display font-bold text-body-lg rounded-full shadow-soft transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer text-center"
+            className="w-full mt-3 h-13 bg-accent hover:bg-accent-hover text-accent-foreground font-display font-bold text-body-lg rounded-full shadow-soft transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer text-center"
           >
             Cadastrar Serviço
           </button>

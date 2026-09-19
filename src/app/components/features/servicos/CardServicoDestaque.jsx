@@ -4,7 +4,10 @@ import Image from "next/image";
 export default function CardServicoDestaque({ servico, avaliacao = 5 }) {
   const imagemUrl = servico.urlImagem || `https://picsum.photos/200/200?random=${servico?.id || 1}`;
   return (
-    <div className="w-50 h-50 relative rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated hover:scale-[1.02] transition-all duration-300 ease-apple">
+    <article
+      aria-label={`${servico?.nomeServico || "Serviço"}, por ${servico?.nomeProfissional || "Profissional"}, R$ ${servico?.preco || "0,00"}`}
+      className="w-50 h-50 relative rounded-2xl overflow-hidden shadow-soft hover:shadow-elevated hover:scale-[1.02] transition-all duration-300 ease-apple"
+    >
       <Image
         className="object-cover"
         src={imagemUrl}
@@ -13,7 +16,7 @@ export default function CardServicoDestaque({ servico, avaliacao = 5 }) {
         sizes="200px"
       />
 
-      <div className="absolute rounded-b-2xl w-full bg-tcc-laranja bottom-0 text-center px-2 py-2 text-white">
+      <div className="absolute rounded-b-2xl w-full bg-accent bottom-0 text-center px-2 py-2 text-accent-foreground">
         <h2
           className="font-semibold text-body-lg leading-tight truncate"
           title={servico?.nomeProfissional}
@@ -43,11 +46,11 @@ export default function CardServicoDestaque({ servico, avaliacao = 5 }) {
                 return <StarHalf key={index} size={12} className="fill-amber-400 stroke-amber-400 shrink-0" />;
               }
 
-              return <Star key={index} size={12} className="stroke-white/60 shrink-0" />;
+              return <Star key={index} size={12} className="stroke-accent-foreground/60 shrink-0" />;
             })}
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

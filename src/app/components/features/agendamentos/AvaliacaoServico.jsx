@@ -70,7 +70,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
             onMouseEnter={() => setNotaHover(n)}
             onMouseLeave={() => setNotaHover(0)}
             onClick={() => setNota(n)}
-            className="p-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded"
+            className="h-11 w-11 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
           >
             <Star
               size={26}
@@ -96,7 +96,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
         type="button"
         onClick={enviarAvaliacao}
         disabled={pending}
-        className="mt-2 bg-tcc-laranja hover:bg-tcc-laranja-dark disabled:opacity-60 disabled:cursor-not-allowed text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+        className="mt-2 bg-accent hover:bg-accent-hover disabled:opacity-60 disabled:cursor-not-allowed text-accent-foreground text-caption font-bold px-4 h-11 rounded-full transition-colors duration-200 cursor-pointer"
       >
         {pending ? "Enviando..." : "Enviar avaliação"}
       </button>

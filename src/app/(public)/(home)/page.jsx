@@ -3,7 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios, categorias } from "@/db/schema";
-import CardServicoCatalogo from "@/app/components/features/servicos/CardServicoCatalogo";
+import CatalogoGrid from "@/app/components/features/servicos/CatalogoGrid";
 
 export const dynamic = "force-dynamic";
 
@@ -51,7 +51,7 @@ export default async function Home() {
           <div className="pt-2">
             <Link
               href="/servicos"
-              className="w-full sm:w-auto bg-tcc-laranja hover:bg-tcc-laranja-dark text-white font-bold px-7 h-14 rounded-full transition-all duration-200 ease-apple active:scale-[0.98] flex items-center justify-center gap-2 text-body-lg shadow-elevated group cursor-pointer"
+              className="w-full sm:w-auto bg-accent hover:bg-accent-hover text-accent-foreground font-bold px-7 h-14 rounded-full transition-all duration-200 ease-apple active:scale-[0.98] flex items-center justify-center gap-2 text-body-lg shadow-elevated group cursor-pointer"
             >
               Ver profissionais disponíveis
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" aria-hidden="true" />
@@ -80,7 +80,7 @@ export default async function Home() {
           {CATEGORIAS_EM_ALTA.map((category, idx) => (
             <Link href="/servicos"
               key={idx}
-              className="shrink-0 whitespace-nowrap bg-muted hover:bg-tcc-laranja hover:text-white text-foreground font-medium text-body-sm px-5 h-11 inline-flex items-center rounded-full border border-border transition-all duration-200 ease-apple cursor-pointer"
+              className="shrink-0 whitespace-nowrap bg-muted hover:bg-accent hover:text-accent-foreground text-foreground font-medium text-body-sm px-5 h-11 inline-flex items-center rounded-full border border-border transition-all duration-200 ease-apple cursor-pointer"
             >
               {category}
             </Link>
@@ -99,21 +99,7 @@ export default async function Home() {
           </Link>
         </div>
 
-        {catalogo.length === 0 ? (
-          <p className="text-muted-foreground text-body">Nenhum serviço cadastrado no momento.</p>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {catalogo.map((servico) => (
-              <Link
-                key={servico.id}
-                href={`/servicos/${servico.slug || servico.id}`}
-                className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <CardServicoCatalogo servico={servico} avaliacao={4.3} />
-              </Link>
-            ))}
-          </div>
-        )}
+        <CatalogoGrid catalogo={catalogo} />
       </section>
     </div>
   );

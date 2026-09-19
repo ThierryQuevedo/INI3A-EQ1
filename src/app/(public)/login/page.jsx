@@ -153,7 +153,7 @@ function LoginForm() {
           <button
             type="submit"
             disabled={isPending}
-            className="w-full h-13 bg-tcc-laranja hover:bg-tcc-laranja-dark text-white rounded-full py-3 text-body-lg font-bold transition-all duration-200 ease-apple active:scale-[0.98] mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 shadow-soft"
+            className="w-full h-13 bg-accent hover:bg-accent-hover text-accent-foreground rounded-full py-3 text-body-lg font-bold transition-all duration-200 ease-apple active:scale-[0.98] mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 shadow-soft"
           >
             {isPending ? "Entrando..." : "Entrar"}
           </button>

@@ -108,7 +108,7 @@ export default async function DetalheServico({ params }) {
 
           <Link
             href={`/agendamentos/novo?servico=${servico.id}`}
-            className="w-full md:w-auto bg-tcc-laranja text-white hover:bg-tcc-laranja-dark active:scale-[0.98] font-bold px-8 h-14 rounded-full shadow-elevated transition-all duration-200 ease-apple flex items-center justify-center gap-2 text-body-lg cursor-pointer"
+            className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent-hover active:scale-[0.98] font-bold px-8 h-14 rounded-full shadow-elevated transition-all duration-200 ease-apple flex items-center justify-center gap-2 text-body-lg cursor-pointer"
           >
             <Calendar size={22} aria-hidden="true" /> Agendar Horário
           </Link>

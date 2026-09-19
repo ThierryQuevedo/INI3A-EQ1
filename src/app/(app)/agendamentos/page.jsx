@@ -46,7 +46,7 @@ export default async function AgendamentosPage() {
           {usuarioLogado.tipo === 'cliente' && (
             <Link
               href="/servicos"
-              className="bg-tcc-laranja hover:bg-tcc-laranja-dark text-white text-body-sm font-bold px-4 h-11 inline-flex items-center rounded-full transition-colors duration-200 w-fit"
+              className="bg-accent hover:bg-accent-hover text-accent-foreground text-body-sm font-bold px-4 h-11 inline-flex items-center rounded-full transition-colors duration-200 w-fit"
             >
               Agendar novo horário
             </Link>

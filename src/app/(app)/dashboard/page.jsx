@@ -175,7 +175,7 @@ export default async function Dashboard() {
             <p className="text-muted-foreground">agendamentos hoje</p>
           </div>
           <div className="bg-card p-6 rounded-2xl border-l-4 border-tcc-laranja shadow-soft">
-            <h3 className="text-tcc-laranja text-h4 font-bold">R$ —</h3>
+            <h3 className="text-tcc-laranja-deep dark:text-tcc-laranja text-h4 font-bold">R$ —</h3>
             <p className="text-muted-foreground">este mês</p>
           </div>
           <div className="bg-card p-6 rounded-2xl border-l-4 border-success shadow-soft">

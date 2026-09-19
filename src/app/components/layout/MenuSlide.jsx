@@ -127,10 +127,10 @@ export default function MenuSlide({ isOpen, onClose, usuario }) {
               <Link
                 href="/dashboard"
                 onClick={onClose}
-                className="py-2.5 px-4 rounded-xl bg-tcc-laranja w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3"
+                className="py-2.5 px-4 rounded-xl bg-accent w-full flex justify-start items-center flex-row hover:brightness-110 transition-all gap-3"
               >
-                <LayoutDashboard size={22} className="text-white" />
-                <span className="font-urbanist font-bold text-lg text-white">
+                <LayoutDashboard size={22} className="text-accent-foreground" />
+                <span className="font-urbanist font-bold text-lg text-accent-foreground">
                   Painel
                 </span>
               </Link>

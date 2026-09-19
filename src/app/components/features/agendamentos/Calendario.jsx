@@ -85,7 +85,7 @@ export default function Calendario({
         {DIAS_SEMANA_LABEL.map((d) => <div key={d}>{d}</div>)}
       </div>
 
-      <div className="grid grid-cols-7 gap-2 sm:gap-3">
+      <div className="grid grid-cols-7 gap-2 sm:gap-3" role="group" aria-label="Selecione um dia no calendário">
         {espacosVazios.map((e) => (
           <div key={`vazio-${e}`} className="w-full aspect-square" />
         ))}
@@ -107,14 +107,14 @@ export default function Calendario({
         })}
       </div>
 
-      <div className="flex flex-wrap items-center gap-5 mt-6 pt-5 border-t border-border text-caption text-muted-foreground font-medium">
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-tcc-laranja" aria-hidden="true" /> Disponível
+      <div className="flex flex-wrap items-center gap-5 mt-6 pt-5 border-t border-border text-body-sm text-muted-foreground font-medium">
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full bg-tcc-laranja-dark" aria-hidden="true" /> Disponível
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3.5 h-3.5 rounded ring-2 ring-tcc-laranja" aria-hidden="true" /> Hoje
+        <div className="flex items-center gap-2">
+          <span className="w-3.5 h-3.5 rounded ring-2 ring-tcc-laranja-dark" aria-hidden="true" /> Hoje
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           <span className="w-3.5 h-3.5 rounded bg-muted" aria-hidden="true" /> Indisponível
         </div>
       </div>

@@ -3,6 +3,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Regras obrigatórias
+use APENAS javascript puro(não utilize typescript)
+Always respond and converse in Portuguese.
 
 Estas duas regras valem para toda sessão neste repositório e têm prioridade sobre qualquer conveniência.
 

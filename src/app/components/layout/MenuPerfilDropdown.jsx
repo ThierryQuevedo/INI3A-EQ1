@@ -114,7 +114,7 @@ export default function PerfilDropdown({ user }) {
                         type="button"
                         role="menuitem"
                         onClick={pedirConfirmacaoSaida}
-                        className="w-full flex items-center gap-3 px-5 py-3.5 text-tcc-laranja hover:bg-muted transition-colors cursor-pointer"
+                        className="w-full flex items-center gap-3 px-5 py-3.5 text-tcc-laranja-deep dark:text-tcc-laranja hover:bg-muted transition-colors cursor-pointer"
                     >
                         <LogOut size={18} aria-hidden="true" />
                         <span className="text-body-sm font-bold">Sair</span>
@@ -147,7 +147,7 @@ export default function PerfilDropdown({ user }) {
                             <button
                                 onClick={confirmarSaida}
                                 disabled={saindo}
-                                className="flex-1 rounded-xl h-11 text-body-sm font-bold text-white bg-tcc-laranja hover:bg-tcc-laranja-dark transition-colors disabled:opacity-60 cursor-pointer"
+                                className="flex-1 rounded-xl h-11 text-body-sm font-bold text-accent-foreground bg-accent hover:bg-accent-hover transition-colors disabled:opacity-60 cursor-pointer"
                             >
                                 {saindo ? "Saindo..." : "Sair"}
                             </button>

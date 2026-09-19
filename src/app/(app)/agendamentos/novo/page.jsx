@@ -1,11 +1,13 @@
 'use client';
 import { Suspense, useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { ArrowLeft, CalendarDays, Clock, CheckCircle2 } from 'lucide-react';
 import { confirmarAgendamentoAction, listarAgendamentosPorPrestador } from '@/app/actions/agendamentos.actions';
 import { getSession } from '@/app/actions/auth.actions';
 import { buscarServico } from '@/app/actions/servicos.actions';
 import { listarDisponibilidades } from '@/app/actions/disponibilidades.actions';
 import Calendario from '@/app/components/features/agendamentos/Calendario';
+import Skeleton from '@/app/components/ui/Skeleton';
 
 function gerarSlots(horaInicio, horaFim, duracaoMin) {
   const slots = [];
@@ -50,13 +52,22 @@ const PERIODOS = [
   { chave: 'noite', label: 'Noite', Icon: IconMoon },
 ];
 
+function AgendarPageSkeleton() {
+  return (
+    <div className="min-h-screen bg-background py-10 px-4">
+      <div className="max-w-2xl mx-auto">
+        <Skeleton className="h-9 w-64 mb-2" />
+        <Skeleton className="h-4 w-48 mb-8" />
+        <Skeleton className="h-80 rounded-2xl mb-4" />
+        <Skeleton className="h-40 rounded-2xl" />
+      </div>
+    </div>
+  );
+}
+
 export default function AgendarPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="w-10 h-10 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
-      </div>
-    }>
+    <Suspense fallback={<AgendarPageSkeleton />}>
       <AgendarPageInner />
     </Suspense>
   );
@@ -226,51 +237,48 @@ function AgendarPageInner() {
   const slotsDoDia = diaSelecionado ? slotsLivres(diaSelecionado) : [];
   const gruposPeriodo = useMemo(() => agruparPorPeriodo(slotsDoDia), [slotsDoDia]);
 
-  if (loading) return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
-        <span className="text-tcc-azul-dark font-semibold text-body-sm">Carregando disponibilidade...</span>
-      </div>
-    </div>
-  );
+  if (loading) return <AgendarPageSkeleton />;
 
   if (sucesso) return (
-    <div className="min-h-screen bg-background flex items-center justify-center" role="status">
-      <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-elevated">
+    <div className="min-h-screen bg-background flex items-center justify-center px-4" role="status">
+      <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-elevated text-center max-w-sm">
         <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-success" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>
+          <CheckCircle2 size={32} className="text-success" aria-hidden="true" />
         </div>
         <h2 className="text-h6 font-bold text-foreground">Agendamento confirmado!</h2>
-        <p className="text-body-sm text-muted-foreground">Redirecionando para sua agenda...</p>
+        <p className="text-body text-muted-foreground">Redirecionando para sua agenda...</p>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background py-10 px-4">
+    <div className="min-h-screen bg-background py-8 sm:py-10 px-4">
       <div className="max-w-2xl mx-auto">
 
         <div className="mb-8">
-          <button onClick={() => router.back()} className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-tcc-azul-dark dark:text-tcc-azul-light font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-full text-body text-tcc-azul-dark dark:text-tcc-azul-light font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer">
+            <ArrowLeft size={18} aria-hidden="true" />
             Voltar
           </button>
           <h1 className="text-h4 font-extrabold text-foreground">Escolha um horário</h1>
           {servico && (
-            <p className="text-body-sm text-muted-foreground mt-1">
+            <p className="text-body-lg text-muted-foreground mt-1.5">
               {servico.nome} · {servico.duracaoEstimada} min · <span className="text-tcc-azul-dark dark:text-tcc-azul-light font-semibold">R$ {Number(servico.preco).toFixed(2)}</span>
             </p>
           )}
         </div>
 
         {erro && (
-          <div role="alert" className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm rounded-xl px-4 py-3">
+          <div role="alert" className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body rounded-xl px-4 py-3">
             {erro}
           </div>
         )}
 
-        <div className="bg-card rounded-2xl p-6 shadow-soft mb-4 flex justify-center">
+        <div className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4">
+          <h2 className="flex items-center gap-2 text-body-lg font-bold text-foreground self-start">
+            <CalendarDays size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
+            1. Escolha o dia
+          </h2>
           <Calendario
             mes={mesAtual}
             ano={anoAtual}
@@ -282,33 +290,37 @@ function AgendarPageInner() {
         </div>
 
         {diaSelecionado && (
-          <div className="bg-card rounded-2xl p-6 shadow-soft mb-4">
-            <h2 className="text-caption font-bold text-muted-foreground uppercase tracking-widest mb-4">
-              Horários — {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+          <div className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6">
+            <h2 className="flex items-center gap-2 text-body-lg font-bold text-foreground mb-1">
+              <Clock size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
+              2. Escolha o horário
             </h2>
+            <p className="text-body-sm text-muted-foreground mb-5 capitalize">
+              {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
             {slotsDoDia.length === 0 ? (
-              <p className="text-body-sm text-muted-foreground">Nenhum horário disponível neste dia.</p>
+              <p className="text-body text-muted-foreground">Nenhum horário disponível neste dia.</p>
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {PERIODOS.map(({ chave, label, Icon }) => {
                   const slotsPeriodo = gruposPeriodo[chave];
                   if (slotsPeriodo.length === 0) return null;
                   return (
                     <div key={chave}>
-                      <div className="flex items-center gap-1.5 text-caption font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                      <div className="flex items-center gap-1.5 text-body-sm font-bold text-foreground mb-2.5">
                         <Icon aria-hidden="true" />
                         {label}
-                        <span className="text-muted-foreground/70 font-medium normal-case tracking-normal">· {slotsPeriodo.length} horário{slotsPeriodo.length > 1 ? 's' : ''}</span>
+                        <span className="text-muted-foreground font-medium">· {slotsPeriodo.length} horário{slotsPeriodo.length > 1 ? 's' : ''}</span>
                       </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
                         {slotsPeriodo.map((slot) => (
                           <button
                             key={slot}
                             onClick={() => setHorarioSelecionado(slot)}
                             aria-pressed={horarioSelecionado === slot}
-                            className={`rounded-xl h-11 text-body-sm font-bold border-2 transition-all duration-200 ease-apple cursor-pointer
+                            className={`rounded-xl h-12 text-body font-bold border-2 transition-all duration-200 ease-apple cursor-pointer
                               ${horarioSelecionado === slot
-                                ? 'border-tcc-laranja bg-tcc-laranja text-white shadow-soft scale-[1.02]'
+                                ? 'border-tcc-laranja bg-accent text-accent-foreground shadow-soft scale-[1.02]'
                                 : 'border-transparent bg-muted text-foreground hover:border-tcc-laranja/40'}
                             `}
                           >
@@ -325,37 +337,37 @@ function AgendarPageInner() {
         )}
 
         {diaSelecionado && horarioSelecionado && (
-          <div className="bg-card rounded-2xl p-6 shadow-elevated mb-4 sticky bottom-4">
-            <h2 className="text-caption font-bold text-muted-foreground uppercase tracking-widest mb-4">Resumo</h2>
-            <div className="flex flex-col gap-2 mb-6">
-              <div className="flex justify-between text-body-sm">
+          <div className="bg-card rounded-2xl p-5 sm:p-7 shadow-elevated mb-4 sticky bottom-4 border border-border">
+            <h2 className="text-body-lg font-bold text-foreground mb-4">3. Confirme os dados</h2>
+            <div className="flex flex-col gap-2.5 mb-6">
+              <div className="flex justify-between text-body">
                 <span className="text-muted-foreground">Serviço</span>
-                <span className="font-semibold text-foreground">{servico?.nome}</span>
+                <span className="font-semibold text-foreground text-right">{servico?.nome}</span>
               </div>
-              <div className="flex justify-between text-body-sm">
+              <div className="flex justify-between text-body">
                 <span className="text-muted-foreground">Data</span>
-                <span className="font-semibold text-foreground">
+                <span className="font-semibold text-foreground text-right capitalize">
                   {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </span>
               </div>
-              <div className="flex justify-between text-body-sm">
+              <div className="flex justify-between text-body">
                 <span className="text-muted-foreground">Horário</span>
                 <span className="font-semibold text-foreground">{horarioSelecionado}</span>
               </div>
-              <div className="flex justify-between text-body-sm">
+              <div className="flex justify-between text-body">
                 <span className="text-muted-foreground">Duração</span>
                 <span className="font-semibold text-foreground">{servico?.duracaoEstimada} min</span>
               </div>
-              <div className="h-px bg-border my-1" />
-              <div className="flex justify-between text-body-sm">
+              <div className="h-px bg-border my-1.5" />
+              <div className="flex justify-between text-body-lg">
                 <span className="text-muted-foreground">Total</span>
-                <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light text-body">R$ {Number(servico?.preco).toFixed(2)}</span>
+                <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">R$ {Number(servico?.preco).toFixed(2)}</span>
               </div>
             </div>
             <button
               onClick={confirmarAgendamento}
               disabled={enviando}
-              className="w-full bg-tcc-azul-dark text-white rounded-full h-13 text-body-sm font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer"
+              className="w-full bg-tcc-azul-dark text-white rounded-full h-13 text-body-lg font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer"
             >
               {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
             </button>

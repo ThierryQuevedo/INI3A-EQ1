@@ -30,7 +30,7 @@ function ModalSenha({ label, icon, onClose }) {
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+            className="h-11 w-11 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
           >
             <X size={18} aria-hidden="true" />
           </button>
@@ -85,7 +85,7 @@ function ModalSenha({ label, icon, onClose }) {
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 rounded-full h-11 text-body-sm font-bold text-white bg-tcc-laranja hover:bg-tcc-laranja-dark transition-colors disabled:opacity-60 cursor-pointer"
+              className="flex-1 rounded-full h-11 text-body-sm font-bold text-accent-foreground bg-accent hover:bg-accent-hover transition-colors disabled:opacity-60 cursor-pointer"
             >
               {isPending ? "Salvando..." : "Salvar"}
             </button>
@@ -116,7 +116,7 @@ export default function CampoSenha({ label, icon }) {
         <button
           onClick={() => setEditando(true)}
           aria-label={`Editar ${label}`}
-          className="h-11 w-11 bg-muted hover:bg-tcc-laranja hover:text-white rounded-full text-muted-foreground shadow-soft border border-border cursor-pointer transition-all duration-200 flex items-center justify-center"
+          className="h-11 w-11 bg-muted hover:bg-accent hover:text-accent-foreground rounded-full text-muted-foreground shadow-soft border border-border cursor-pointer transition-all duration-200 flex items-center justify-center"
         >
           <Pencil size={16} aria-hidden="true" />
         </button>

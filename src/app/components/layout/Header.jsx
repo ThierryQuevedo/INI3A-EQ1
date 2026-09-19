@@ -33,13 +33,13 @@ export default async function Header() {
                         <MenuWrapper usuario={user} />
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-4 pointer-events-auto">
+                    <nav aria-label="Conta" className="flex items-center gap-2 sm:gap-4 pointer-events-auto">
                         {user ? (
                             <div className="flex items-center gap-3 sm:gap-4">
                                 {user.tipo === "prestador" && (
                                     <Link
                                         href="/dashboard"
-                                        className="hidden sm:flex items-center gap-2 text-body-sm font-semibold bg-tcc-azul-medium/40 hover:bg-tcc-azul-medium/70 text-white px-4 h-11 rounded-full border border-tcc-azul-medium hover:border-tcc-azul-light transition-all duration-200"
+                                        className="hidden sm:flex items-center gap-2 text-body font-semibold bg-tcc-azul-medium/40 hover:bg-tcc-azul-medium/70 text-white px-4 h-11 rounded-full border border-tcc-azul-medium hover:border-tcc-azul-light transition-all duration-200"
                                     >
                                         <LayoutDashboard size={16} aria-hidden="true" />
                                         Dashboard
@@ -48,7 +48,7 @@ export default async function Header() {
 
                                 <Link
                                     href="/configuracoes"
-                                    className="text-body-sm font-medium text-tcc-azul-light hover:text-white transition-colors hidden sm:inline"
+                                    className="text-body font-medium text-tcc-azul-light hover:text-white transition-colors hidden sm:inline"
                                 >
                                     Olá, <span className="text-white font-semibold">{user.nome}</span>
                                 </Link>
@@ -57,18 +57,18 @@ export default async function Header() {
                             </div>
                         ) : (
                             <div className="flex items-center gap-2 sm:gap-3">
-                                <Link href="/login" className="text-body-sm font-semibold text-tcc-azul-light hover:text-white transition-colors px-3 h-11 inline-flex items-center rounded-full">
+                                <Link href="/login" className="text-body font-semibold text-tcc-azul-light hover:text-white transition-colors px-3 h-11 inline-flex items-center rounded-full">
                                     Entrar
                                 </Link>
                                 <Link
                                     href="/cadastro"
-                                    className="text-body-sm font-bold bg-tcc-laranja hover:bg-tcc-laranja-dark text-white px-4 h-11 inline-flex items-center rounded-full transition-all duration-200"
+                                    className="text-body font-bold bg-accent hover:bg-accent-hover text-accent-foreground px-4 h-11 inline-flex items-center rounded-full transition-all duration-200"
                                 >
                                     Criar Conta
                                 </Link>
                             </div>
                         )}
-                    </div>
+                    </nav>
 
                 </div>
             </div>
