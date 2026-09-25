@@ -1,7 +1,7 @@
 'use client';
-import { Suspense, useEffect, useState, useMemo } from 'react';
+import { Suspense, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CalendarDays, Clock, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock, CheckCircle2, Check, Pencil } from 'lucide-react';
 import { confirmarAgendamentoAction, listarAgendamentosPorPrestador } from '@/app/actions/agendamentos.actions';
 import { getSession } from '@/app/actions/auth.actions';
 import { buscarServico } from '@/app/actions/servicos.actions';
@@ -24,7 +24,6 @@ function gerarSlots(horaInicio, horaFim, duracaoMin) {
   return slots;
 }
 
-// Agrupa os horários livres em períodos do dia, pra facilitar a escolha visual
 function agruparPorPeriodo(slots) {
   const grupos = { manha: [], tarde: [], noite: [] };
   for (const s of slots) {
@@ -65,6 +64,54 @@ function AgendarPageSkeleton() {
   );
 }
 
+
+function PassosProgresso({ passoAtual }) {
+  const passos = [
+    { numero: 1, label: 'Dia' },
+    { numero: 2, label: 'Horário' },
+    { numero: 3, label: 'Confirmação' },
+  ];
+
+  return (
+    <ol className="flex items-center gap-2 mb-6" aria-label="Etapas do agendamento">
+      {passos.map((passo, idx) => {
+        const concluido = passo.numero < passoAtual;
+        const atual = passo.numero === passoAtual;
+        return (
+          <li key={passo.numero} className="flex items-center gap-2 flex-1 last:flex-none">
+            <div
+              aria-current={atual ? 'step' : undefined}
+              className={`flex items-center gap-2 shrink-0 ${atual ? '' : ''}`}
+            >
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center text-caption font-bold border-2 transition-colors ${
+                  concluido
+                    ? 'bg-tcc-azul-dark border-tcc-azul-dark text-white'
+                    : atual
+                    ? 'border-tcc-azul-dark text-tcc-azul-dark dark:text-tcc-azul-light dark:border-tcc-azul-light'
+                    : 'border-border text-muted-foreground'
+                }`}
+              >
+                {concluido ? <Check size={14} aria-hidden="true" /> : passo.numero}
+              </span>
+              <span
+                className={`text-caption font-semibold hidden sm:inline ${
+                  atual ? 'text-foreground' : concluido ? 'text-foreground/70' : 'text-muted-foreground'
+                }`}
+              >
+                {passo.label}
+              </span>
+            </div>
+            {idx < passos.length - 1 && (
+              <div className={`h-0.5 flex-1 rounded-full ${concluido ? 'bg-tcc-azul-dark' : 'bg-border'}`} aria-hidden="true" />
+            )}
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
 export default function AgendarPage() {
   return (
     <Suspense fallback={<AgendarPageSkeleton />}>
@@ -90,6 +137,12 @@ function AgendarPageInner() {
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
 
+  const refHorarioHeading = useRef(null);
+  const refConfirmacaoHeading = useRef(null);
+  const refErro = useRef(null);
+  const primeiroRender = useRef(true);
+  const slotRefs = useRef(new Map());
+
   useEffect(() => {
     async function verificarSessao() {
       const usuario = await getSession();
@@ -107,8 +160,6 @@ function AgendarPageInner() {
 
         const prestadorId = dadosServico.prestadorId;
 
-        // A agenda é por serviço: cada serviço do prestador tem seus
-        // próprios blocos de disponibilidade, então filtramos por servicoId.
         const [resDisp, resAgend] = await Promise.all([
           listarDisponibilidades(prestadorId, Number(servicoId)),
           listarAgendamentosPorPrestador(prestadorId),
@@ -125,9 +176,6 @@ function AgendarPageInner() {
     carregar();
   }, [servicoId]);
 
-  // Enquanto o usuário não clicar em nenhum dia, seleciona automaticamente o
-  // dia de hoje (se ele tiver disponibilidade cadastrada), para que os
-  // horários já apareçam na primeira abertura da página.
   const diaSelecionadoAuto = useMemo(() => {
     if (loading || !servico || disponibilidades.length === 0) return null;
 
@@ -160,7 +208,6 @@ function AgendarPageInner() {
 
     let livres = slots.filter((s) => !ocupados.includes(s));
 
-    // Se o dia em questão for hoje, remove os horários que já passaram
     const agora = new Date();
     if (dataStr === agora.toDateString()) {
       const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
@@ -173,7 +220,6 @@ function AgendarPageInner() {
     return livres;
   }
 
-  // Calcula, para cada dia do mês exibido, se há disponibilidade e quantas vagas
   function calcularDiasInfo() {
     if (!servico) return {};
     const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
@@ -197,7 +243,6 @@ function AgendarPageInner() {
 
   const diasInfo = calcularDiasInfo();
 
-  // Quando o usuário clica num dia do calendário, monta o objeto que slotsLivres() espera
   function selecionarDia(data) {
     const diaSemana = data.getDay();
     const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
@@ -236,6 +281,72 @@ function AgendarPageInner() {
 
   const slotsDoDia = diaSelecionado ? slotsLivres(diaSelecionado) : [];
   const gruposPeriodo = useMemo(() => agruparPorPeriodo(slotsDoDia), [slotsDoDia]);
+  const slotsFlat = useMemo(
+    () => PERIODOS.flatMap(({ chave }) => gruposPeriodo[chave] || []),
+    [gruposPeriodo]
+  );
+
+  const prefereMovimentoReduzido =
+    typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+  function rolarEfocar(ref) {
+    if (!ref?.current) return;
+    ref.current.scrollIntoView({
+      behavior: prefereMovimentoReduzido ? 'auto' : 'smooth',
+      block: 'start',
+    });
+    ref.current.focus({ preventScroll: true });
+  }
+
+  useEffect(() => {
+    if (primeiroRender.current) {
+      primeiroRender.current = false;
+      return;
+    }
+    if (diaSelecionadoManual) {
+      const id = setTimeout(() => rolarEfocar(refHorarioHeading), 50);
+      return () => clearTimeout(id);
+    }
+  }, [diaSelecionadoManual]);
+
+  useEffect(() => {
+    if (horarioSelecionado) {
+      const id = setTimeout(() => rolarEfocar(refConfirmacaoHeading), 50);
+      return () => clearTimeout(id);
+    }
+  }, [horarioSelecionado]);
+
+  useEffect(() => {
+    if (erro && refErro.current) {
+      refErro.current.focus();
+    }
+  }, [erro]);
+
+  const handleSlotKeyDown = useCallback(
+    (e, slot) => {
+      const idx = slotsFlat.indexOf(slot);
+      if (idx === -1) return;
+
+      let novoIdx = null;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') novoIdx = (idx + 1) % slotsFlat.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') novoIdx = (idx - 1 + slotsFlat.length) % slotsFlat.length;
+      else if (e.key === 'Home') novoIdx = 0;
+      else if (e.key === 'End') novoIdx = slotsFlat.length - 1;
+      else if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        setHorarioSelecionado(slot);
+        return;
+      } else return;
+
+      e.preventDefault();
+      const proximoSlot = slotsFlat[novoIdx];
+      setHorarioSelecionado(proximoSlot);
+      slotRefs.current.get(proximoSlot)?.focus();
+    },
+    [slotsFlat]
+  );
+
+  const passoAtual = horarioSelecionado ? 3 : diaSelecionado ? 2 : 1;
 
   if (loading) return <AgendarPageSkeleton />;
 
@@ -252,11 +363,11 @@ function AgendarPageInner() {
   );
 
   return (
-    <div className="min-h-screen bg-background py-8 sm:py-10 px-4">
+    <main className={`min-h-screen bg-background py-8 sm:py-10 px-4 ${diaSelecionado && horarioSelecionado ? 'pb-40' : ''}`}>
       <div className="max-w-2xl mx-auto">
 
-        <div className="mb-8">
-          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-full text-body text-tcc-azul-dark dark:text-tcc-azul-light font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer">
+        <div className="mb-6">
+          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-full text-body text-tcc-azul-dark dark:text-tcc-azul-light font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tcc-azul-dark">
             <ArrowLeft size={18} aria-hidden="true" />
             Voltar
           </button>
@@ -268,14 +379,21 @@ function AgendarPageInner() {
           )}
         </div>
 
+        <PassosProgresso passoAtual={passoAtual} />
+
         {erro && (
-          <div role="alert" className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body rounded-xl px-4 py-3">
+          <div
+            ref={refErro}
+            role="alert"
+            tabIndex={-1}
+            className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body rounded-xl px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+          >
             {erro}
           </div>
         )}
 
-        <div className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4">
-          <h2 className="flex items-center gap-2 text-body-lg font-bold text-foreground self-start">
+        <section className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4" aria-labelledby="titulo-passo-1">
+          <h2 id="titulo-passo-1" className="flex items-center gap-2 text-body-lg font-bold text-foreground self-start">
             <CalendarDays size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
             1. Escolha o dia
           </h2>
@@ -287,16 +405,26 @@ function AgendarPageInner() {
             onSelectDia={selecionarDia}
             onMesChange={(novoMes, novoAno) => { setMesAtual(novoMes); setAnoAtual(novoAno); }}
           />
-        </div>
+        </section>
 
         {diaSelecionado && (
-          <div className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6">
-            <h2 className="flex items-center gap-2 text-body-lg font-bold text-foreground mb-1">
+          <section className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6" aria-labelledby="titulo-passo-2">
+            <h2
+              ref={refHorarioHeading}
+              id="titulo-passo-2"
+              tabIndex={-1}
+              className="flex items-center gap-2 text-body-lg font-bold text-foreground mb-1 focus:outline-none"
+            >
               <Clock size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
               2. Escolha o horário
             </h2>
             <p className="text-body-sm text-muted-foreground mb-5 capitalize">
               {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            </p>
+            <p className="sr-only" aria-live="polite">
+              {slotsDoDia.length === 0
+                ? 'Nenhum horário disponível neste dia.'
+                : `${slotsDoDia.length} horário${slotsDoDia.length > 1 ? 's' : ''} disponível${slotsDoDia.length > 1 ? 'is' : ''} neste dia.`}
             </p>
             {slotsDoDia.length === 0 ? (
               <p className="text-body text-muted-foreground">Nenhum horário disponível neste dia.</p>
@@ -307,73 +435,113 @@ function AgendarPageInner() {
                   if (slotsPeriodo.length === 0) return null;
                   return (
                     <div key={chave}>
-                      <div className="flex items-center gap-1.5 text-body-sm font-bold text-foreground mb-2.5">
+                      <h3 className="flex items-center gap-1.5 text-body-sm font-bold text-foreground mb-2.5">
                         <Icon aria-hidden="true" />
                         {label}
                         <span className="text-muted-foreground font-medium">· {slotsPeriodo.length} horário{slotsPeriodo.length > 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
-                        {slotsPeriodo.map((slot) => (
-                          <button
-                            key={slot}
-                            onClick={() => setHorarioSelecionado(slot)}
-                            aria-pressed={horarioSelecionado === slot}
-                            className={`rounded-xl h-12 text-body font-bold border-2 transition-all duration-200 ease-apple cursor-pointer
-                              ${horarioSelecionado === slot
-                                ? 'border-tcc-laranja bg-accent text-accent-foreground shadow-soft scale-[1.02]'
-                                : 'border-transparent bg-muted text-foreground hover:border-tcc-laranja/40'}
-                            `}
-                          >
-                            {slot}
-                          </button>
-                        ))}
+                      </h3>
+                      <div
+                        role="radiogroup"
+                        aria-label={`Horários disponíveis no período da ${label.toLowerCase()}`}
+                        className="grid grid-cols-3 sm:grid-cols-5 gap-2.5"
+                      >
+                        {slotsPeriodo.map((slot) => {
+                          const selecionado = horarioSelecionado === slot;
+                          // roving tabindex: só o item selecionado (ou o primeiro do dia, se nada selecionado) é alcançável via Tab
+                          const ehFocoInicial = !horarioSelecionado && slotsFlat[0] === slot;
+                          return (
+                            <button
+                              key={slot}
+                              ref={(el) => {
+                                if (el) slotRefs.current.set(slot, el);
+                                else slotRefs.current.delete(slot);
+                              }}
+                              role="radio"
+                              aria-checked={selecionado}
+                              aria-label={`Selecionar horário ${slot}`}
+                              tabIndex={selecionado || ehFocoInicial ? 0 : -1}
+                              onClick={() => setHorarioSelecionado(slot)}
+                              onKeyDown={(e) => handleSlotKeyDown(e, slot)}
+                              className={`rounded-xl h-12 text-body font-bold border-2 transition-all duration-200 ease-apple cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-dark focus-visible:ring-offset-2
+                                ${selecionado
+                                  ? 'border-tcc-laranja bg-accent text-accent-foreground shadow-soft scale-[1.02]'
+                                  : 'border-transparent bg-muted text-foreground hover:border-tcc-laranja/40'}
+                              `}
+                            >
+                              {slot}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   );
                 })}
               </div>
             )}
-          </div>
+          </section>
         )}
 
         {diaSelecionado && horarioSelecionado && (
-          <div className="bg-card rounded-2xl p-5 sm:p-7 shadow-elevated mb-4 sticky bottom-4 border border-border">
-            <h2 className="text-body-lg font-bold text-foreground mb-4">3. Confirme os dados</h2>
-            <div className="flex flex-col gap-2.5 mb-6">
-              <div className="flex justify-between text-body">
-                <span className="text-muted-foreground">Serviço</span>
-                <span className="font-semibold text-foreground text-right">{servico?.nome}</span>
+          <div className="fixed bottom-0 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border shadow-elevated">
+            <div className="max-w-2xl mx-auto p-5 sm:p-6">
+              <h2
+                ref={refConfirmacaoHeading}
+                id="titulo-passo-3"
+                tabIndex={-1}
+                className="text-body-lg font-bold text-foreground mb-3 focus:outline-none"
+              >
+                3. Confirme os dados
+              </h2>
+              <div className="flex flex-col gap-2 mb-4 text-body-sm sm:text-body">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Serviço</span>
+                  <span className="font-semibold text-foreground text-right">{servico?.nome}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Data</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="font-semibold text-foreground text-right capitalize">
+                      {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    </span>
+                    <button
+                      onClick={() => rolarEfocar(refHorarioHeading.current ? { current: document.getElementById('titulo-passo-1') } : null) || document.getElementById('titulo-passo-1')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="text-tcc-azul-dark dark:text-tcc-azul-light p-1 -m-1 rounded-full hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-tcc-azul-dark"
+                      aria-label="Alterar dia"
+                    >
+                      <Pencil size={13} aria-hidden="true" />
+                    </button>
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">Horário</span>
+                  <span className="flex items-center gap-1.5">
+                    <span className="font-semibold text-foreground">{horarioSelecionado}</span>
+                    <button
+                      onClick={() => document.getElementById('titulo-passo-2')?.scrollIntoView({ behavior: 'smooth' })}
+                      className="text-tcc-azul-dark dark:text-tcc-azul-light p-1 -m-1 rounded-full hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-tcc-azul-dark"
+                      aria-label="Alterar horário"
+                    >
+                      <Pencil size={13} aria-hidden="true" />
+                    </button>
+                  </span>
+                </div>
+                <div className="h-px bg-border my-1" />
+                <div className="flex justify-between text-body-lg">
+                  <span className="text-muted-foreground">Total</span>
+                  <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">R$ {Number(servico?.preco).toFixed(2)}</span>
+                </div>
               </div>
-              <div className="flex justify-between text-body">
-                <span className="text-muted-foreground">Data</span>
-                <span className="font-semibold text-foreground text-right capitalize">
-                  {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </span>
-              </div>
-              <div className="flex justify-between text-body">
-                <span className="text-muted-foreground">Horário</span>
-                <span className="font-semibold text-foreground">{horarioSelecionado}</span>
-              </div>
-              <div className="flex justify-between text-body">
-                <span className="text-muted-foreground">Duração</span>
-                <span className="font-semibold text-foreground">{servico?.duracaoEstimada} min</span>
-              </div>
-              <div className="h-px bg-border my-1.5" />
-              <div className="flex justify-between text-body-lg">
-                <span className="text-muted-foreground">Total</span>
-                <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">R$ {Number(servico?.preco).toFixed(2)}</span>
-              </div>
+              <button
+                onClick={confirmarAgendamento}
+                disabled={enviando}
+                className="w-full bg-tcc-azul-dark text-white rounded-full h-13 text-body-lg font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
+              </button>
             </div>
-            <button
-              onClick={confirmarAgendamento}
-              disabled={enviando}
-              className="w-full bg-tcc-azul-dark text-white rounded-full h-13 text-body-lg font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer"
-            >
-              {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
-            </button>
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }
