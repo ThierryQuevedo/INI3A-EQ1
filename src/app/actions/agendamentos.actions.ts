@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import { eq, and, gte, asc } from 'drizzle-orm';
+import { eq, and, gte, asc, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { agendamentos, servicos, usuarios, avaliacoes } from '@/db/schema';
 import { getSession } from './auth.actions';
@@ -45,12 +45,44 @@ export async function confirmarAgendamentoAction({
   const usuario = await getSession();
   if (!usuario) return { erro: 'Não autenticado.' };
 
+  const agendamentoDate = new Date(dataHora);
+  if (isNaN(agendamentoDate.getTime()) || agendamentoDate < new Date()) {
+    return { erro: 'Data ou horário inválido.' };
+  }
+
+  const [servicoExistente] = await db
+    .select({ id: servicos.id, prestadorId: servicos.prestadorId })
+    .from(servicos)
+    .where(eq(servicos.id, Number(servicoId)))
+    .limit(1);
+
+  if (!servicoExistente) {
+    return { erro: 'Serviço não encontrado.' };
+  }
+
+  const agendamentoExistente = await db
+    .select({ id: agendamentos.id })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .where(
+      and(
+        eq(servicos.prestadorId, servicoExistente.prestadorId),
+        eq(agendamentos.dataHora, agendamentoDate),
+        ne(agendamentos.status, 'cancelado')
+      )
+    )
+    .limit(1);
+
+  if (agendamentoExistente.length > 0) {
+    return { erro: 'Este horário já foi preenchido. Por favor, escolha outro.' };
+  }
+
   const [novo] = await db
     .insert(agendamentos)
     .values({
       clienteId: usuario.id,
       servicoId,
-      dataHora: new Date(dataHora),
+      dataHora: agendamentoDate,
       status: 'pendente',
     })
     .returning();

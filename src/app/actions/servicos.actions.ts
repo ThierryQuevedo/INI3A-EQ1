@@ -79,6 +79,11 @@ export async function cadastrarServico(formData: FormData) {
     throw new Error('Campos obrigatórios ausentes no formulário.');
   }
 
+  const precoNum = Number(preco);
+  if (isNaN(precoNum) || precoNum <= 0 || precoNum > 999999.99) {
+    throw new Error('Preço inválido. O valor deve estar entre R$ 0,01 e R$ 999.999,99.');
+  }
+
   let categoriaIdFinal: number;
 
   if (categoriaIdRaw === 'outro') {
@@ -106,7 +111,7 @@ export async function cadastrarServico(formData: FormData) {
     slug: gerarSlug(nome.toString()),
     descricao: descricao ? descricao.toString() : null,
     urlImagem,
-    preco: preco.toString(),
+    preco: precoNum.toFixed(2),
     duracaoEstimada: parseInt(duracaoEstimada.toString(), 10),
   });
 

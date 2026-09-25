@@ -176,37 +176,43 @@ function AgendarPageInner() {
     carregar();
   }, [servicoId]);
 
-  const diaSelecionadoAuto = useMemo(() => {
-    if (loading || !servico || disponibilidades.length === 0) return null;
-
+  function ehDataPassada(data) {
+    const d = new Date(data);
+    d.setHours(0, 0, 0, 0);
     const hoje = new Date();
-    const diaSemana = hoje.getDay();
-    const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
-    if (!disp) return null;
+    hoje.setHours(0, 0, 0, 0);
+    return d < hoje;
+  }
 
-    return {
-      data: hoje,
-      diaSemana,
-      horaInicio: disp.horaInicio,
-      horaFim: disp.horaFim,
-    };
-  }, [loading, servico, disponibilidades]);
+  const slotsLivres = useCallback((diaObj) => {
+    if (!servico || !diaObj) return [];
+    const data = diaObj.data ? new Date(diaObj.data) : new Date(diaObj);
+    if (ehDataPassada(data)) return [];
 
-  const diaSelecionado = diaSelecionadoManual ?? diaSelecionadoAuto;
+    const diaSemana = data.getDay();
+    // Obtém todos os blocos de disponibilidade explicitamente salvos para este dia da semana
+    const dispsDoDia = disponibilidades.filter((d) => Number(d.diaSemana) === diaSemana);
+    if (dispsDoDia.length === 0) return [];
 
-  function slotsLivres(diaObj) {
-    if (!servico) return [];
-    const slots = gerarSlots(diaObj.horaInicio, diaObj.horaFim, servico.duracaoEstimada);
-    const dataStr = diaObj.data.toDateString();
+    // Lógica flexível: gera blocos de atendimento partindo do horário inicial de cada bloco (ex.: 09:00)
+    const todosSlots = [];
+    for (const disp of dispsDoDia) {
+      if (!disp.horaInicio || !disp.horaFim) continue;
+      const slots = gerarSlots(disp.horaInicio, disp.horaFim, servico.duracaoEstimada);
+      todosSlots.push(...slots);
+    }
+
+    const slotsUnicos = Array.from(new Set(todosSlots)).sort();
+    const dataStr = data.toDateString();
 
     const ocupados = agendados
-      .filter((ag) => new Date(ag.dataHora).toDateString() === dataStr)
+      .filter((ag) => ag.status !== 'cancelado' && new Date(ag.dataHora).toDateString() === dataStr)
       .map((ag) => {
         const d = new Date(ag.dataHora);
         return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
       });
 
-    let livres = slots.filter((s) => !ocupados.includes(s));
+    let livres = slotsUnicos.filter((s) => !ocupados.includes(s));
 
     const agora = new Date();
     if (dataStr === agora.toDateString()) {
@@ -218,41 +224,59 @@ function AgendarPageInner() {
     }
 
     return livres;
-  }
+  }, [servico, disponibilidades, agendados]);
 
-  function calcularDiasInfo() {
+  const diasInfo = useMemo(() => {
     if (!servico) return {};
     const diasNoMes = new Date(anoAtual, mesAtual + 1, 0).getDate();
     const info = {};
 
     for (let dia = 1; dia <= diasNoMes; dia++) {
       const data = new Date(anoAtual, mesAtual, dia);
-      const diaSemana = data.getDay();
-      const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
-
-      if (!disp) {
+      if (ehDataPassada(data)) {
         info[dia] = { disponivel: false, vagas: 0 };
         continue;
       }
 
-      const livres = slotsLivres({ data, horaInicio: disp.horaInicio, horaFim: disp.horaFim });
+      const livres = slotsLivres({ data });
       info[dia] = { disponivel: livres.length > 0, vagas: livres.length };
     }
     return info;
-  }
+  }, [servico, anoAtual, mesAtual, slotsLivres]);
 
-  const diasInfo = calcularDiasInfo();
+  const diaSelecionadoAuto = useMemo(() => {
+    if (loading || !servico || disponibilidades.length === 0) return null;
+
+    const hoje = new Date();
+    // Bloqueia auto-seleção se o dia de hoje não tiver vagas abertas
+    const livresHoje = slotsLivres({ data: hoje });
+    if (livresHoje.length === 0) return null;
+
+    return {
+      data: hoje,
+      diaSemana: hoje.getDay(),
+    };
+  }, [loading, servico, disponibilidades, slotsLivres]);
+
+  const diaSelecionado = diaSelecionadoManual ?? diaSelecionadoAuto;
 
   function selecionarDia(data) {
-    const diaSemana = data.getDay();
-    const disp = disponibilidades.find((d) => d.diaSemana === diaSemana);
-    if (!disp) return;
-    setDiaSelecionadoManual({ data, diaSemana, horaInicio: disp.horaInicio, horaFim: disp.horaFim });
+    if (ehDataPassada(data)) return;
+    const livres = slotsLivres({ data });
+    // Bloqueia seleção caso o dia escolhido não possua vagas abertas
+    if (livres.length === 0) return;
+
+    setDiaSelecionadoManual({ data, diaSemana: data.getDay() });
     setHorarioSelecionado(null);
   }
 
   async function confirmarAgendamento() {
     if (!diaSelecionado || !horarioSelecionado) return;
+    const livres = slotsLivres(diaSelecionado);
+    if (!livres.includes(horarioSelecionado)) {
+      setErro('O horário selecionado não está mais disponível.');
+      return;
+    }
     setEnviando(true);
     setErro(null);
     try {
@@ -279,7 +303,7 @@ function AgendarPageInner() {
     }
   }
 
-  const slotsDoDia = diaSelecionado ? slotsLivres(diaSelecionado) : [];
+  const slotsDoDia = useMemo(() => (diaSelecionado ? slotsLivres(diaSelecionado) : []), [diaSelecionado, slotsLivres]);
   const gruposPeriodo = useMemo(() => agruparPorPeriodo(slotsDoDia), [slotsDoDia]);
   const slotsFlat = useMemo(
     () => PERIODOS.flatMap(({ chave }) => gruposPeriodo[chave] || []),
@@ -346,7 +370,7 @@ function AgendarPageInner() {
     [slotsFlat]
   );
 
-  const passoAtual = horarioSelecionado ? 3 : diaSelecionado ? 2 : 1;
+  const passoAtual = horarioSelecionado ? 3 : (diaSelecionado && slotsDoDia.length > 0) ? 2 : 1;
 
   if (loading) return <AgendarPageSkeleton />;
 

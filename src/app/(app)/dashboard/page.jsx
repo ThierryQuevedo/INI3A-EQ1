@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireSession } from "@/app/actions/auth.actions";
-import BotaoCancelarAgendamento from "@/app/components/features/agendamentos/BotaoCancelarAgendamento";
+import BotaoStatusConfirm from "@/app/components/features/agendamentos/BotaoStatusConfirm";
 import CardServicoDestaque from "@/app/components/features/servicos/CardServicoDestaque";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios, categorias } from "@/db/schema";
@@ -112,23 +112,36 @@ export default async function Dashboard() {
           </span>
 
           {podeConfirmar && (
-            <form action={atualizarStatusAgendamento.bind(null, ag.id, 'confirmado')}>
-              <button type="submit" className="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer">
-                Confirmar
-              </button>
-            </form>
+            <BotaoStatusConfirm
+              action={atualizarStatusAgendamento.bind(null, ag.id, 'confirmado')}
+              textoBotao="Confirmar"
+              classeBotao="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              tituloModal="Confirmar agendamento?"
+              mensagemModal={`Deseja confirmar o agendamento de ${ag.clienteNome} para ${ag.servicoNome}?`}
+              classeConfirmar="bg-success text-white hover:bg-success/90"
+            />
           )}
 
           {podeConcluir && (
-            <form action={atualizarStatusAgendamento.bind(null, ag.id, 'concluido')}>
-              <button type="submit" className="bg-tcc-azul hover:bg-tcc-azul-dark text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer">
-                Concluir
-              </button>
-            </form>
+            <BotaoStatusConfirm
+              action={atualizarStatusAgendamento.bind(null, ag.id, 'concluido')}
+              textoBotao="Concluir"
+              classeBotao="bg-tcc-azul hover:bg-tcc-azul-dark text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              tituloModal="Concluir agendamento?"
+              mensagemModal={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
+              classeConfirmar="bg-tcc-azul text-white hover:bg-tcc-azul-dark"
+            />
           )}
 
           {podeCancelar && (
-            <BotaoCancelarAgendamento action={atualizarStatusAgendamento.bind(null, ag.id, 'cancelado')} />
+            <BotaoStatusConfirm
+              action={atualizarStatusAgendamento.bind(null, ag.id, 'cancelado')}
+              textoBotao="Cancelar"
+              classeBotao="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              tituloModal="Cancelar agendamento?"
+              mensagemModal={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
+              classeConfirmar="bg-destructive text-white hover:bg-destructive/90"
+            />
           )}
         </div>
       </div>

@@ -44,6 +44,11 @@ export default function UserBannerUpload({
   function processarArquivo(file) {
     if (!file) return;
 
+    if (!file.type || !file.type.startsWith("image/")) {
+      setToast({ tipo: "erro", mensagem: "Apenas arquivos de imagem são permitidos." });
+      return;
+    }
+
     const validacao = validarArquivo(file);
     if (!validacao.valido) {
       setToast({ tipo: "erro", mensagem: validacao.erro });
@@ -157,7 +162,7 @@ export default function UserBannerUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp"
+        accept="image/*"
         onChange={handleFileChange}
         className="hidden"
         aria-label="Upload de capa do perfil"

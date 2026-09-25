@@ -173,6 +173,13 @@ export default function CadastrarPage() {
               inputMode="numeric"
               value={campos.cel}
               onChange={handleChange}
+              onKeyDown={(e) => {
+                const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter"];
+                if (permitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
+                if (!/^[0-9]$/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
               aria-invalid={!!erros.cel}
               aria-describedby={erros.cel ? "cel-erro" : undefined}
               placeholder="(11) 91234-5678"

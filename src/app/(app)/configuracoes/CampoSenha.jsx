@@ -44,6 +44,7 @@ function ModalSenha({ label, icon, onClose }) {
               type="password"
               name="senhaAtual"
               placeholder="Senha atual"
+              required
               autoFocus
               className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
             />
@@ -55,6 +56,8 @@ function ModalSenha({ label, icon, onClose }) {
               type="password"
               name="novaSenha"
               placeholder="Nova senha"
+              required
+              minLength={6}
               className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
             />
           </div>
@@ -65,6 +68,8 @@ function ModalSenha({ label, icon, onClose }) {
               type="password"
               name="confirmarSenha"
               placeholder="Confirmar nova senha"
+              required
+              minLength={6}
               className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
             />
           </div>

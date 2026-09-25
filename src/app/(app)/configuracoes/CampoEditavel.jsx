@@ -6,14 +6,46 @@ import { Pencil, X } from "lucide-react";
 
 const estadoInicial = { erro: null };
 
+function formatarTelefone(valor) {
+  const digitos = String(valor || "").replace(/\D/g, "").slice(0, 11);
+  if (digitos.length === 0) return "";
+  if (digitos.length <= 2) return `(${digitos}`;
+  if (digitos.length <= 6) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
+  if (digitos.length <= 10) {
+    return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
+  }
+  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7, 11)}`;
+}
+
 function ModalEdicao({ label, name, valor, icon, action, type, onClose }) {
   const [state, formAction, isPending] = useActionState(action, estadoInicial);
+  const [campoValor, setCampoValor] = useState(
+    name === "telefone" ? formatarTelefone(valor) : (valor || "")
+  );
 
   useEffect(() => {
     if (state?.sucesso) {
       onClose();
     }
   }, [state, onClose]);
+
+  function handleKeyDown(e) {
+    if (name === "telefone") {
+      const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter"];
+      if (permitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
+      if (!/^[0-9]$/.test(e.key)) {
+        e.preventDefault();
+      }
+    }
+  }
+
+  function handleChange(e) {
+    if (name === "telefone") {
+      setCampoValor(formatarTelefone(e.target.value));
+    } else {
+      setCampoValor(e.target.value);
+    }
+  }
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Editar ${label}`} className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
@@ -39,9 +71,14 @@ function ModalEdicao({ label, name, valor, icon, action, type, onClose }) {
           <label htmlFor={`campo-${name}`} className="sr-only-status">{label}</label>
           <input
             id={`campo-${name}`}
-            type={type}
+            type={name === "telefone" ? "tel" : type}
             name={name}
-            defaultValue={valor}
+            value={campoValor}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            inputMode={name === "telefone" ? "numeric" : undefined}
+            maxLength={name === "telefone" ? 15 : undefined}
+            placeholder={name === "telefone" ? "(11) 91234-5678" : undefined}
             autoFocus
             className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
           />

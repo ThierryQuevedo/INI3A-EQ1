@@ -269,8 +269,16 @@ export async function atualizarSenha(estadoAnterior: unknown, formData: FormData
   const novaSenha = formData.get('novaSenha');
   const confirmarSenha = formData.get('confirmarSenha');
 
-  if (!senhaAtual || !novaSenha || !confirmarSenha) {
-    return { erro: 'Preencha todos os campos.' };
+  if (!senhaAtual || String(senhaAtual).trim() === '') {
+    return { erro: 'Informe a senha atual.' };
+  }
+
+  if (!novaSenha || String(novaSenha).trim() === '') {
+    return { erro: 'Informe a nova senha.' };
+  }
+
+  if (!confirmarSenha || String(confirmarSenha).trim() === '') {
+    return { erro: 'Confirme a nova senha.' };
   }
 
   if (String(novaSenha).length < 6) {
@@ -287,6 +295,10 @@ export async function atualizarSenha(estadoAnterior: unknown, formData: FormData
     .where(eq(usuarios.id, usuario.id))
     .limit(1);
 
+  if (!linha || !linha.senha) {
+    return { erro: 'Usuário não encontrado.' };
+  }
+
   const senhaValida = await bcrypt.compare(String(senhaAtual), linha.senha);
   if (!senhaValida) {
     return { erro: 'Senha atual incorreta.' };
@@ -294,6 +306,8 @@ export async function atualizarSenha(estadoAnterior: unknown, formData: FormData
 
   const novaSenhaHash = await bcrypt.hash(String(novaSenha), 10);
   await db.update(usuarios).set({ senha: novaSenhaHash }).where(eq(usuarios.id, usuario.id));
+
+  revalidatePath('/configuracoes');
 
   return { erro: null, sucesso: true };
 }

@@ -7,7 +7,7 @@ export default function DiaCalendario({
   passado = false,
   onClick,
 }) {
-  const desabilitado = passado || !disponivel;
+  const desabilitado = passado || !disponivel || Number(vagas) <= 0;
 
   let classes = "relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center text-body-lg sm:text-h6 font-bold transition-all duration-200 ease-apple ";
 

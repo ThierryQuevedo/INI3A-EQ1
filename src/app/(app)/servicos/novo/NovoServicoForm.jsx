@@ -95,7 +95,23 @@ export default function NovoServicoForm({ categorias = [], action }) {
                   name="preco"
                   step="0.01"
                   min="0"
+                  max="999999.99"
+                  maxLength={9}
                   placeholder="0,00"
+                  onKeyDown={(e) => {
+                    if (['e', 'E', '+', '-'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onInput={(e) => {
+                    if (e.target.value.length > 9) {
+                      e.target.value = e.target.value.slice(0, 9);
+                    }
+                    const num = parseFloat(e.target.value);
+                    if (!isNaN(num) && num > 999999.99) {
+                      e.target.value = '999999.99';
+                    }
+                  }}
                   className="w-full pl-10 pr-4 py-3 rounded-xl bg-tcc-neutro-100/60 border border-tcc-neutro-200 text-tcc-neutro-700 font-inter text-sm focus:outline-none focus:border-tcc-azul focus:ring-4 focus:ring-tcc-azul-lightest transition-all"
                   required
                 />

@@ -65,6 +65,7 @@ export default function DisponibilidadePage() {
 
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  const [toastSucesso, setToastSucesso] = useState(null);
   const [processando, setProcessando] = useState(false);
 
   const [blocoSelecionado, setBlocoSelecionado] = useState(null);
@@ -142,6 +143,12 @@ export default function DisponibilidadePage() {
     const t = setTimeout(() => setErro(null), 4000);
     return () => clearTimeout(t);
   }, [erro]);
+
+  useEffect(() => {
+    if (!toastSucesso) return;
+    const t = setTimeout(() => setToastSucesso(null), 4000);
+    return () => clearTimeout(t);
+  }, [toastSucesso]);
 
   const totalMinutosGrade = (HORA_GRADE_FIM - HORA_GRADE_INICIO + 1) * 60;
   const totalLinhas = Math.floor(totalMinutosGrade / passo);
@@ -244,6 +251,7 @@ export default function DisponibilidadePage() {
 
       const idsRemovidos = new Set(blocosParaFundir.map((b) => b.id));
       setDisponibilidades((prev) => [...prev.filter((d) => !idsRemovidos.has(d.id)), unificado]);
+      setToastSucesso('Disponibilidade salva com sucesso!');
 
     } catch (e) {
       setErro(e.message);
@@ -328,6 +336,7 @@ export default function DisponibilidadePage() {
       const atualizado = await criarBlocoBackend(bloco.diaSemana, minutosParaHHMM(inicioMin), minutosParaHHMM(fimMin));
       setDisponibilidades((prev) => [...prev.filter((d) => d.id !== bloco.id), atualizado]);
       setBlocoSelecionado(atualizado.id);
+      setToastSucesso('Horário atualizado com sucesso!');
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -357,6 +366,7 @@ export default function DisponibilidadePage() {
     try {
       const novo = await criarBlocoBackend(diaAlvo, bloco.horaInicio, bloco.horaFim);
       setDisponibilidades((prev) => [...prev, novo]);
+      setToastSucesso('Horário replicado com sucesso!');
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -371,6 +381,7 @@ export default function DisponibilidadePage() {
       await removerBlocoBackend(id);
       setDisponibilidades((prev) => prev.filter((d) => d.id !== id));
       setBlocoSelecionado(null);
+      setToastSucesso('Horário removido com sucesso!');
     } catch {
       setErro('Erro ao remover disponibilidade.');
     } finally {
@@ -666,6 +677,29 @@ export default function DisponibilidadePage() {
         </div>
 
       </div>
+
+      {toastSucesso && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-card border border-success/40 text-foreground px-4 py-3 rounded-2xl shadow-elevated animate-in fade-in slide-in-from-bottom-2"
+        >
+          <div className="w-7 h-7 rounded-full bg-success/20 text-success flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <span className="text-body-sm font-semibold">{toastSucesso}</span>
+          <button
+            type="button"
+            onClick={() => setToastSucesso(null)}
+            className="text-muted-foreground hover:text-foreground text-caption ml-2 p-1 rounded-full cursor-pointer"
+            aria-label="Fechar notificação"
+          >
+            ✕
+          </button>
+        </div>
+      )}
     </div>
   );
 }
