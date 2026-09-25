@@ -1,8 +1,8 @@
 
 import { User, ArrowRight, ShieldCheck, Mail, Phone, Calendar } from "lucide-react";
 import { requireSession, atualizarNome, atualizarEmail, atualizarTelefone } from "@/app/actions/auth.actions";
-import AvatarUpload from "@/app/components/layout/AvatarUpload";
-import BannerUpload from "./BannerUpload";
+import ProfileAvatar from "@/app/components/features/perfil/ProfileAvatar";
+import UserBannerUpload from "@/app/components/features/perfil/UserBannerUpload";
 import CampoEditavel from "./CampoEditavel";
 import CampoSenha from "./CampoSenha";
 
@@ -21,7 +21,7 @@ export default async function PaginaConfiguracoes() {
     <div className="min-h-screen bg-tcc-azul-deep font-sans flex flex-col antialiased selection:bg-tcc-laranja/30">
       <section className="bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep pt-16 pb-28 flex flex-col items-center justify-center relative">
 
-        <AvatarUpload usuario={usuario} inicialNome={inicialNome} />
+        <ProfileAvatar usuario={usuario} inicialNome={inicialNome} />
 
         <h1 className="text-white text-3xl font-bold tracking-wide font-urbanist drop-shadow-sm">
           {usuario.nome}
@@ -37,7 +37,7 @@ export default async function PaginaConfiguracoes() {
 
           <div className="mb-8">
             <h2 className="text-h6 font-bold text-foreground tracking-tight mb-3">Banner do perfil</h2>
-            <BannerUpload usuario={usuario} />
+            <UserBannerUpload usuario={usuario} />
           </div>
 
           <div className="flex items-center justify-between border-b border-border pb-4 mb-8">

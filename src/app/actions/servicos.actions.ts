@@ -96,12 +96,16 @@ export async function cadastrarServico(formData: FormData) {
     categoriaIdFinal = Number(categoriaIdRaw);
   }
 
+  const urlImagemRaw = formData.get('urlImagem');
+  const urlImagem = urlImagemRaw && urlImagemRaw.toString().trim() !== '' ? urlImagemRaw.toString().trim() : null;
+
   await db.insert(servicos).values({
     prestadorId,
     categoriaId: categoriaIdFinal,
     nome: nome.toString(),
     slug: gerarSlug(nome.toString()),
     descricao: descricao ? descricao.toString() : null,
+    urlImagem,
     preco: preco.toString(),
     duracaoEstimada: parseInt(duracaoEstimada.toString(), 10),
   });

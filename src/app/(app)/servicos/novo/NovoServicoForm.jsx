@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from 'react';
+import ServiceImageUpload from '@/app/components/features/servicos/ServiceImageUpload';
 
 export default function NovoServicoForm({ categorias = [], action }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
@@ -122,6 +123,12 @@ export default function NovoServicoForm({ categorias = [], action }) {
             </div>
 
           </div>
+
+          <ServiceImageUpload
+            name="urlImagem"
+            label="Foto de apresentação do serviço"
+            maxSizeMB={5}
+          />
 
           <div className="flex flex-col gap-1.5">
             <div className="flex justify-between items-center">
