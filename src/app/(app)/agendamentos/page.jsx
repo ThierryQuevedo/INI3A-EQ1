@@ -7,7 +7,7 @@ import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoSe
 export const dynamic = 'force-dynamic';
 
 const STATUS_CONFIG = {
-  pendente: { estilo: 'bg-warning/15 text-warning', Icon: Clock3, label: 'Pendente' },
+  pendente: { estilo: 'bg-warning/15 text-warning', Icon: Clock3, label: 'Pendenteœ' },
   confirmado: { estilo: 'bg-success/15 text-success', Icon: CalendarCheck2, label: 'Confirmado' },
   concluido: { estilo: 'bg-tcc-azul/10 text-tcc-azul', Icon: CheckCircle2, label: 'Concluído' },
   cancelado: { estilo: 'bg-destructive/10 text-destructive', Icon: XCircle, label: 'Cancelado' },
