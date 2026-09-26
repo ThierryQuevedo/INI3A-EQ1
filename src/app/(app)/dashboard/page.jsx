@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { requireSession } from "@/app/actions/auth.actions";
 import BotaoStatusConfirm from "@/app/components/features/agendamentos/BotaoStatusConfirm";
-import CardServicoDestaque from "@/app/components/features/servicos/CardServicoDestaque";
+import CardServicoCatalogo from "@/app/components/features/servicos/CardServicoCatalogo";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios, categorias } from "@/db/schema";
 import { eq, and, gte, lt, desc } from "drizzle-orm";
@@ -79,7 +79,7 @@ export default async function Dashboard() {
 
   function statusLabel(status) {
     const map = {
-      pendente:   { label: 'Pendente',   bg: 'bg-warning/15', text: 'text-warning' },
+      pendente:   { label: 'Aguardando confirmação',   bg: 'bg-warning/15', text: 'text-warning' },
       confirmado: { label: 'Confirmado', bg: 'bg-tcc-azul/10', text: 'text-tcc-azul' },
       concluido:  { label: 'Feito',      bg: 'bg-success/15', text: 'text-success' },
       cancelado:  { label: 'Cancelado',  bg: 'bg-destructive/10', text: 'text-destructive' },
@@ -242,14 +242,14 @@ export default async function Dashboard() {
               Ver catálogo completo
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
             {servicosDestaque.map((servico) => (
               <Link
                 key={servico.id}
                 href={`/servicos/${servico.slug || servico.id}`}
                 className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
-                <CardServicoDestaque servico={servico} />
+                <CardServicoCatalogo servico={servico} />
               </Link>
             ))}
           </div>
