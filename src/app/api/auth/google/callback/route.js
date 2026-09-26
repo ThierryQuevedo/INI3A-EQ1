@@ -12,10 +12,12 @@ import { criarSessao } from '@/lib/session';
 const STATE_COOKIE = 'google_oauth_state';
 
 function redirecionarComErro(request) {
-  return NextResponse.redirect(new URL('/login?erro=google', SITE_URL));
+  const baseUrl = process.env.SITE_URL || request.nextUrl.origin;
+  return NextResponse.redirect(new URL('/login?erro=google', baseUrl));
 }
 
 export async function GET(request) {
+  const baseUrl = process.env.SITE_URL || request.nextUrl.origin;
   const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
   const state = searchParams.get('state');
@@ -84,7 +86,7 @@ export async function GET(request) {
     revalidatePath('/', 'layout');
 
     const destino = usuario.tipo === 'prestador' ? '/dashboard' : '/';
-    return NextResponse.redirect(new URL(destino, SITE_URL));
+    return NextResponse.redirect(new URL(destino, baseUrl));
   } catch (error) {
     console.error('Erro no callback do Google:', error);
     return redirecionarComErro(request);
