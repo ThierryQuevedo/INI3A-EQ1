@@ -27,5 +27,5 @@ jobs:
             npm run build
             npx drizzle-kit push
             
-            pm2 start ./node_modules/.bin/next --name marcaai -- start -p 49681
+            pm2 start ./node_modules/.bin/next --name marcaai -- start -p 49682
             pm2 save
