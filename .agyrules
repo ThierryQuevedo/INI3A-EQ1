@@ -2,11 +2,36 @@
 
 ## Idioma e Estilo
 - Responda sempre em Português do Brasil.
+- Tom direto e objetivo: sem saudações, sem introduções ("Com certeza!", "Aqui está..."), sem parágrafos de encerramento, sem resumos do que foi feito. Vá direto ao código/comando/resposta.
+- Não repita o pedido do usuário antes de responder.
+- Não exponha raciocínio passo a passo nem justificativas longas, a menos que solicitado.
 
 ## Regras de Código
-- Use sempre javascript em vez TypeScript.
-- Não remova bibliotecas sem autorização explícita.
-- NUNCA mexer com o repositorio(git/github), nem se envolver com os commits
+- JavaScript sempre, nunca TypeScript.
+- Não remova ou substitua bibliotecas sem autorização explícita.
+- NUNCA execute ações de git/github (add, commit, push, PR) nem sugira mensagens de commit.
+- **Modificações:** nunca reescreva o arquivo inteiro. Retorne apenas o trecho/função alterada, com um comentário indicando o local de inserção (ex: `// dentro de handleSubmit, após a validação`).
+- Prefira diffs/patches a blocos de código completos quando a ferramenta suportar.
+- Mantenha nomes, formatação e convenções já existentes no arquivo; não refatore o que não foi pedido.
 
-## Testes e Segurança
-- Nunca inclua chaves de API ou senhas em texto puro no código.
+## Segurança
+- Nunca inclua chaves de API, tokens ou senhas em texto puro. Use variáveis de ambiente (`.env`) e referencie-as.
+
+## Eficiência de Tokens e Contexto
+- **Leitura de arquivos:** leia só as linhas/funções estritamente necessárias. Nunca leia diretórios inteiros ou múltiplos arquivos sem pedido explícito. Se precisar de mais contexto, peça o trecho específico em vez de escanear o projeto.
+- **Buscas:** no máximo 1 busca por rodada de análise. Não repita buscas já feitas na mesma conversa; reaproveite o contexto já obtido.
+- **Perguntas:** se algo for ambíguo, assuma a interpretação mais provável e sinalize a suposição em uma linha — não pare a tarefa para perguntar, exceto se a ambiguidade puder causar retrabalho grande.
+- **Sem excesso de ferramentas:** não rode lint/build/test automaticamente a menos que pedido ou que a tarefa exija validação óbvia (ex: sintaxe quebrada).
+- **Comandos de terminal:** forneça apenas a linha de comando, sem tutorial.
+- **Explicações:** zero teoria sobre "como o código funciona" a menos que o pedido contenha explicitamente "explique" ou "por que".
+
+## Roteamento por Complexidade (multi-modelo)
+- **Simples** (sintaxe, formatação, dúvidas pontuais, scripts curtos) → Gemini Flash / GPT-OSS.
+- **Intermediário** (novas rotinas, refatoração de módulo, testes unitários, lógica de negócio padrão) → Claude Sonnet / Gemini Pro.
+- **Complexo** (bugs críticos/evasivos, arquitetura de sistema, falhas concorrentes) → Claude Opus, e só nesses casos.
+- Na dúvida entre dois níveis, escolha o mais barato; escale só se a resposta falhar ou for insuficiente.
+
+## Formato de Saída
+- Código sem comentários explicativos redundantes (só onde a lógica não for óbvia).
+- Sem markdown decorativo desnecessário (bullets, títulos) em respostas curtas — só para código/comandos.
+- Se a tarefa já foi cumprida, não pergunte "posso ajudar em mais algo?".

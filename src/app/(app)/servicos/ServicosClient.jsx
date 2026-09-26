@@ -37,9 +37,9 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
         <div className="bg-tcc-azul-deep min-h-screen">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
 
-                <div className="mb-8 sm:mb-10">
+                <div className="mb-8 sm:mb-10 text-center sm:text-left">
                     <h1 className="font-display text-white font-bold text-h3">Catálogo de Serviços</h1>
-                    <p className="text-tcc-azul-light text-body-lg mt-2 max-w-2xl">
+                    <p className="text-tcc-azul-light text-body-lg mt-2 max-w-2xl mx-auto sm:mx-0">
                         Encontre um profissional pelo nome, categoria ou tipo de serviço.
                     </p>
                 </div>

@@ -387,7 +387,7 @@ function AgendarPageInner() {
   );
 
   return (
-    <main className={`min-h-screen bg-background py-8 sm:py-10 px-4 ${diaSelecionado && horarioSelecionado ? 'pb-40' : ''}`}>
+    <main className={`min-h-screen bg-background py-8 sm:py-10 px-4 ${diaSelecionado && horarioSelecionado ? 'pb-52 sm:pb-56' : ''}`}>
       <div className="max-w-2xl mx-auto">
 
         <div className="mb-6">
@@ -507,22 +507,22 @@ function AgendarPageInner() {
 
         {diaSelecionado && horarioSelecionado && (
           <div className="fixed bottom-0 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border shadow-elevated">
-            <div className="max-w-2xl mx-auto p-5 sm:p-6">
+            <div className="max-w-2xl mx-auto p-3 sm:p-5 sm:p-6 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               <h2
                 ref={refConfirmacaoHeading}
                 id="titulo-passo-3"
                 tabIndex={-1}
-                className="text-body-lg font-bold text-foreground mb-3 focus:outline-none"
+                className="text-body font-bold text-foreground mb-2 sm:mb-3 focus:outline-none"
               >
                 3. Confirme os dados
               </h2>
-              <div className="flex flex-col gap-2 mb-4 text-body-sm sm:text-body">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Serviço</span>
-                  <span className="font-semibold text-foreground text-right">{servico?.nome}</span>
+              <div className="flex flex-col gap-1.5 sm:gap-2 mb-3 sm:mb-4 text-body-sm sm:text-body">
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-muted-foreground shrink-0">Serviço</span>
+                  <span className="font-semibold text-foreground text-right truncate max-w-[55%]">{servico?.nome}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Data</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-muted-foreground shrink-0">Data</span>
                   <span className="flex items-center gap-1.5">
                     <span className="font-semibold text-foreground text-right capitalize">
                       {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
@@ -536,8 +536,8 @@ function AgendarPageInner() {
                     </button>
                   </span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">Horário</span>
+                <div className="flex justify-between items-center gap-2">
+                  <span className="text-muted-foreground shrink-0">Horário</span>
                   <span className="flex items-center gap-1.5">
                     <span className="font-semibold text-foreground">{horarioSelecionado}</span>
                     <button
@@ -549,8 +549,8 @@ function AgendarPageInner() {
                     </button>
                   </span>
                 </div>
-                <div className="h-px bg-border my-1" />
-                <div className="flex justify-between text-body-lg">
+                <div className="h-px bg-border my-0.5 sm:my-1" />
+                <div className="flex justify-between text-body sm:text-body-lg">
                   <span className="text-muted-foreground">Total</span>
                   <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">R$ {Number(servico?.preco).toFixed(2)}</span>
                 </div>
@@ -558,7 +558,7 @@ function AgendarPageInner() {
               <button
                 onClick={confirmarAgendamento}
                 disabled={enviando}
-                className="w-full bg-tcc-azul-dark text-white rounded-full h-13 text-body-lg font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="w-full bg-tcc-azul-dark text-white rounded-full h-11 sm:h-13 text-body font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
               </button>

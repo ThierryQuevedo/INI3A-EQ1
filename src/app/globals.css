@@ -69,7 +69,9 @@
   --color-accent-hover: var(--color-tcc-laranja-dark);
 
   --color-muted: #EBEDF5;
-  --color-muted-foreground: var(--color-tcc-neutro-400);
+  /* neutro-500 (#4E5054) dá ~7:1 de contraste contra branco/cinza-claro — passa WCAG AA.
+     neutro-400 (#707378) anterior ficava em ~4.3:1, abaixo do mínimo de 4.5:1. */
+  --color-muted-foreground: var(--color-tcc-neutro-500);
 
   --color-destructive: var(--color-danger);
   --color-destructive-foreground: #FFFFFF;
