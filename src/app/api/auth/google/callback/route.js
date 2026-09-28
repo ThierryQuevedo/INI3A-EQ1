@@ -11,13 +11,19 @@ import { criarSessao } from '@/lib/session';
 
 const STATE_COOKIE = 'google_oauth_state';
 
-function redirecionarComErro(request) {
-  const baseUrl = process.env.SITE_URL || request.nextUrl.origin;
-  return NextResponse.redirect(new URL('/login?erro=google', baseUrl));
+function buildUrl(path, baseUrl) {
+  const cleanBase = baseUrl.replace(/\/$/, '');
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${cleanBase}${cleanPath}`;
+}
+
+function redirecionarComErro(baseUrl) {
+  return NextResponse.redirect(buildUrl('/login?erro=google', baseUrl));
 }
 
 export async function GET(request) {
-  const baseUrl = process.env.SITE_URL || request.nextUrl.origin;
+  const baseUrl = process.env.SITE_URL || `${request.nextUrl.origin}/26-marcaai`;
+  
   const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
   const state = searchParams.get('state');
@@ -28,7 +34,7 @@ export async function GET(request) {
   cookieStore.delete(STATE_COOKIE);
 
   if (erroGoogle || !code || !state || !stateEsperado || state !== stateEsperado) {
-    return redirecionarComErro(request);
+    return redirecionarComErro(baseUrl);
   }
 
   try {
@@ -36,7 +42,7 @@ export async function GET(request) {
 
     const { tokens } = await client.getToken(code);
     if (!tokens.id_token) {
-      return redirecionarComErro(request);
+      return redirecionarComErro(baseUrl);
     }
 
     const ticket = await client.verifyIdToken({
@@ -47,7 +53,7 @@ export async function GET(request) {
 
     const email = payload?.email;
     if (!email || payload.email_verified === false) {
-      return redirecionarComErro(request);
+      return redirecionarComErro(baseUrl);
     }
 
     const nome = payload.name || email;
@@ -79,16 +85,16 @@ export async function GET(request) {
     }
 
     if (!usuario) {
-      return redirecionarComErro(request);
+      return redirecionarComErro(baseUrl);
     }
 
     await criarSessao(usuario.id);
     revalidatePath('/', 'layout');
 
     const destino = usuario.tipo === 'prestador' ? '/dashboard' : '/';
-    return NextResponse.redirect(new URL(destino, baseUrl));
+    return NextResponse.redirect(buildUrl(destino, baseUrl));
   } catch (error) {
     console.error('Erro no callback do Google:', error);
-    return redirecionarComErro(request);
+    return redirecionarComErro(baseUrl);
   }
 }
