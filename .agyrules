@@ -27,6 +27,7 @@
 
 ## Roteamento por Complexidade (multi-modelo)
 - **Simples** (sintaxe, formatação, dúvidas pontuais, scripts curtos) → Gemini Flash / GPT-OSS.
+
 - **Intermediário** (novas rotinas, refatoração de módulo, testes unitários, lógica de negócio padrão) → Claude Sonnet / Gemini Pro.
 - **Complexo** (bugs críticos/evasivos, arquitetura de sistema, falhas concorrentes) → Claude Opus, e só nesses casos.
 - Na dúvida entre dois níveis, escolha o mais barato; escale só se a resposta falhar ou for insuficiente.
