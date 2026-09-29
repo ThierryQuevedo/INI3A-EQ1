@@ -33,13 +33,13 @@ function EstrelasNota({ nota = 0, tamanho = 16 }) {
 }
 
 export default async function PerfilPrestador({ params }) {
-  const { id } = await params;
+  const { slug } = await params;
 
-  if (!id || isNaN(Number(id))) {
+  if (!slug) {
     return notFound();
   }
 
-  const perfil = await buscarPerfilPrestador(Number(id));
+  const perfil = await buscarPerfilPrestador(slug);
 
   if (!perfil) {
     return notFound();

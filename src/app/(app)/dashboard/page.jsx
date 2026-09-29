@@ -2,15 +2,24 @@ import Link from "next/link";
 import { requireSession } from "@/app/actions/auth.actions";
 import BotaoStatusConfirm from "@/app/components/features/agendamentos/BotaoStatusConfirm";
 import CardServicoCatalogo from "@/app/components/features/servicos/CardServicoCatalogo";
+import DashboardCliente from "@/app/components/features/dashboard/DashboardCliente";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios, categorias } from "@/db/schema";
 import { eq, and, gte, lt, desc } from "drizzle-orm";
 import { atualizarStatusAgendamento } from "@/app/actions/agendamentos.actions";
+import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
+import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
 
 export const dynamic = 'force-dynamic';
 
 export default async function Dashboard() {
   const usuario = await requireSession();
+
+  if (usuario.tipo === 'cliente') {
+    const dadosCliente = await buscarDashboardCliente(usuario.id);
+    return <DashboardCliente usuario={usuario} dados={dadosCliente} />;
+  }
+
   const nome = usuario.nome;
   const prestadorId = usuario.id;
 
@@ -28,7 +37,9 @@ export default async function Dashboard() {
     duracaoEstimada: servicos.duracaoEstimada,
   };
 
-  const [agendamentosHoje, agendamentosFuturos, servicosDestaque] = await Promise.all([
+  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+
+  const [agendamentosHoje, agendamentosFuturos, servicosDestaque, perfilPrestador, faturamento] = await Promise.all([
     db.select(camposAgendamento)
       .from(agendamentos)
       .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -64,7 +75,22 @@ export default async function Dashboard() {
       .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
       .orderBy(desc(servicos.id))
       .limit(8),
+
+    buscarPerfilPrestador(prestadorId),
+
+    db.select({
+        preco: servicos.preco,
+      })
+      .from(agendamentos)
+      .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+      .where(and(
+        eq(servicos.prestadorId, prestadorId),
+        eq(agendamentos.status, 'concluido'),
+        gte(agendamentos.dataHora, primeiroDiaMes)
+      )),
   ]);
+
+  const faturamentoTotal = faturamento.reduce((acc, curr) => acc + Number(curr.preco || 0), 0);
 
   function formatarHora(data) {
     const d = new Date(data);
@@ -159,6 +185,12 @@ export default async function Dashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
+              href={`/prestador/${usuario.slug || usuario.id}`}
+              className="bg-secondary hover:bg-muted text-foreground border border-border text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
+            >
+              Ver perfil público
+            </Link>
+            <Link
               href="/disponibilidades"
               className="bg-card hover:bg-muted text-tcc-azul-dark dark:text-tcc-azul-light border border-tcc-azul-dark/20 text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
             >
@@ -188,16 +220,23 @@ export default async function Dashboard() {
             <p className="text-muted-foreground">agendamentos hoje</p>
           </div>
           <div className="bg-card p-6 rounded-2xl border-l-4 border-tcc-laranja shadow-soft">
-            <h3 className="text-tcc-laranja-deep dark:text-tcc-laranja text-h4 font-bold">R$ —</h3>
+            <h3 className="text-tcc-laranja-deep dark:text-tcc-laranja text-h4 font-bold">
+              R$ {faturamentoTotal.toFixed(2).replace('.', ',')}
+            </h3>
             <p className="text-muted-foreground">este mês</p>
           </div>
           <div className="bg-card p-6 rounded-2xl border-l-4 border-success shadow-soft">
             <p className="text-success font-semibold text-body-sm">Avaliação</p>
-            <h3 className="text-success text-h4 font-bold">— <span className="text-h6">★</span></h3>
-            <p className="text-muted-foreground">— avaliações</p>
+            <h3 className="text-success text-h4 font-bold">
+              {perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}{' '}
+              <span className="text-h6">★</span>
+            </h3>
+            <p className="text-muted-foreground">{perfilPrestador?.totalAvaliacoes ?? 0} avaliações</p>
           </div>
           <div className="bg-card p-6 rounded-2xl border-l-4 border-foreground shadow-soft">
-            <h3 className="text-foreground text-h4 font-bold">—</h3>
+            <h3 className="text-foreground text-h4 font-bold">
+              {perfilPrestador?.totalClientesAtendidos ?? 0}
+            </h3>
             <p className="text-muted-foreground">Clientes atendidos</p>
           </div>
         </div>

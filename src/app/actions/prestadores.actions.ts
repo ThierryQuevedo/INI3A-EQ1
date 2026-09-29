@@ -1,6 +1,6 @@
 'use server';
 
-import { eq, and, avg, count, countDistinct, desc, isNotNull } from 'drizzle-orm';
+import { eq, or, and, avg, count, countDistinct, desc, isNotNull } from 'drizzle-orm';
 import { db } from '@/db';
 import {
   usuarios,
@@ -11,11 +11,18 @@ import {
   avaliacoes,
 } from '@/db/schema';
 
-export async function buscarPerfilPrestador(usuarioId: number) {
-  const id = Number(usuarioId);
+export async function buscarPerfilPrestador(identificador: string | number) {
+  if (!identificador) return null;
+
+  const isNumero = !isNaN(Number(identificador)) && Number(identificador) > 0;
+  const condicao = isNumero
+    ? or(eq(usuarios.id, Number(identificador)), eq(usuarios.slug, String(identificador)))
+    : eq(usuarios.slug, String(identificador));
+
   const [dadosUsuario] = await db
     .select({
       id: usuarios.id,
+      slug: usuarios.slug,
       nome: usuarios.nome,
       email: usuarios.email,
       telefone: usuarios.telefone,
@@ -27,10 +34,12 @@ export async function buscarPerfilPrestador(usuarioId: number) {
     })
     .from(usuarios)
     .innerJoin(prestadores, eq(prestadores.usuarioId, usuarios.id))
-    .where(eq(usuarios.id, id))
+    .where(condicao)
     .limit(1);
 
   if (!dadosUsuario) return null;
+
+  const prestadorId = dadosUsuario.id;
 
 
   const servicosDoPrestador = await db
@@ -45,7 +54,7 @@ export async function buscarPerfilPrestador(usuarioId: number) {
     })
     .from(servicos)
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(eq(servicos.prestadorId, id));
+    .where(eq(servicos.prestadorId, prestadorId));
 
   const [estatAvaliacoes] = await db
     .select({
@@ -57,7 +66,7 @@ export async function buscarPerfilPrestador(usuarioId: number) {
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
     .where(
       and(
-        eq(servicos.prestadorId, id),
+        eq(servicos.prestadorId, prestadorId),
         isNotNull(avaliacoes.notaParaPrestador)
       )
     );
@@ -71,7 +80,7 @@ export async function buscarPerfilPrestador(usuarioId: number) {
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
     .where(
-      and(eq(servicos.prestadorId, id), eq(agendamentos.status, 'concluido'))
+      and(eq(servicos.prestadorId, prestadorId), eq(agendamentos.status, 'concluido'))
     );
 
 
@@ -91,7 +100,7 @@ export async function buscarPerfilPrestador(usuarioId: number) {
     .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
     .where(
       and(
-        eq(servicos.prestadorId, id),
+        eq(servicos.prestadorId, prestadorId),
         isNotNull(avaliacoes.notaParaPrestador)
       )
     )

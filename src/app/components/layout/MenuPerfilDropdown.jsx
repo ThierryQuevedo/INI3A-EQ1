@@ -93,9 +93,20 @@ export default function PerfilDropdown({ user }) {
                         onClick={() => setAberto(false)}
                         className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                     >
-                        <UserRound size={18} className="text-tcc-" aria-hidden="true" />
-                        <span className="text-body-sm font-semibold">Perfil</span>
+                        <UserRound size={18} className="text-tcc-azul" aria-hidden="true" />
+                        <span className="text-body-sm font-semibold">Configurações</span>
                     </Link>
+                    {user?.id && (
+                        <Link
+                            href={user.tipo === 'prestador' ? `/prestador/${user.slug || user.id}` : `/cliente/${user.slug || user.id}`}
+                            role="menuitem"
+                            onClick={() => setAberto(false)}
+                            className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
+                        >
+                            <User size={18} className="text-tcc-laranja" aria-hidden="true" />
+                            <span className="text-body-sm font-semibold">Perfil Público</span>
+                        </Link>
+                    )}
                     <button
                         type="button"
                         onClick={() => setTheme(isDark ? "light" : "dark")}

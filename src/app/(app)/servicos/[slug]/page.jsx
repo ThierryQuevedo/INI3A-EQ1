@@ -24,11 +24,14 @@ export default async function DetalheServico({ params }) {
       descricao: servicos.descricao,
       preco: servicos.preco,
       duracaoEstimada: servicos.duracaoEstimada,
+      urlImagem: servicos.urlImagem,
       categoriaNome: categorias.nome,
       prestadorId: servicos.prestadorId,
+      prestadorSlug: usuarios.slug,
       prestadorNome: usuarios.nome,
       prestadorEmail: usuarios.email,
       prestadorTelefone: usuarios.telefone,
+      prestadorImagem: usuarios.urlImagem,
       prestadorBiografia: prestadores.biografia,
     })
     .from(servicos)
@@ -49,14 +52,17 @@ export default async function DetalheServico({ params }) {
     descricao: dadosDb.descricao || "Nenhuma descrição informada pelo prestador.",
     preco: dadosDb.preco || "0.00",
     duracaoEstimada: dadosDb.duracaoEstimada || 0,
+    urlImagem: dadosDb.urlImagem,
     categoria: dadosDb.categoriaNome || "Sem categoria",
     avaliacaoMedia: 4.5,
     prestadorId: dadosDb.prestadorId,
+    prestadorSlug: dadosDb.prestadorSlug || dadosDb.prestadorId,
     prestador: {
       nome: dadosDb.prestadorNome || "Profissional",
       biografia: dadosDb.prestadorBiografia || "Profissional parceiro do Marca Aí.",
       telefone: dadosDb.prestadorTelefone || "Não informado",
       email: dadosDb.prestadorEmail || "Não informado",
+      urlImagem: dadosDb.prestadorImagem,
     }
   };
 
@@ -76,10 +82,10 @@ export default async function DetalheServico({ params }) {
         <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-tcc-azul-darker/60 backdrop-blur-md p-6 rounded-3xl shadow-2xl gap-6">
           <div className="flex flex-col items-center md:flex-row gap-6">
 
-            <div className="relative size-32 rounded-2xl overflow-hidden border-4 border-tcc-azul-medium shadow-md">
+            <div className="relative size-32 rounded-2xl overflow-hidden border-4 border-tcc-azul-medium shadow-md bg-tcc-azul-dark">
               <Image
-                src={`https://picsum.photos/200/200?random=${servico.id}`}
-                alt={servico.prestador.nome}
+                src={servico.urlImagem || `https://picsum.photos/200/200?random=${servico.id}`}
+                alt={servico.nome}
                 fill
                 className="object-cover"
               />
@@ -92,7 +98,15 @@ export default async function DetalheServico({ params }) {
               <h1 className="text-h4 font-extrabold font-display tracking-tight mb-2">
                 {servico.nome}
               </h1>
-              <p className="text-tcc-azul-light font-medium mb-3">Por: {servico.prestador.nome}</p>
+              <p className="text-tcc-azul-light font-medium mb-3">
+                Por:{' '}
+                <Link
+                  href={`/prestador/${servico.prestadorSlug}`}
+                  className="font-bold underline text-white hover:text-tcc-laranja transition-colors"
+                >
+                  {servico.prestador.nome}
+                </Link>
+              </p>
 
               <div className="bg-tcc-azul-dark w-fit mx-auto md:mx-0 px-4 py-1.5 rounded-full flex items-center gap-2 border border-tcc-azul/40">
                 <span className="text-body-sm font-bold text-tcc-laranja" aria-hidden="true">{servico.avaliacaoMedia.toFixed(1)}</span>
@@ -157,6 +171,13 @@ export default async function DetalheServico({ params }) {
               <p className="text-body-sm text-tcc-azul-lightest leading-relaxed mb-6">
                 {servico.prestador.biografia}
               </p>
+
+              <Link
+                href={`/prestador/${servico.prestadorSlug}`}
+                className="w-full mb-6 bg-tcc-azul-dark hover:bg-tcc-azul border border-tcc-azul-light/20 text-white text-body-sm font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-center"
+              >
+                Ver perfil e outros serviços
+              </Link>
 
               <h3 className="text-caption font-bold uppercase tracking-wider text-tcc-azul-light mb-3">
                 Canais de Contato

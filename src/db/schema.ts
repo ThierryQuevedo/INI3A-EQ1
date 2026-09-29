@@ -3,6 +3,7 @@ import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar } 
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
   nome: text('nome').notNull(),
+  slug: varchar('slug', { length: 255 }),
   email: text('email').notNull().unique(),
   telefone: text('telefone').unique(),
   urlImagem: text('url_imagem'),

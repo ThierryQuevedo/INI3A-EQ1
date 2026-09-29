@@ -8,6 +8,7 @@ import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, sessoes, prestadores } from '@/db/schema';
 import { SESSION_COOKIE, criarSessao } from '@/lib/session';
+import { gerarSlug } from '@/lib/slug';
 
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
   try {
@@ -33,10 +34,24 @@ export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
 
     const senhaHash = await bcrypt.hash(String(senha), 10);
 
+    let baseSlug = gerarSlug(String(nome));
+    if (!baseSlug) baseSlug = 'usuario';
+    let finalSlug = baseSlug;
+    const [slugExistente] = await db
+      .select({ id: usuarios.id })
+      .from(usuarios)
+      .where(eq(usuarios.slug, finalSlug))
+      .limit(1);
+
+    if (slugExistente) {
+      finalSlug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+    }
+
     const resultadoNovoUsuario = await db
       .insert(usuarios)
       .values({
         nome: String(nome),
+        slug: finalSlug,
         email: String(email),
         telefone: String(telefone),
         senha: senhaHash,
@@ -132,6 +147,7 @@ export async function getSession() {
       .select({
         id: usuarios.id,
         nome: usuarios.nome,
+        slug: usuarios.slug,
         email: usuarios.email,
         telefone: usuarios.telefone,
         tipo: usuarios.tipo,

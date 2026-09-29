@@ -14,6 +14,8 @@ export default async function ServicosPage() {
       preco: servicos.preco,
       urlImagem: servicos.urlImagem,
       duracao: servicos.duracaoEstimada,
+      prestadorId: servicos.prestadorId,
+      prestadorSlug: usuarios.slug,
       nomeProfissional: usuarios.nome,
       categoriaId: servicos.categoriaId,
       nomeCategoria: categorias.nome,
