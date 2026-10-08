@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { servicos, usuarios, categorias } from '@/db/schema';
 import ServicosClient from './ServicosClient';
+import { comEstatisticas } from '@/lib/avaliacoes';
 
 export default async function ServicosPage() {
   const dadosBrutos = await db
@@ -28,5 +29,5 @@ export default async function ServicosPage() {
     .select({ id: categorias.id, nome: categorias.nome })
     .from(categorias);
 
-  return <ServicosClient servicos={dadosBrutos} categorias={listaCategorias} />;
+  return <ServicosClient servicos={await comEstatisticas(dadosBrutos)} categorias={listaCategorias} />;
 }

@@ -96,6 +96,29 @@ export async function confirmarAgendamentoAction({
 }
 
 export async function atualizarStatusAgendamento(id: number, status: string) {
+  const usuario = await getSession();
+  if (!usuario) return;
+
+  const [atual] = await db
+    .select({
+      status: agendamentos.status,
+      clienteId: agendamentos.clienteId,
+      prestadorId: servicos.prestadorId,
+    })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .where(eq(agendamentos.id, Number(id)))
+    .limit(1);
+
+  if (!atual) return;
+
+  const ehPrestador = atual.prestadorId === usuario.id;
+  const ehCliente = atual.clienteId === usuario.id;
+  const permitido = status === 'cancelado' ? ehPrestador || ehCliente : ehPrestador;
+  if (!permitido) return;
+
+  if (atual.status === status) return;
+
   await db.update(agendamentos).set({ status }).where(eq(agendamentos.id, id));
 
   switch (status) {

@@ -7,6 +7,13 @@ import { db } from '@/db';
 import { avaliacoes, agendamentos, servicos } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { notificarNovaAvaliacao } from '@/lib/notificacoes';
+import { verificarPodeAvaliar } from '@/lib/avaliacoes';
+
+const ERROS_AVALIACAO = {
+  nao_encontrado: 'Agendamento não encontrado.',
+  nao_autorizado: 'Não autorizado.',
+  nao_concluido: 'Este serviço ainda não foi concluído.',
+};
 
 export async function avaliarServico({
   agendamentoId,
@@ -25,17 +32,9 @@ export async function avaliarServico({
     return { erro: 'A nota deve ser um número inteiro entre 1 e 5.' };
   }
 
-  const [agendamento] = await db
-    .select()
-    .from(agendamentos)
-    .where(eq(agendamentos.id, Number(agendamentoId)))
-    .limit(1);
-
-  if (!agendamento) return { erro: 'Agendamento não encontrado.' };
-  if (agendamento.clienteId !== usuario.id) return { erro: 'Não autorizado.' };
-  if (agendamento.status !== 'concluido') {
-    return { erro: 'Este serviço ainda não foi concluído.' };
-  }
+  // 'ja_avaliado' não bloqueia: reenviar atualiza a avaliação existente.
+  const { motivo } = await verificarPodeAvaliar(agendamentoId, usuario.id);
+  if (motivo && motivo !== 'ja_avaliado') return { erro: ERROS_AVALIACAO[motivo] };
 
   const comentarioNormalizado = comentario?.trim() || null;
 
@@ -67,6 +66,11 @@ export async function avaliarServico({
   );
 
   revalidatePath('/agendamentos');
+  revalidatePath('/avaliar/[agendamentoId]', 'page');
+  revalidatePath('/servicos/[slug]', 'page');
+  revalidatePath('/prestador/[slug]', 'page');
+  revalidatePath('/servicos');
+  revalidatePath('/');
   return { erro: null, sucesso: true };
 }
 

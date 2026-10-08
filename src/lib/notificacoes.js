@@ -13,6 +13,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import { agendamentos, notificacoes, servicos, usuarios } from '@/db/schema';
 import { enviarEmail } from './email.js';
+import { verificarPodeAvaliar } from './avaliacoes.js';
 import {
   emailAgendamentoCancelado,
   emailAgendamentoConfirmado,
@@ -36,6 +37,7 @@ const prestadorUsuarios = alias(usuarios, 'prestador_usuarios');
 async function dadosDoAgendamento(agendamentoId) {
   const [info] = await db
     .select({
+      agendamentoId: agendamentos.id,
       clienteId: usuarios.id,
       clienteNome: usuarios.nome,
       clienteEmail: usuarios.email,
@@ -157,9 +159,15 @@ export async function notificarAgendamentoCancelado(agendamentoId) {
   });
 }
 
-/** Serviço concluído: convida o cliente a avaliar. */
+/** Serviço concluído: convida o cliente a avaliar, com link para /avaliar/[id]. */
 export async function notificarServicoConcluido(agendamentoId) {
   await comProtecao('notificarServicoConcluido', async () => {
+    const { pode, motivo } = await verificarPodeAvaliar(agendamentoId);
+    if (!pode) {
+      console.info(`[notificacoes] convite de avaliação do agendamento ${agendamentoId} não enviado (${motivo}).`);
+      return;
+    }
+
     const dados = await dadosDoAgendamento(agendamentoId);
     if (!dados) return;
 

@@ -7,7 +7,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios } from '@/db/schema';
 import { getGoogleOAuthClient } from '@/lib/google-oauth';
-import { criarSessao } from '@/lib/session';
+import { criarSessao, consumirProximo } from '@/lib/session';
 
 const STATE_COOKIE = 'google_oauth_state';
 
@@ -91,7 +91,8 @@ export async function GET(request) {
     await criarSessao(usuario.id);
     revalidatePath('/', 'layout');
 
-    const destino = usuario.tipo === 'prestador' ? '/dashboard' : '/';
+    const proximo = await consumirProximo();
+    const destino = proximo ?? (usuario.tipo === 'prestador' ? '/dashboard' : '/');
     return NextResponse.redirect(buildUrl(destino, baseUrl));
   } catch (error) {
     console.error('Erro no callback do Google:', error);

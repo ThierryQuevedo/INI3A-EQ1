@@ -4,6 +4,7 @@ import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios, categorias } from "@/db/schema";
 import CatalogoGrid from "@/app/components/features/servicos/CatalogoGrid";
+import { comEstatisticas } from "@/lib/avaliacoes";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ const CATEGORIAS_EM_ALTA = [
 ];
 
 export default async function Home() {
-  const catalogo = await db
+  const servicosRecentes = await db
     .select({
       id: servicos.id,
       slug: servicos.slug,
@@ -33,6 +34,7 @@ export default async function Home() {
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
     .orderBy(desc(servicos.id))
     .limit(10);
+  const catalogo = await comEstatisticas(servicosRecentes);
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans antialiased">

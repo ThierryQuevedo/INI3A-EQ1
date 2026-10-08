@@ -6,31 +6,9 @@ import { notFound } from 'next/navigation';
 import { buscarPerfilPrestador } from '@/app/actions/prestadores.actions';
 import BotaoVoltar from '@/app/components/ui/BotaoVoltar';
 import CardServicoCatalogo from '@/app/components/features/servicos/CardServicoCatalogo';
+import EstrelasNota from '@/app/components/ui/EstrelasNota';
 
 export const dynamic = 'force-dynamic';
-
-function EstrelasNota({ nota = 0, tamanho = 16 }) {
-  return (
-    <div className="flex gap-0.5" aria-hidden="true">
-      {[...Array(5)].map((_, i) => {
-        const n = i + 1;
-        const preenchida = nota >= n;
-        const metade = nota > i && nota < n;
-        return (
-          <Star
-            key={`star-${i}`}
-            size={tamanho}
-            className={
-              preenchida || metade
-                ? 'fill-amber-400 stroke-amber-400 shrink-0'
-                : 'stroke-muted-foreground shrink-0'
-            }
-          />
-        );
-      })}
-    </div>
-  );
-}
 
 export default async function PerfilPrestador({ params }) {
   const { slug } = await params;
@@ -60,6 +38,8 @@ export default async function PerfilPrestador({ params }) {
     nomeCategoria: s.categoriaNome,
     preco: parseFloat(s.preco).toFixed(2).replace('.', ','),
     urlImagem: s.urlImagem,
+    avaliacaoMedia: s.avaliacaoMedia,
+    totalAvaliacoes: s.totalAvaliacoes,
   }));
 
   return (
@@ -174,7 +154,7 @@ export default async function PerfilPrestador({ params }) {
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {servicosFormatados.map((s) => (
-                <CardServicoCatalogo key={s.id} servico={s} avaliacao={avaliacaoMedia} />
+                <CardServicoCatalogo key={s.id} servico={s} />
               ))}
             </div>
           )}

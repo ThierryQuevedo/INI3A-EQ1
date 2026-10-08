@@ -27,3 +27,22 @@ export async function criarSessao(usuarioId) {
 
   return sessionId;
 }
+
+// routing pós login
+export const PROXIMO_COOKIE = 'marcaai_proximo';
+
+export function caminhoInternoSeguro(valor) {
+  if (typeof valor !== 'string') return null;
+  if (!valor.startsWith('/') || valor.startsWith('//') || valor.startsWith('/\\')) return null;
+  return valor;
+}
+
+
+export async function consumirProximo() {
+  const cookieStore = await cookies();
+  const valor = cookieStore.get(PROXIMO_COOKIE)?.value;
+  if (valor === undefined) return null;
+
+  cookieStore.delete(PROXIMO_COOKIE);
+  return caminhoInternoSeguro(valor);
+}

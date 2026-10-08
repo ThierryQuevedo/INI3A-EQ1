@@ -28,7 +28,7 @@ export default function CatalogoGrid({ catalogo }) {
             visivel: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.28, 0.11, 0.32, 1] } },
           }}
         >
-          <CardServicoCatalogo servico={servico} avaliacao={4.1} />
+          <CardServicoCatalogo servico={servico} />
         </motion.div>
       ))}
     </motion.div>

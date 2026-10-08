@@ -10,6 +10,7 @@ import {
   agendamentos,
   avaliacoes,
 } from '@/db/schema';
+import { comEstatisticas } from '@/lib/avaliacoes';
 
 export async function buscarPerfilPrestador(identificador: string | number) {
   if (!identificador) return null;
@@ -109,7 +110,7 @@ export async function buscarPerfilPrestador(identificador: string | number) {
 
   return {
     usuario: dadosUsuario,
-    servicos: servicosDoPrestador,
+    servicos: await comEstatisticas(servicosDoPrestador),
     avaliacaoMedia: estatAvaliacoes?.media ? Number(estatAvaliacoes.media) : 0,
     totalAvaliacoes: estatAvaliacoes?.total ?? 0,
     totalClientesAtendidos: estatClientes?.totalClientes ?? 0,

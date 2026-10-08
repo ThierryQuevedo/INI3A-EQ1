@@ -145,8 +145,8 @@ export function emailAgendamentoCancelado({ clienteNome, prestadorNome, servicoN
   };
 }
 
-export function emailServicoConcluido({ clienteNome, prestadorNome, servicoNome }) {
-  const link = linkApp('/agendamentos');
+export function emailServicoConcluido({ agendamentoId, clienteNome, prestadorNome, servicoNome }) {
+  const link = linkApp(`/avaliar/${agendamentoId}/`);
 
   return {
     assunto: `Seu serviço "${servicoNome}" foi concluído`,

@@ -2,7 +2,11 @@ import { Star, StarHalf, CalendarPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-export default function CardServicoCatalogo({ servico, avaliacao = 5 }) {
+export default function CardServicoCatalogo({
+  servico,
+  avaliacao = servico?.avaliacaoMedia ?? 0,
+  totalAvaliacoes = servico?.totalAvaliacoes ?? 0,
+}) {
   const imagemUrl =
     servico.urlImagem ||
     `https://picsum.photos/200/200?random=${servico?.id || 1}`;
@@ -93,10 +97,19 @@ export default function CardServicoCatalogo({ servico, avaliacao = 5 }) {
                 );
               })}
             </div>
-            <span className="text-body-sm text-muted-foreground font-medium">
-              <span className="sr-only-status">Avaliação: </span>
-              {avaliacao?.toFixed(1)}
-            </span>
+            {totalAvaliacoes > 0 ? (
+              <span className="text-body-sm text-muted-foreground font-medium">
+                <span className="sr-only-status">Avaliação: </span>
+                {avaliacao.toFixed(1)}
+                <span className="sr-only-status">
+                  {` de 5, ${totalAvaliacoes} avaliaç${totalAvaliacoes === 1 ? 'ão' : 'ões'}`}
+                </span>
+              </span>
+            ) : (
+              <span className="text-body-sm text-muted-foreground font-medium">
+                <span className="sr-only-status">Sem avaliações ainda: </span>Novo
+              </span>
+            )}
           </div>
         </div>
       </Link>

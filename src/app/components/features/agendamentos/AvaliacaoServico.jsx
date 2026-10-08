@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { Star } from "lucide-react";
 import { avaliarServico } from "@/app/actions/avaliacoes.actions";
 
-export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) {
+export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, variante = "card" }) {
+  const naPagina = variante === "pagina";
   const [enviado, setEnviado] = useState(!!avaliacaoExistente);
   const [nota, setNota] = useState(avaliacaoExistente?.nota || 0);
   const [notaHover, setNotaHover] = useState(0);
@@ -14,7 +16,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
 
   if (enviado) {
     return (
-      <div className="mt-3 pt-3 border-t border-border">
+      <div className={naPagina ? "" : "mt-3 pt-3 border-t border-border"}>
         <p className="text-caption font-bold text-success uppercase mb-1">Avaliação enviada</p>
         <div className="flex items-center gap-2">
           <div className="flex gap-0.5" aria-hidden="true">
@@ -30,6 +32,14 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
         </div>
         {comentario && (
           <p className="text-body-sm text-foreground mt-1.5 italic">&ldquo;{comentario}&rdquo;</p>
+        )}
+        {naPagina && (
+          <Link
+            href="/agendamentos"
+            className="mt-6 inline-flex items-center justify-center bg-primary text-primary-foreground hover:opacity-90 text-body-sm font-bold px-6 h-11 rounded-full transition-opacity duration-200"
+          >
+            Ver meus agendamentos
+          </Link>
         )}
       </div>
     );
@@ -54,8 +64,8 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
   };
 
   return (
-    <div className="mt-3 pt-3 border-t border-border">
-      <p className="text-body-sm font-bold text-foreground mb-2">
+    <div className={naPagina ? "" : "mt-3 pt-3 border-t border-border"}>
+      <p className={`${naPagina ? "text-body" : "text-body-sm"} font-bold text-foreground mb-2`}>
         Como foi o serviço? Deixe sua avaliação
       </p>
 
@@ -73,7 +83,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
             className="h-11 w-11 flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-full"
           >
             <Star
-              size={26}
+              size={naPagina ? 32 : 26}
               className={notaExibida >= n ? "fill-amber-400 stroke-amber-400" : "stroke-muted-foreground"}
             />
           </button>
@@ -85,7 +95,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente }) 
         value={comentario}
         onChange={(e) => setComentario(e.target.value)}
         placeholder="Deixe um comentário (opcional)"
-        rows={2}
+        rows={naPagina ? 4 : 2}
         maxLength={500}
         className="w-full text-body-sm bg-muted border border-border rounded-lg p-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
       />

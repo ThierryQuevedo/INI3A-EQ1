@@ -7,8 +7,14 @@ import { db } from '@/db';
 import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
+import EstrelasNota from "@/app/components/ui/EstrelasNota";
+import { estatisticasPorServico } from "@/lib/avaliacoes";
 
 export const dynamic = 'force-dynamic';
+
+function rotuloAvaliacoes(total) {
+  return `${total} ${total === 1 ? 'avaliação' : 'avaliações'}`;
+}
 
 export default async function DetalheServico({ params }) {
   const { slug } = await params;
@@ -45,6 +51,7 @@ export default async function DetalheServico({ params }) {
   }
 
   const dadosDb = resultadoBanco[0];
+  const estatisticas = (await estatisticasPorServico([dadosDb.id])).get(dadosDb.id);
 
   const servico = {
     id: dadosDb.id,
@@ -54,7 +61,8 @@ export default async function DetalheServico({ params }) {
     duracaoEstimada: dadosDb.duracaoEstimada || 0,
     urlImagem: dadosDb.urlImagem,
     categoria: dadosDb.categoriaNome || "Sem categoria",
-    avaliacaoMedia: 4.5,
+    avaliacaoMedia: estatisticas?.media ?? 0,
+    totalAvaliacoes: estatisticas?.total ?? 0,
     prestadorId: dadosDb.prestadorId,
     prestadorSlug: dadosDb.prestadorSlug || dadosDb.prestadorId,
     prestador: {
@@ -109,13 +117,20 @@ export default async function DetalheServico({ params }) {
               </p>
 
               <div className="bg-tcc-azul-dark w-fit mx-auto md:mx-0 px-4 py-1.5 rounded-full flex items-center gap-2 border border-tcc-azul/40">
-                <span className="text-body-sm font-bold text-tcc-laranja" aria-hidden="true">{servico.avaliacaoMedia.toFixed(1)}</span>
-                <div className="flex text-tcc-laranja scale-90" aria-hidden="true">
-                  <span>★ ★ ★ ★ ½</span>
-                </div>
-                <span className="text-caption text-tcc-azul-lightest" role="img" aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, 32 avaliações`}>
-                  (32 avaliações)
-                </span>
+                {servico.totalAvaliacoes > 0 ? (
+                  <>
+                    <span className="text-body-sm font-bold text-tcc-laranja" aria-hidden="true">{servico.avaliacaoMedia.toFixed(1)}</span>
+                    <EstrelasNota nota={servico.avaliacaoMedia} tamanho={14} />
+                    <span className="text-caption text-tcc-azul-lightest" role="img" aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, ${rotuloAvaliacoes(servico.totalAvaliacoes)}`}>
+                      ({rotuloAvaliacoes(servico.totalAvaliacoes)})
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <EstrelasNota nota={0} tamanho={14} />
+                    <span className="text-caption text-tcc-azul-lightest">Sem avaliações ainda</span>
+                  </>
+                )}
               </div>
             </div>
           </div>

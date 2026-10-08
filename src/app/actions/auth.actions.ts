@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, sessoes, prestadores } from '@/db/schema';
-import { SESSION_COOKIE, criarSessao } from '@/lib/session';
+import { SESSION_COOKIE, criarSessao, consumirProximo } from '@/lib/session';
 import { gerarSlug } from '@/lib/slug';
 
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
@@ -104,13 +104,14 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
     }
 
     await criarSessao(usuario.id);
+    const proximo = await consumirProximo();
 
     revalidatePath('/', 'layout');
 
     return {
       erro: null,
       sucesso: true,
-      redirectTo: usuario.tipo === 'prestador' ? '/dashboard' : '/',
+      redirectTo: proximo ?? (usuario.tipo === 'prestador' ? '/dashboard' : '/'),
     };
 
   } catch (error) {

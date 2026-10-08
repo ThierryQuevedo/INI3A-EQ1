@@ -87,7 +87,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
                         {servicosFiltrados.map((servico) => (
-                            <CardServicoCatalogo key={servico.id} servico={servico} avaliacao={4.3} />
+                            <CardServicoCatalogo key={servico.id} servico={servico} />
                         ))}
                     </div>
                 )}
