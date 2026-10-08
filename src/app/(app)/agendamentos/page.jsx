@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarClock, CalendarCheck2, Clock3, CheckCircle2, XCircle, User, DollarSign, Phone, CalendarPlus, CalendarX2 } from 'lucide-react';
+import { CalendarClock, CalendarCheck2, Clock3, CheckCircle2, XCircle, User, DollarSign, Phone, CalendarPlus, CalendarX2, Star } from 'lucide-react';
 import { requireSession } from '@/app/actions/auth.actions';
 import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
@@ -87,6 +87,13 @@ function CardAgendamento({ item, usuarioLogado }) {
                 : null
             }
           />
+          <Link
+            href={`/avaliar/${item.id}`}
+            className="mt-3 inline-flex items-center gap-1.5 h-11 px-4 rounded-full border border-border bg-card hover:bg-muted text-body-sm font-semibold text-foreground transition-colors duration-200"
+          >
+            <Star size={15} aria-hidden="true" />
+            {item.avaliacaoNota ? 'Ver avaliação' : 'Abrir página de avaliação'}
+          </Link>
         </div>
       )}
     </div>
