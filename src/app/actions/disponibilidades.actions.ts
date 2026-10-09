@@ -69,6 +69,65 @@ export async function criarDisponibilidade(
   return nova;
 }
 
+export async function atualizarDisponibilidade(
+  prestadorId: number,
+  id: number,
+  { horaInicio, horaFim }: { horaInicio: string; horaFim: string }
+) {
+  if (!horaInicio || !horaFim || horaInicio >= horaFim) {
+    return { erro: 'Horários inválidos (horaInicio deve ser menor que horaFim).' };
+  }
+
+  const [atual] = await db
+    .select()
+    .from(disponibilidades)
+    .where(
+      and(
+        eq(disponibilidades.id, Number(id)),
+        eq(disponibilidades.prestadorId, Number(prestadorId))
+      )
+    );
+
+  if (!atual) {
+    return { erro: 'Horário não encontrado.' };
+  }
+
+  // Conflito checado apenas contra os OUTROS horários do mesmo serviço/dia —
+  // excluir o próprio registro evita falso-positivo ao apenas ajustar o intervalo.
+  const disponibilidadesDoDia = await db
+    .select()
+    .from(disponibilidades)
+    .where(
+      and(
+        eq(disponibilidades.prestadorId, Number(prestadorId)),
+        eq(disponibilidades.servicoId, atual.servicoId),
+        eq(disponibilidades.diaSemana, atual.diaSemana)
+      )
+    );
+
+  const temConflito = disponibilidadesDoDia.some((d) => {
+    if (d.id === Number(id)) return false;
+    return horaInicio < d.horaFim && horaFim > d.horaInicio;
+  });
+
+  if (temConflito) {
+    return { erro: 'Já existe um horário cadastrado que conflita com este intervalo.' };
+  }
+
+  const [atualizada] = await db
+    .update(disponibilidades)
+    .set({ horaInicio, horaFim })
+    .where(
+      and(
+        eq(disponibilidades.id, Number(id)),
+        eq(disponibilidades.prestadorId, Number(prestadorId))
+      )
+    )
+    .returning();
+
+  return atualizada;
+}
+
 export async function deletarDisponibilidade(prestadorId: number, id: number) {
   await db
     .delete(disponibilidades)

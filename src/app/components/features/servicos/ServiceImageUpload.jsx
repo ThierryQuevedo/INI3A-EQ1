@@ -2,7 +2,8 @@
 
 import { useState, useRef } from "react";
 import { UploadCloud, Trash2, RefreshCw, AlertCircle, CheckCircle2, Loader2, X } from "lucide-react";
-import { validarArquivo, gerarPreviewLocal, fazerUploadImagem } from "@/lib/uploadService";
+import { validarArquivo, fazerUploadImagem } from "@/lib/uploadService";
+import ImageCropperModal from "../../../components/ImageCropperModal";
 
 export default function ServiceImageUpload({
   name = "urlImagem",
@@ -23,6 +24,10 @@ export default function ServiceImageUpload({
   const [erroValidacao, setErroValidacao] = useState(null);
   const fileInputRef = useRef(null);
 
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
+  const [nomeArquivoOriginal, setNomeArquivoOriginal] = useState(null);
+
   function abrirSeletor() {
     setErroValidacao(null);
     if (fileInputRef.current) {
@@ -40,7 +45,7 @@ export default function ServiceImageUpload({
     return `${mb.toFixed(1)} MB`;
   }
 
-  async function processarArquivo(file) {
+  function processarArquivo(file) {
     if (!file) return;
 
     // 1. Validação visualmente clara
@@ -51,22 +56,39 @@ export default function ServiceImageUpload({
     }
 
     setErroValidacao(null);
-    const preview = gerarPreviewLocal(file);
+    setNomeArquivoOriginal(file.name);
+    const url = URL.createObjectURL(file);
+    setCropImageSrc(url);
+    setCropModalOpen(true);
+  }
+
+  function handleCropCancel() {
+    setCropModalOpen(false);
+    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+    setCropImageSrc(null);
+  }
+
+  async function handleCropConfirm(arquivoRecortado) {
+    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+    setCropModalOpen(false);
+    setCropImageSrc(null);
+
+    const preview = URL.createObjectURL(arquivoRecortado);
     setPreviewUrl(preview);
     setFileMeta({
-      nome: file.name,
-      tamanhoFormatado: formatarTamanho(file.size),
+      nome: nomeArquivoOriginal || arquivoRecortado.name,
+      tamanhoFormatado: formatarTamanho(arquivoRecortado.size),
     });
     setIsUploading(true);
 
     try {
       // 2. Simulação de upload (leve, sem banco de dados)
-      const resultado = await fazerUploadImagem(file, { limiteMB: maxSizeMB });
+      const resultado = await fazerUploadImagem(arquivoRecortado, { limiteMB: maxSizeMB });
       setUrlCustomizada(resultado.url);
       setPreviewUrl("");
 
       if (typeof onChange === "function") {
-        onChange(resultado.url, file);
+        onChange(resultado.url, arquivoRecortado);
       }
     } catch (err) {
       console.error("Erro no upload da foto do serviço:", err);
@@ -294,6 +316,17 @@ export default function ServiceImageUpload({
           </div>
         </div>
       )}
+
+      <ImageCropperModal
+        open={cropModalOpen}
+        imageSrc={cropImageSrc}
+        onCancel={handleCropCancel}
+        onConfirm={handleCropConfirm}
+        isSaving={isUploading}
+        aspect={1}
+        shape="rect"
+        outputWidth={800}
+      />
     </div>
   );
 }

@@ -14,8 +14,7 @@ export default function HeaderDesktopNav({ usuario, className }) {
     { href: "/servicos", label: "Buscar profissionais" },
     ...(ehPrestador
       ? [
-          { href: "/dashboard", label: "Painel" },
-          { href: "/disponibilidades", label: "Agenda" },
+          { href: "/agendamentos", label: "Agenda" },
         ]
       : []),
   ];

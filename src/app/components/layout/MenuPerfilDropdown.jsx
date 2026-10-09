@@ -1,8 +1,9 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { User, LogOut, UserRound } from "lucide-react";
+import { User, LogOut, UserRound, Sun, Moon } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 import { logout } from "@/app/actions/auth.actions";
 import { useMounted } from "@/app/hooks/useMounted";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
@@ -12,6 +13,8 @@ export default function PerfilDropdown({ user }) {
     const [confirmandoSaida, setConfirmandoSaida] = useState(false);
     const menuRef = useRef(null);
     const mounted = useMounted();
+    const { resolvedTheme, setTheme } = useTheme();
+    const temaEscuro = resolvedTheme === "dark";
 
     useEffect(() => {
         function handleClickFora(event) {
@@ -37,6 +40,11 @@ export default function PerfilDropdown({ user }) {
     function pedirConfirmacaoSaida() {
         setAberto(false);
         setConfirmandoSaida(true);
+    }
+
+    function alternarTema() {
+        setTheme(temaEscuro ? "light" : "dark");
+        setAberto(false);
     }
 
     async function confirmarSaida() {
@@ -90,6 +98,19 @@ export default function PerfilDropdown({ user }) {
                             <span className="text-body-sm font-semibold">Perfil Público</span>
                         </Link>
                     )}
+                    <button
+                        type="button"
+                        role="menuitem"
+                        onClick={alternarTema}
+                        className="w-full flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors cursor-pointer"
+                    >
+                        {temaEscuro ? (
+                            <Sun size={18} className="text-tcc-azul" aria-hidden="true" />
+                        ) : (
+                            <Moon size={18} className="text-tcc-azul" aria-hidden="true" />
+                        )}
+                        <span className="text-body-sm font-semibold">{temaEscuro ? "Modo claro" : "Modo escuro"}</span>
+                    </button>
                     <button
                         type="button"
                         role="menuitem"

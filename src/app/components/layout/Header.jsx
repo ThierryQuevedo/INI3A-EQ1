@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import HeaderDesktopNav from './HeaderDesktopNav';
 import PerfilDropdown from './MenuPerfilDropdown';
-import ThemeToggle from './ThemeToggle';
 import logotipo from '../../../public/images/Identidade visual marca ai/logotipo.png';
 
 export default function Header({ usuario }) {
@@ -23,8 +22,6 @@ export default function Header({ usuario }) {
                 <HeaderDesktopNav usuario={usuario} className="max-md:hidden md:flex" />
 
                 <div className="flex items-center gap-1 sm:gap-2">
-                    <ThemeToggle className="inline-flex text-muted-foreground hover:text-foreground" />
-
                     {usuario ? (
                         <div className="flex items-center gap-2 sm:gap-3">
                             {usuario.tipo === "prestador" && (

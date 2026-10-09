@@ -1,25 +1,34 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSession } from '@/app/actions/auth.actions';
 import { listarServicosPorPrestador } from '@/app/actions/servicos.actions';
-import { listarDisponibilidades, criarDisponibilidade, deletarDisponibilidade } from '@/app/actions/disponibilidades.actions';
+import {
+  listarDisponibilidades,
+  criarDisponibilidade,
+  atualizarDisponibilidade,
+  deletarDisponibilidade,
+} from '@/app/actions/disponibilidades.actions';
 import Skeleton from '@/app/components/ui/Skeleton';
+import ConfirmDialog from '@/app/components/ui/ConfirmDialog';
+import DiaDisponibilidadeCard from '@/app/components/features/disponibilidades/DiaDisponibilidadeCard';
 import { useToast } from '@/app/components/ui/ToastProvider';
-import { ChevronUp, ChevronDown, ArrowLeft, ArrowRight, Trash2, Briefcase } from 'lucide-react';
+import { ArrowLeft, Briefcase } from 'lucide-react';
 
-const DIAS_ABREV = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const HORA_GRADE_INICIO = 0;
-const HORA_GRADE_FIM = 23;
-const ROW_HEIGHT = 22;
-const PASSOS_DISPONIVEIS = [15, 30, 60];
+const DIAS = [
+  { valor: 0, nome: 'Domingo' },
+  { valor: 1, nome: 'Segunda-feira' },
+  { valor: 2, nome: 'Terça-feira' },
+  { valor: 3, nome: 'Quarta-feira' },
+  { valor: 4, nome: 'Quinta-feira' },
+  { valor: 5, nome: 'Sexta-feira' },
+  { valor: 6, nome: 'Sábado' },
+];
 
-function minutosParaHHMM(min) {
-  if (min >= 1440) return '23:59';
-  const h = Math.floor(min / 60);
-  const m = min % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+function normalizarBloco(b) {
+  const cortar = (v) => (typeof v === 'string' ? v.slice(0, 5) : v);
+  return { ...b, horaInicio: cortar(b.horaInicio), horaFim: cortar(b.horaFim) };
 }
 
 function hhmmParaMinutos(hhmm) {
@@ -28,9 +37,15 @@ function hhmmParaMinutos(hhmm) {
   return h * 60 + m;
 }
 
-function normalizarBloco(b) {
-  const cortar = (v) => (typeof v === 'string' ? v.slice(0, 5) : v);
-  return { ...b, horaInicio: cortar(b.horaInicio), horaFim: cortar(b.horaFim) };
+function minutosParaHHMM(min) {
+  const m = Math.max(0, Math.min(1439, min));
+  const h = Math.floor(m / 60);
+  const mm = m % 60;
+  return `${String(h).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+function haConflito(ranges, inicio, fim) {
+  return ranges.some((r) => inicio < r.horaFim && fim > r.horaInicio);
 }
 
 export default function DisponibilidadePage() {
@@ -43,23 +58,13 @@ export default function DisponibilidadePage() {
   const [servicoSelecionadoId, setServicoSelecionadoId] = useState(null);
   const [carregandoServicos, setCarregandoServicos] = useState(true);
 
-  const [passoModo, setPassoModo] = useState('30');
-  const [passoCustom, setPassoCustom] = useState(45);
-  const passo = passoModo === 'custom' ? Math.max(5, Number(passoCustom) || 15) : Number(passoModo);
-
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
-  const [processando, setProcessando] = useState(false);
+  const [diasProcessando, setDiasProcessando] = useState(() => new Set());
+  const [errosPorDia, setErrosPorDia] = useState({});
+  const [confirmacao, setConfirmacao] = useState(null); // { tipo: 'dia' | 'horario', dia, range?, ranges? }
 
-  const [blocoSelecionado, setBlocoSelecionado] = useState(null);
-
-  const [arraste, setArraste] = useState(null);
-  const arrasteRef = useRef(null);
-  const arrastandoAgora = useRef(false);
   const disponibilidadesRef = useRef(disponibilidades);
-
-  const gridRefs = useRef({});
-
   useEffect(() => {
     disponibilidadesRef.current = disponibilidades;
   }, [disponibilidades]);
@@ -104,7 +109,6 @@ export default function DisponibilidadePage() {
 
     async function carregarDisponibilidades() {
       setLoading(true);
-      setBlocoSelecionado(null);
       try {
         const dados = await listarDisponibilidades(prestadorId, servicoSelecionadoId);
         if (montado) {
@@ -127,13 +131,18 @@ export default function DisponibilidadePage() {
     return () => clearTimeout(t);
   }, [erro]);
 
-  const totalMinutosGrade = (HORA_GRADE_FIM - HORA_GRADE_INICIO + 1) * 60;
-  const totalLinhas = Math.floor(totalMinutosGrade / passo);
-  const linhasPorHora = Math.max(1, Math.round(60 / passo));
-
-  function linhaParaMinutos(linhaIndex) {
-    return HORA_GRADE_INICIO * 60 + linhaIndex * passo;
-  }
+  const blocosPorDia = useMemo(() => {
+    const grupos = {};
+    for (const d of DIAS) grupos[d.valor] = [];
+    for (const d of disponibilidades) {
+      const dia = Number(d.diaSemana);
+      if (grupos[dia]) grupos[dia].push(d);
+    }
+    Object.values(grupos).forEach((lista) =>
+      lista.sort((a, b) => hhmmParaMinutos(a.horaInicio) - hhmmParaMinutos(b.horaInicio))
+    );
+    return grupos;
+  }, [disponibilidades]);
 
   async function resolverPrestadorId() {
     if (prestadorId != null) return prestadorId;
@@ -141,239 +150,163 @@ export default function DisponibilidadePage() {
     return usuario?.id ?? null;
   }
 
-  async function criarBlocoBackend(diaSemana, horaInicio, horaFim) {
-    const idParaEnvio = await resolverPrestadorId();
-    if (idParaEnvio == null) throw new Error('Prestador ID inválido.');
-    if (servicoSelecionadoId == null) throw new Error('Selecione um serviço primeiro.');
-
-    const resultado = await criarDisponibilidade(idParaEnvio, {
-      diaSemana: Number(diaSemana),
-      horaInicio,
-      horaFim,
-      servicoId: servicoSelecionadoId,
+  function marcarProcessando(diaValor, ativo) {
+    setDiasProcessando((prev) => {
+      const novo = new Set(prev);
+      if (ativo) novo.add(diaValor);
+      else novo.delete(diaValor);
+      return novo;
     });
-
-    if (resultado?.erro) throw new Error(resultado.erro);
-    return normalizarBloco(resultado);
   }
 
-  async function removerBlocoBackend(id) {
-    const idParaEnvio = await resolverPrestadorId();
-    if (idParaEnvio == null) return;
-    await deletarDisponibilidade(idParaEnvio, id);
-  }
-
-  const blocosDoDiaRef = useCallback((dia) => {
-    return disponibilidadesRef.current
-      .filter((d) => Number(d.diaSemana) === Number(dia))
-      .slice()
-      .sort((a, b) => hhmmParaMinutos(a.horaInicio) - hhmmParaMinutos(b.horaInicio));
-  }, []);
-
-  const blocosPorDia = useMemo(() => {
-    const grupos = Array.from({ length: 7 }, () => []);
-    for (const d of disponibilidades) {
-      const dia = Number(d.diaSemana);
-      if (dia >= 0 && dia < 7) grupos[dia].push(d);
+  function definirErroDia(diaValor, mensagem) {
+    setErrosPorDia((prev) => ({ ...prev, [diaValor]: mensagem }));
+    if (mensagem) {
+      setTimeout(() => {
+        setErrosPorDia((prev) => (prev[diaValor] === mensagem ? { ...prev, [diaValor]: null } : prev));
+      }, 5000);
     }
-    grupos.forEach((g) => g.sort((a, b) => hhmmParaMinutos(a.horaInicio) - hhmmParaMinutos(b.horaInicio)));
-    return grupos;
-  }, [disponibilidades]);
+  }
 
-  const confirmarArraste = useCallback(async (dadosArraste) => {
-    if (!dadosArraste) return;
+  async function onAdicionarHorario(dia) {
+    if (servicoSelecionadoId == null) return;
+    const idPrestador = await resolverPrestadorId();
+    if (idPrestador == null) return;
 
-    const { dia, inicioLinha, atualLinha } = dadosArraste;
-    const minLinhaIndex = Math.min(inicioLinha, atualLinha);
-    const maxLinhaIndex = Math.max(inicioLinha, atualLinha);
+    const rangesDia = blocosPorDia[dia.valor] || [];
+    let inicio = '09:00';
+    let fim = '18:00';
 
-    let inicioMin = linhaParaMinutos(minLinhaIndex);
-    let fimMin = linhaParaMinutos(maxLinhaIndex + 1);
-
-    if (inicioMin < 0) inicioMin = 0;
-    if (fimMin > 1440) fimMin = 1440;
-    if (inicioMin >= fimMin) return;
-
-    setProcessando(true);
-    setErro(null);
-
-    try {
-      const blocosDia = blocosDoDiaRef(dia);
-
-      const blocosParaFundir = blocosDia.filter((b) => {
-        const bIni = hhmmParaMinutos(b.horaInicio);
-        const bFim = hhmmParaMinutos(b.horaFim);
-        return inicioMin <= bFim && fimMin >= bIni;
-      });
-
-      let menorInicio = inicioMin;
-      let maiorFim = fimMin;
-
-      blocosParaFundir.forEach((b) => {
-        const bIni = hhmmParaMinutos(b.horaInicio);
-        const bFim = hhmmParaMinutos(b.horaFim);
-        if (bIni < menorInicio) menorInicio = bIni;
-        if (bFim > maiorFim) maiorFim = bFim;
-      });
-
-      if (blocosParaFundir.length > 0) {
-        await Promise.all(blocosParaFundir.map((b) => removerBlocoBackend(b.id)));
+    if (rangesDia.length > 0) {
+      const ultimo = rangesDia[rangesDia.length - 1];
+      const inicioMin = hhmmParaMinutos(ultimo.horaFim);
+      if (inicioMin >= 1380) {
+        definirErroDia(dia.valor, 'Não há mais espaço livre neste dia para adicionar outro horário.');
+        return;
       }
-
-      const unificado = await criarBlocoBackend(
-        dia,
-        minutosParaHHMM(menorInicio),
-        minutosParaHHMM(maiorFim)
-      );
-
-      const idsRemovidos = new Set(blocosParaFundir.map((b) => b.id));
-      setDisponibilidades((prev) => [...prev.filter((d) => !idsRemovidos.has(d.id)), unificado]);
-      toast.success('Disponibilidade salva com sucesso!');
-
-    } catch (e) {
-      setErro(e.message);
-    } finally {
-      setProcessando(false);
-      setArraste(null);
-      arrasteRef.current = null;
-    }
-  }, [prestadorId, passo, servicoSelecionadoId]);
-
-  useEffect(() => {
-    function aoSoltar() {
-      if (arrasteRef.current) {
-        confirmarArraste(arrasteRef.current);
-      }
-      arrastandoAgora.current = false;
-    }
-    window.addEventListener('pointerup', aoSoltar);
-    window.addEventListener('pointercancel', aoSoltar);
-    return () => {
-      window.removeEventListener('pointerup', aoSoltar);
-      window.removeEventListener('pointercancel', aoSoltar);
-    };
-  }, [confirmarArraste]);
-
-  function iniciarArraste(e, dia, linha) {
-    if (processando || servicoSelecionadoId == null) return;
-    e.preventDefault();
-
-    if (e.target.hasPointerCapture && e.target.hasPointerCapture(e.pointerId)) {
-      e.target.releasePointerCapture(e.pointerId);
+      inicio = minutosParaHHMM(inicioMin);
+      fim = minutosParaHHMM(Math.min(inicioMin + 60, 1439));
     }
 
-    setBlocoSelecionado(null);
-    arrastandoAgora.current = true;
-    const novo = { dia, inicioLinha: linha, atualLinha: linha };
-    arrasteRef.current = novo;
-    setArraste(novo);
-  }
+    // Otimista: insere o intervalo já na UI (o Switch/linha aparecem e animam na hora)
+    // e desfaz se o servidor recusar — evita que a animação só aconteça depois do round-trip.
+    const idTemporario = `tmp-${Date.now()}`;
+    const otimista = { id: idTemporario, diaSemana: dia.valor, servicoId: servicoSelecionadoId, horaInicio: inicio, horaFim: fim };
 
-  function moverArraste(dia, linha) {
-    if (!arrastandoAgora.current) return;
-    setArraste((prev) => {
-      if (!prev || prev.dia !== dia || prev.atualLinha === linha) return prev;
-      const atualizado = { ...prev, atualLinha: linha };
-      arrasteRef.current = atualizado;
-      return atualizado;
-    });
-  }
-
-  function handlePointerMoveNaColuna(e, dia) {
-    if (!arrastandoAgora.current) return;
-    const el = gridRefs.current[dia];
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    let linha = Math.floor(y / ROW_HEIGHT);
-    if (linha < 0) linha = 0;
-    if (linha >= totalLinhas) linha = totalLinhas - 1;
-    moverArraste(dia, linha);
-  }
-
-  async function alterarTamanhoBloco(bloco, lado, operacao) {
-    if (processando) return;
-
-    let inicioMin = hhmmParaMinutos(bloco.horaInicio);
-    let fimMin = hhmmParaMinutos(bloco.horaFim);
-
-    if (lado === 'inicio') {
-      inicioMin = operacao === 'aumentar' ? inicioMin - passo : inicioMin + passo;
-    } else if (lado === 'fim') {
-      fimMin = operacao === 'aumentar' ? fimMin + passo : fimMin - passo;
-    }
-
-    if (inicioMin >= fimMin) return;
-    if (inicioMin < 0 || fimMin > 1440) return;
-
-    setProcessando(true);
-    setErro(null);
+    marcarProcessando(dia.valor, true);
+    setDisponibilidades((prev) => [...prev, otimista]);
     try {
-      await removerBlocoBackend(bloco.id);
-      const atualizado = await criarBlocoBackend(bloco.diaSemana, minutosParaHHMM(inicioMin), minutosParaHHMM(fimMin));
-      setDisponibilidades((prev) => [...prev.filter((d) => d.id !== bloco.id), atualizado]);
-      setBlocoSelecionado(atualizado.id);
-      toast.success('Horário atualizado com sucesso!');
-    } catch (e) {
-      setErro(e.message);
+      const resultado = await criarDisponibilidade(idPrestador, {
+        diaSemana: dia.valor,
+        horaInicio: inicio,
+        horaFim: fim,
+        servicoId: servicoSelecionadoId,
+      });
+      if (resultado?.erro) {
+        setDisponibilidades((prev) => prev.filter((d) => d.id !== idTemporario));
+        definirErroDia(dia.valor, resultado.erro);
+        return;
+      }
+      setDisponibilidades((prev) => prev.map((d) => (d.id === idTemporario ? normalizarBloco(resultado) : d)));
+      toast.success('Horário adicionado.');
+    } catch {
+      setDisponibilidades((prev) => prev.filter((d) => d.id !== idTemporario));
+      definirErroDia(dia.valor, 'Erro ao adicionar horário.');
     } finally {
-      setProcessando(false);
+      marcarProcessando(dia.valor, false);
     }
   }
 
-  async function replicarParaDia(bloco, direcao) {
-    if (processando) return;
-    const inicioMin = hhmmParaMinutos(bloco.horaInicio);
-    const fimMin = hhmmParaMinutos(bloco.horaFim);
-    const diaAlvo = (Number(bloco.diaSemana) + direcao + 7) % 7;
+  function onToggleDia(dia, novoEstado) {
+    if (novoEstado) {
+      onAdicionarHorario(dia);
+      return;
+    }
+    const rangesDia = blocosPorDia[dia.valor] || [];
+    if (rangesDia.length === 0) return;
+    setConfirmacao({ tipo: 'dia', dia, ranges: rangesDia });
+  }
 
-    const sobrepostos = blocosDoDiaRef(diaAlvo).filter((b) => {
-      const bIni = hhmmParaMinutos(b.horaInicio);
-      const bFim = hhmmParaMinutos(b.horaFim);
-      return inicioMin <= bFim && fimMin >= bIni;
-    });
+  function onPedirRemoverHorario(dia, range) {
+    setConfirmacao({ tipo: 'horario', dia, range });
+  }
 
-    if (sobrepostos.length > 0) {
-      setErro('O dia de destino já possui horários tocando neste intervalo.');
+  async function onAlterarHorario(dia, range, campo, novoValor) {
+    if (!novoValor) return;
+    const novoRange = { ...range, [campo]: novoValor };
+
+    if (novoRange.horaInicio >= novoRange.horaFim) {
+      definirErroDia(dia.valor, 'O horário de início precisa ser antes do horário de fim.');
       return;
     }
 
-    setProcessando(true);
-    setErro(null);
+    const outrosRangesDia = (blocosPorDia[dia.valor] || []).filter((r) => r.id !== range.id);
+    if (haConflito(outrosRangesDia, novoRange.horaInicio, novoRange.horaFim)) {
+      definirErroDia(dia.valor, 'Esse horário conflita com outro já cadastrado neste dia.');
+      return;
+    }
+
+    const idPrestador = await resolverPrestadorId();
+    if (idPrestador == null) return;
+
+    const anterior = disponibilidadesRef.current;
+    setDisponibilidades((prev) => prev.map((d) => (d.id === range.id ? { ...d, [campo]: novoValor } : d)));
+
+    marcarProcessando(dia.valor, true);
     try {
-      const novo = await criarBlocoBackend(diaAlvo, bloco.horaInicio, bloco.horaFim);
-      setDisponibilidades((prev) => [...prev, novo]);
-      toast.success('Horário replicado com sucesso!');
-    } catch (e) {
-      setErro(e.message);
+      const resultado = await atualizarDisponibilidade(idPrestador, range.id, {
+        horaInicio: novoRange.horaInicio,
+        horaFim: novoRange.horaFim,
+      });
+      if (resultado?.erro) {
+        setDisponibilidades(anterior);
+        definirErroDia(dia.valor, resultado.erro);
+        return;
+      }
+      setDisponibilidades((prev) => prev.map((d) => (d.id === range.id ? normalizarBloco(resultado) : d)));
+    } catch {
+      setDisponibilidades(anterior);
+      definirErroDia(dia.valor, 'Erro ao atualizar horário.');
     } finally {
-      setProcessando(false);
+      marcarProcessando(dia.valor, false);
     }
   }
 
-  async function handleRemover(id) {
-    setProcessando(true);
-    setErro(null);
+  async function confirmarAcao() {
+    if (!confirmacao) return;
+    const { tipo, dia } = confirmacao;
+    const idPrestador = await resolverPrestadorId();
+    if (idPrestador == null) return;
+
+    const ids = tipo === 'horario' ? [confirmacao.range.id] : confirmacao.ranges.map((r) => r.id);
+    const mensagemSucesso = tipo === 'horario' ? 'Horário removido.' : `Horários de ${dia.nome} removidos.`;
+
+    // Otimista: some da tela (e o Switch já anima pra desligado) assim que o usuário
+    // confirma, em vez de só depois do round-trip — restaura se o servidor recusar.
+    const removidos = disponibilidadesRef.current.filter((d) => ids.includes(d.id));
+
+    marcarProcessando(dia.valor, true);
+    setDisponibilidades((prev) => prev.filter((d) => !ids.includes(d.id)));
     try {
-      await removerBlocoBackend(id);
-      setDisponibilidades((prev) => prev.filter((d) => d.id !== id));
-      setBlocoSelecionado(null);
-      toast.success('Horário removido com sucesso!');
+      await Promise.all(ids.map((id) => deletarDisponibilidade(idPrestador, id)));
+      toast.success(mensagemSucesso);
     } catch {
-      setErro('Erro ao remover disponibilidade.');
+      setDisponibilidades((prev) => [...prev, ...removidos]);
+      definirErroDia(dia.valor, 'Erro ao remover horário.');
     } finally {
-      setProcessando(false);
+      marcarProcessando(dia.valor, false);
     }
   }
 
   if (carregandoServicos) return (
     <div className="min-h-screen bg-background py-8 px-4 font-sans">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-3xl mx-auto">
         <Skeleton className="h-9 w-64 mb-2" />
         <Skeleton className="h-4 w-80 mb-6" />
         <Skeleton className="h-16 rounded-2xl mb-4" />
-        <Skeleton className="h-16 rounded-2xl mb-4" />
-        <Skeleton className="h-[500px] rounded-2xl" />
+        {Array.from({ length: 7 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-2xl mb-3" />
+        ))}
       </div>
     </div>
   );
@@ -393,20 +326,18 @@ export default function DisponibilidadePage() {
     );
   }
 
-  const linhasHora = [];
-  for (let l = 0; l <= totalLinhas; l += linhasPorHora) {
-    const min = linhaParaMinutos(l);
-    let label = minutosParaHHMM(min);
-    if (l === totalLinhas && min === 1440) label = '23:59';
-    linhasHora.push({ linha: l, label });
-  }
+  const agora = new Date();
+  const diaAtual = agora.getDay();
+
+  const descricaoConfirmacao = confirmacao
+    ? confirmacao.tipo === 'horario'
+      ? `Remover o horário de ${confirmacao.range.horaInicio} às ${confirmacao.range.horaFim} em ${confirmacao.dia.nome}?`
+      : `Isso vai remover ${confirmacao.ranges.length} horário${confirmacao.ranges.length > 1 ? 's' : ''} cadastrado${confirmacao.ranges.length > 1 ? 's' : ''} para ${confirmacao.dia.nome}.`
+    : '';
 
   return (
-    <div
-      className="min-h-screen bg-background py-8 px-4 font-sans"
-      onClick={() => setBlocoSelecionado(null)}
-    >
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-background py-8 px-4 font-sans">
+      <div className="max-w-3xl mx-auto">
 
         <div className="mb-6">
           <button
@@ -417,8 +348,8 @@ export default function DisponibilidadePage() {
             Voltar
           </button>
           <h1 className="text-h4 font-extrabold text-foreground">Minha disponibilidade</h1>
-          <p className="text-body-sm text-muted-foreground mt-1">
-            Arraste na grade para criar blocos contínuos. Clique no bloco para abrir o menu de exclusão e edição.
+          <p className="text-body-sm text-muted-foreground mt-1.5">
+            Ative os dias em que você atende e defina os horários de cada um.
           </p>
         </div>
 
@@ -427,7 +358,7 @@ export default function DisponibilidadePage() {
         )}
 
         {/* Seletor de serviço — cada serviço tem sua própria agenda */}
-        <div className="bg-card rounded-2xl p-4 shadow-soft mb-4" onClick={(e) => e.stopPropagation()}>
+        <div className="bg-card rounded-2xl p-4 shadow-soft mb-5">
           <label className="text-caption font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
             <Briefcase width={13} height={13} aria-hidden="true" /> Serviço
           </label>
@@ -452,206 +383,42 @@ export default function DisponibilidadePage() {
           </div>
         </div>
 
-        <div className="bg-card rounded-2xl p-4 shadow-soft mb-4 flex items-center gap-4 flex-wrap" onClick={(e) => e.stopPropagation()}>
-          <label htmlFor="passo-incremento" className="text-caption font-semibold text-muted-foreground">Duração do incremento</label>
-          <select
-            id="passo-incremento"
-            value={passoModo}
-            onChange={(e) => setPassoModo(e.target.value)}
-            className="h-10 rounded-xl border border-input bg-background px-3 text-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {PASSOS_DISPONIVEIS.map((p) => (
-              <option key={p} value={p}>{p} min</option>
+        {loading ? (
+          <div className="space-y-3">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-16 rounded-2xl" />
             ))}
-            <option value="custom">Customizado</option>
-          </select>
-
-          {passoModo === 'custom' && (
-            <div className="flex items-center gap-2">
-              <label htmlFor="passo-custom" className="sr-only-status">Minutos personalizados</label>
-              <input
-                id="passo-custom"
-                type="number"
-                min="5"
-                max="240"
-                value={passoCustom}
-                onChange={(e) => setPassoCustom(e.target.value)}
-                className="w-20 h-10 rounded-xl border border-input bg-background px-3 text-body-sm font-semibold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-              <span className="text-caption font-semibold text-muted-foreground">minutos</span>
-            </div>
-          )}
-        </div>
-
-        <div className={`bg-card rounded-2xl p-3 shadow-soft overflow-x-auto touch-none select-none relative ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
-          {loading && (
-            <div className="absolute inset-0 flex items-center justify-center z-50">
-              <div className="w-8 h-8 rounded-full border-4 border-tcc-azul-dark border-t-transparent animate-spin" role="status" aria-label="Carregando" />
-            </div>
-          )}
-          <div className="flex min-w-[850px]">
-
-            <div className="w-14 flex-shrink-0 relative pt-6" style={{ height: totalLinhas * ROW_HEIGHT + 24 }}>
-              {linhasHora.map(({ linha, label }) => (
-                <div
-                  key={linha}
-                  className="absolute right-2 text-[11px] text-muted-foreground font-medium -translate-y-1/2"
-                  style={{ top: 24 + linha * ROW_HEIGHT }}
-                >
-                  {label}
-                </div>
-              ))}
-            </div>
-
-            {DIAS_ABREV.map((nome, dia) => {
-              const blocos = blocosPorDia[dia];
-              const arrastandoAqui = arraste && arraste.dia === dia;
-              const linhaMinArraste = arrastandoAqui ? Math.min(arraste.inicioLinha, arraste.atualLinha) : null;
-              const linhaMaxArraste = arrastandoAqui ? Math.max(arraste.inicioLinha, arraste.atualLinha) : null;
-
-              return (
-                <div key={dia} className="flex-1 min-w-[110px] border-l border-border relative">
-                  <div className="text-center text-caption font-semibold text-muted-foreground py-1.5 border-b border-border sticky top-0 bg-card z-10">
-                    {nome}
-                  </div>
-                  <div
-                    ref={(el) => { gridRefs.current[dia] = el; }}
-                    className="relative"
-                    style={{ height: totalLinhas * ROW_HEIGHT }}
-                    onPointerMove={(e) => handlePointerMoveNaColuna(e, dia)}
-                  >
-
-                    {linhasHora.map(({ linha }) => (
-                      <div
-                        key={`hora-${linha}`}
-                        className="absolute left-0 right-0 border-t border-border"
-                        style={{ top: linha * ROW_HEIGHT }}
-                      />
-                    ))}
-
-                    {Array.from({ length: totalLinhas }).map((_, linha) => (
-                      <div
-                        key={linha}
-                        onPointerDown={(e) => iniciarArraste(e, dia, linha)}
-                        onPointerEnter={() => moverArraste(dia, linha)}
-                        className="absolute left-0 right-0 hover:bg-tcc-azul-dark/10 cursor-pointer transition-colors duration-150"
-                        style={{ top: linha * ROW_HEIGHT, height: ROW_HEIGHT, touchAction: 'none' }}
-                      />
-                    ))}
-
-                    {arrastandoAqui && (
-                      <div
-                        className="absolute left-0.5 right-0.5 bg-tcc-azul-dark/25 border-2 border-dashed border-tcc-azul-dark rounded-md pointer-events-none z-20 flex items-center justify-center overflow-hidden"
-                        style={{
-                          top: linhaMinArraste * ROW_HEIGHT,
-                          height: (linhaMaxArraste - linhaMinArraste + 1) * ROW_HEIGHT,
-                        }}
-                      >
-                        <span className="text-[10px] font-bold text-tcc-azul-dark bg-white/90 rounded px-1 whitespace-nowrap shadow-soft">
-                          {minutosParaHHMM(linhaParaMinutos(linhaMinArraste))}–{minutosParaHHMM(linhaParaMinutos(linhaMaxArraste + 1))}
-                        </span>
-                      </div>
-                    )}
-
-                    {blocos.map((b) => {
-                      const inicioMin = hhmmParaMinutos(b.horaInicio);
-                      const fimMin = hhmmParaMinutos(b.horaFim);
-
-                      const top = ((inicioMin - HORA_GRADE_INICIO * 60) / passo) * ROW_HEIGHT;
-                      const altura = ((fimMin - inicioMin) / passo) * ROW_HEIGHT;
-                      const isSelecionado = blocoSelecionado === b.id;
-
-                      return (
-                        <div
-                          key={b.id}
-                          role="button"
-                          tabIndex={0}
-                          aria-pressed={isSelecionado}
-                          aria-label={`Bloco de ${b.horaInicio} às ${b.horaFim}`}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setBlocoSelecionado(isSelecionado ? null : b.id);
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              setBlocoSelecionado(isSelecionado ? null : b.id);
-                            }
-                          }}
-                          onPointerDown={(e) => e.stopPropagation()}
-                          className={`absolute left-0.5 right-0.5 text-white rounded-md cursor-pointer transition-all duration-150 overflow-visible ${
-                            isSelecionado
-                              ? 'bg-tcc-azul-dark ring-2 ring-tcc-laranja ring-offset-1 z-40 shadow-card'
-                              : 'bg-tcc-azul-dark z-30 hover:bg-tcc-azul-darker shadow-soft'
-                          }`}
-                          style={{ top, height: Math.max(altura, 3) }}
-                        >
-                          <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-[10px] font-extrabold tracking-tight text-center px-1 leading-tight pointer-events-none whitespace-nowrap">
-                            {b.horaInicio}–{b.horaFim}
-                          </span>
-
-                          {isSelecionado && (
-                            <div
-                              className="absolute -top-16 left-1/2 -translate-x-1/2 bg-tcc-neutro-700 text-white rounded-xl shadow-elevated border border-tcc-neutro-600 p-2 flex items-center gap-2.5 z-50 whitespace-nowrap"
-                              onClick={(e) => e.stopPropagation()}
-                              onPointerDown={(e) => e.stopPropagation()}
-                            >
-                              <button
-                                onClick={() => replicarParaDia(b, -1)}
-                                aria-label="Copiar para dia anterior"
-                                className="w-9 h-9 rounded-lg bg-tcc-neutro-600 flex items-center justify-center text-tcc-laranja hover:bg-tcc-neutro-500 transition-colors cursor-pointer"
-                              >
-                                <ArrowLeft size={14} aria-hidden="true" />
-                              </button>
-
-                              <div className="flex flex-col gap-1 items-center bg-tcc-neutro-600 rounded-lg p-1.5">
-                                <span className="text-[10px] font-extrabold text-tcc-neutro-300 uppercase leading-none tracking-widest">Início</span>
-                                <div className="flex gap-1.5">
-                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'aumentar')} aria-label="Antecipar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronUp size={14} aria-hidden="true" /></button>
-                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'diminuir')} aria-label="Atrasar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronDown size={14} aria-hidden="true" /></button>
-                                </div>
-                              </div>
-
-                              <div className="flex flex-col gap-1 items-center bg-tcc-neutro-600 rounded-lg p-1.5">
-                                <span className="text-[10px] font-extrabold text-tcc-neutro-300 uppercase leading-none tracking-widest">Fim</span>
-                                <div className="flex gap-1.5">
-                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'diminuir')} aria-label="Antecipar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronUp size={14} aria-hidden="true" /></button>
-                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'aumentar')} aria-label="Atrasar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronDown size={14} aria-hidden="true" /></button>
-                                </div>
-                              </div>
-
-                              <button
-                                onClick={() => replicarParaDia(b, 1)}
-                                aria-label="Copiar para próximo dia"
-                                className="w-9 h-9 rounded-lg bg-tcc-neutro-600 flex items-center justify-center text-tcc-laranja hover:bg-tcc-neutro-500 transition-colors cursor-pointer"
-                              >
-                                <ArrowRight size={14} aria-hidden="true" />
-                              </button>
-
-                              <span className="w-px h-8 bg-tcc-neutro-600 mx-0.5" aria-hidden="true" />
-
-                              <button
-                                onClick={() => handleRemover(b.id)}
-                                aria-label="Apagar este horário"
-                                className="px-3 h-9 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive hover:text-white font-bold text-caption flex items-center gap-1.5 transition-colors cursor-pointer"
-                              >
-                                <Trash2 size={14} aria-hidden="true" />
-                                <span>Apagar</span>
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
           </div>
-        </div>
+        ) : (
+          <div className="space-y-3">
+            {DIAS.map((dia) => (
+              <DiaDisponibilidadeCard
+                key={dia.valor}
+                dia={dia}
+                ehHoje={dia.valor === diaAtual}
+                ranges={blocosPorDia[dia.valor] || []}
+                processando={diasProcessando.has(dia.valor)}
+                erro={errosPorDia[dia.valor] || null}
+                onToggleDia={onToggleDia}
+                onAdicionarHorario={onAdicionarHorario}
+                onAlterarHorario={onAlterarHorario}
+                onPedirRemoverHorario={onPedirRemoverHorario}
+              />
+            ))}
+          </div>
+        )}
 
       </div>
+
+      <ConfirmDialog
+        open={!!confirmacao}
+        onOpenChange={(v) => { if (!v) setConfirmacao(null); }}
+        title={confirmacao?.tipo === 'horario' ? 'Remover horário?' : 'Desativar este dia?'}
+        description={descricaoConfirmacao}
+        confirmLabel="Remover"
+        variant="destructive"
+        onConfirm={confirmarAcao}
+      />
     </div>
   );
 }
