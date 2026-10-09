@@ -20,6 +20,7 @@ jobs:
             cd /var/www/equipes/26-marcaai/INI3A-EQ1
             git fetch origin main
             git reset --hard origin/main
+            git clean -fd
             cd src
             pm2 delete marcaai
             rm -rf .next
