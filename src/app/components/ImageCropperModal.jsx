@@ -27,12 +27,22 @@ export default function ImageCropperModal({
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [pronto, setPronto] = useState(false);
 
+  // Reinicia zoom/offset/pronto ao abrir com uma imagem nova — ajuste durante o
+  // render (padrão recomendado pelo React para resetar estado quando uma prop
+  // muda), não dentro do efeito, que fica só com a carga assíncrona da imagem.
+  const chaveAtual = open ? imageSrc : null;
+  const [chaveAnterior, setChaveAnterior] = useState(chaveAtual);
+  if (chaveAtual !== chaveAnterior) {
+    setChaveAnterior(chaveAtual);
+    if (chaveAtual) {
+      setZoom(1);
+      setOffset({ x: 0, y: 0 });
+      setPronto(false);
+    }
+  }
+
   useEffect(() => {
     if (!open || !imageSrc) return;
-    setZoom(1);
-    setOffset({ x: 0, y: 0 });
-    setPronto(false);
-
     const img = new Image();
     img.onload = () => {
       imgRef.current = img;

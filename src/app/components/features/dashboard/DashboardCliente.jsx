@@ -15,6 +15,8 @@ import {
   Clock3,
 } from 'lucide-react';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
+import { formatarPreco } from '@/app/components/ui/PriceTag';
+import { rotuloStatus } from '@/lib/statusAgendamento';
 
 export default function DashboardCliente({ usuario, dados }) {
   const { proximos, historico, avaliacoesPendentes, reputacao, metricas } = dados;
@@ -50,14 +52,8 @@ export default function DashboardCliente({ usuario, dados }) {
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-card border border-border p-6 rounded-3xl shadow-soft">
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="bg-accent/15 text-accent-foreground px-3 py-0.5 rounded-full text-caption font-bold uppercase">
-                Painel do Cliente
-              </span>
-              <span className="text-caption text-muted-foreground">· Modo Consumidor</span>
-            </div>
             <h1 className="text-h4 font-bold text-foreground">
-              Olá, {usuario.nome?.split(' ')[0]} 👋
+              Olá, {usuario.nome?.split(' ')[0]}
             </h1>
             <p className="text-body-sm text-muted-foreground mt-1">
               Acompanhe seus agendamentos, avalie serviços e peça novamente com agilidade.
@@ -106,7 +102,7 @@ export default function DashboardCliente({ usuario, dados }) {
                         Prestador:{' '}
                         <Link
                           href={`/prestador/${item.prestadorSlug || ''}`}
-                          className="font-semibold text-tcc-azul hover:underline"
+                          className="font-semibold text-primary hover:underline"
                         >
                           {item.prestadorNome}
                         </Link>
@@ -126,24 +122,24 @@ export default function DashboardCliente({ usuario, dados }) {
 
         {/* Métricas e Resumo */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-card p-5 rounded-2xl border-l-4 border-tcc-azul shadow-soft">
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
             <p className="text-caption text-muted-foreground">Em andamento</p>
-            <h3 className="text-h4 font-bold text-tcc-azul mt-1">{metricas.ativos}</h3>
+            <h3 className="text-h4 font-bold text-foreground mt-1">{metricas.ativos}</h3>
           </div>
-          <div className="bg-card p-5 rounded-2xl border-l-4 border-success shadow-soft">
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
             <p className="text-caption text-muted-foreground">Concluídos</p>
-            <h3 className="text-h4 font-bold text-success mt-1">{metricas.concluidos}</h3>
+            <h3 className="text-h4 font-bold text-foreground mt-1">{metricas.concluidos}</h3>
           </div>
-          <div className="bg-card p-5 rounded-2xl border-l-4 border-tcc-laranja shadow-soft">
-            <p className="text-caption text-muted-foreground">Reputação como Cliente</p>
-            <h3 className="text-h4 font-bold text-tcc-laranja mt-1 flex items-center gap-1">
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
+            <p className="text-caption text-muted-foreground">Sua reputação</p>
+            <h3 className="text-h4 font-bold text-foreground mt-1 flex items-center gap-1">
               {reputacao.media > 0 ? reputacao.media.toFixed(1) : '—'}
               <Star size={18} className="fill-amber-400 stroke-amber-400" />
             </h3>
             <p className="text-caption text-muted-foreground mt-0.5">({reputacao.total} avaliações)</p>
           </div>
-          <div className="bg-card p-5 rounded-2xl border-l-4 border-foreground shadow-soft">
-            <p className="text-caption text-muted-foreground">Total de Pedidos</p>
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
+            <p className="text-caption text-muted-foreground">Total de agendamentos</p>
             <h3 className="text-h4 font-bold text-foreground mt-1">{metricas.total}</h3>
           </div>
         </div>
@@ -152,10 +148,10 @@ export default function DashboardCliente({ usuario, dados }) {
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-h6 font-bold text-foreground flex items-center gap-2">
-              <CalendarClock size={20} className="text-tcc-azul" aria-hidden="true" />
+              <CalendarClock size={20} className="text-primary" aria-hidden="true" />
               Próximos Horários Agendados
             </h2>
-            <Link href="/agendamentos" className="text-body-sm font-medium text-tcc-azul hover:underline flex items-center gap-1">
+            <Link href="/agendamentos" className="text-body-sm font-medium text-primary hover:underline flex items-center gap-1">
               Ver todos <ArrowRight size={14} />
             </Link>
           </div>
@@ -195,7 +191,7 @@ export default function DashboardCliente({ usuario, dados }) {
                           Prestador:{' '}
                           <Link
                             href={`/prestador/${ag.prestadorSlug || ''}`}
-                            className="font-semibold text-tcc-azul hover:underline"
+                            className="font-semibold text-primary hover:underline"
                           >
                             {ag.prestadorNome}
                           </Link>
@@ -203,10 +199,10 @@ export default function DashboardCliente({ usuario, dados }) {
                       </div>
                     </div>
 
-                    <span className={`px-3 py-1 rounded-full text-caption font-bold uppercase shrink-0 ${
+                    <span className={`px-3 py-1 rounded-full text-caption font-bold shrink-0 ${
                       ag.status === 'confirmado' ? 'bg-success/15 text-success' : 'bg-warning/15 text-warning'
                     }`}>
-                      {ag.status}
+                      {rotuloStatus(ag.status)}
                     </span>
                   </div>
 
@@ -216,9 +212,7 @@ export default function DashboardCliente({ usuario, dados }) {
                       <span className="font-bold">{formatarData(ag.dataHora)}</span>
                       <span>às {formatarHora(ag.dataHora)}</span>
                     </div>
-                    <span className="font-bold text-tcc-laranja">
-                      R$ {Number(ag.servicoPreco).toFixed(2).replace('.', ',')}
-                    </span>
+                    <span className="font-bold text-primary">{formatarPreco(ag.servicoPreco)}</span>
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
@@ -260,10 +254,10 @@ export default function DashboardCliente({ usuario, dados }) {
                 <div key={item.id} className="bg-card p-5 rounded-2xl border border-border shadow-soft flex flex-col justify-between gap-4">
                   <div>
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className={`px-2.5 py-0.5 rounded-full text-caption font-bold uppercase ${
+                      <span className={`px-2.5 py-0.5 rounded-full text-caption font-bold ${
                         item.status === 'concluido' ? 'bg-success/15 text-success' : 'bg-destructive/10 text-destructive'
                       }`}>
-                        {item.status}
+                        {rotuloStatus(item.status)}
                       </span>
                       <span className="text-caption text-muted-foreground">
                         {new Date(item.dataHora).toLocaleDateString('pt-BR')}
@@ -275,14 +269,12 @@ export default function DashboardCliente({ usuario, dados }) {
                       Por{' '}
                       <Link
                         href={`/prestador/${item.prestadorSlug || ''}`}
-                        className="font-medium text-tcc-azul hover:underline"
+                        className="font-medium text-primary hover:underline"
                       >
                         {item.prestadorNome}
                       </Link>
                     </p>
-                    <p className="font-bold text-body-sm text-foreground mt-2">
-                      R$ {Number(item.servicoPreco).toFixed(2).replace('.', ',')}
-                    </p>
+                    <p className="font-bold text-body-sm text-foreground mt-2">{formatarPreco(item.servicoPreco)}</p>
                   </div>
 
                   <Link

@@ -3,7 +3,7 @@ import Skeleton from "@/app/components/ui/Skeleton";
 
 export default function LoadingNovoServico() {
   return (
-    <div className="min-h-screen bg-tcc-azul-deep flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <ProgressBar />
       <div className="w-full max-w-xl bg-card rounded-2xl shadow-elevated border border-border p-8 md:p-10 space-y-5">
         <div className="text-center mb-4">

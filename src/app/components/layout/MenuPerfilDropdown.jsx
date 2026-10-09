@@ -1,22 +1,17 @@
 "use client";
-import { useState, useRef, useEffect, useSyncExternalStore } from "react";
-import { User, LogOut, UserRound, Sun, Moon } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { User, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useTheme } from "next-themes";
 import { logout } from "@/app/actions/auth.actions";
-
-const subscribeNoop = () => () => {};
+import { useMounted } from "@/app/hooks/useMounted";
+import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
 
 export default function PerfilDropdown({ user }) {
     const [aberto, setAberto] = useState(false);
     const [confirmandoSaida, setConfirmandoSaida] = useState(false);
-    const [saindo, setSaindo] = useState(false);
     const menuRef = useRef(null);
-
-    // tema
-    const { resolvedTheme, setTheme } = useTheme();
-    const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false);
+    const mounted = useMounted();
 
     useEffect(() => {
         function handleClickFora(event) {
@@ -39,38 +34,26 @@ export default function PerfilDropdown({ user }) {
         return <span className="inline-block h-11 w-11" aria-hidden="true" />;
     }
 
-    const isDark = resolvedTheme === "dark";
-
     function pedirConfirmacaoSaida() {
         setAberto(false);
         setConfirmandoSaida(true);
     }
 
-    function cancelarSaida() {
-        setConfirmandoSaida(false);
-    }
-
     async function confirmarSaida() {
-        setSaindo(true);
-        try {
-            await logout();
-        } finally {
-            setSaindo(false);
-            setConfirmandoSaida(false);
-        }
+        await logout();
     }
 
     return (
         <div className="relative" ref={menuRef}>
             <button
                 onClick={() => setAberto((prev) => !prev)}
-                className="bg-tcc-azul text-tcc-azul-deep h-11 w-11 rounded-full p-0.5 hover:bg-tcc-azul-medium transition-all duration-200 shadow-inner cursor-pointer overflow-hidden flex items-center justify-center"
+                className="bg-primary text-primary-foreground h-11 w-11 rounded-full p-0.5 hover:bg-primary-hover transition-all duration-200 shadow-inner cursor-pointer overflow-hidden flex items-center justify-center"
                 aria-label="Menu do perfil"
                 aria-haspopup="menu"
                 aria-expanded={aberto}
             >
                 {user?.urlImagem ? (
-                    <img
+                    <Image
                         src={user.urlImagem}
                         className="w-full h-full aspect-square rounded-full object-cover"
                         width={44}
@@ -78,7 +61,7 @@ export default function PerfilDropdown({ user }) {
                         alt=""
                     />
                 ) : (
-                    <UserRound size={22} className="text-white" aria-hidden="true" />
+                    <UserRound size={22} className="text-primary-foreground" aria-hidden="true" />
                 )}
             </button>
 
@@ -109,20 +92,6 @@ export default function PerfilDropdown({ user }) {
                     )}
                     <button
                         type="button"
-                        onClick={() => setTheme(isDark ? "light" : "dark")}
-                        aria-label={isDark ? "Ativar tema claro" : "Ativar tema escuro"}
-                        aria-pressed={isDark}
-                        className="flex w-full items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
-                    >
-                        {isDark ? (
-                            <Sun size={20} strokeWidth={1.75} />
-                        ) : (
-                            <Moon size={20} strokeWidth={1.75} />
-                        )}
-                        <span className="text-body-sm font-semibold">Mudar tema</span>
-                    </button>
-                    <button
-                        type="button"
                         role="menuitem"
                         onClick={pedirConfirmacaoSaida}
                         className="w-full flex items-center gap-3 px-5 py-3.5 text-tcc-laranja-deep dark:text-tcc-laranja hover:bg-muted transition-colors cursor-pointer"
@@ -133,39 +102,14 @@ export default function PerfilDropdown({ user }) {
                 </div>
             )}
 
-            {confirmandoSaida && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-100 px-4">
-                    <div
-                        role="alertdialog"
-                        aria-modal="true"
-                        aria-labelledby="sair-titulo"
-                        className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full"
-                    >
-                        <h2 id="sair-titulo" className="text-base font-extrabold text-foreground mb-2">
-                            Sair da conta?
-                        </h2>
-                        <p className="text-body-sm text-muted-foreground mb-6">
-                            Você precisará entrar novamente para acessar sua conta.
-                        </p>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={cancelarSaida}
-                                disabled={saindo}
-                                className="flex-1 rounded-xl h-11 text-body-sm font-bold text-foreground bg-muted hover:bg-muted/70 transition-colors disabled:opacity-60 cursor-pointer"
-                            >
-                                Cancelar
-                            </button>
-                            <button
-                                onClick={confirmarSaida}
-                                disabled={saindo}
-                                className="flex-1 rounded-xl h-11 text-body-sm font-bold text-accent-foreground bg-accent hover:bg-accent-hover transition-colors disabled:opacity-60 cursor-pointer"
-                            >
-                                {saindo ? "Saindo..." : "Sair"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <ConfirmDialog
+                open={confirmandoSaida}
+                onOpenChange={setConfirmandoSaida}
+                title="Sair da conta?"
+                description="Você precisará entrar novamente para acessar sua conta."
+                confirmLabel="Sair"
+                onConfirm={confirmarSaida}
+            />
         </div>
     );
 }

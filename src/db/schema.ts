@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar, doublePrecision } from 'drizzle-orm/pg-core';
 
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
@@ -29,6 +29,9 @@ export const prestadores = pgTable('prestadores', {
   biografia: text('biografia'),
   documento: text('documento'),
   raioAtendimentoKm: integer('raio_atendimento_km'),
+  latitude: doublePrecision('latitude'),
+  longitude: doublePrecision('longitude'),
+  enderecoTexto: text('endereco_texto'),
 });
 
 export const categorias = pgTable('categorias', {

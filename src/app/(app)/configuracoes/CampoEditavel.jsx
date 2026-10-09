@@ -2,20 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useActionState } from "react";
-import { Pencil, X } from "lucide-react";
+import { X } from "lucide-react";
+import { formatarTelefone } from "@/lib/formatarTelefone";
+import LinhaCampo from "./LinhaCampo";
 
 const estadoInicial = { erro: null };
-
-function formatarTelefone(valor) {
-  const digitos = String(valor || "").replace(/\D/g, "").slice(0, 11);
-  if (digitos.length === 0) return "";
-  if (digitos.length <= 2) return `(${digitos}`;
-  if (digitos.length <= 6) return `(${digitos.slice(0, 2)}) ${digitos.slice(2)}`;
-  if (digitos.length <= 10) {
-    return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 6)}-${digitos.slice(6)}`;
-  }
-  return `(${digitos.slice(0, 2)}) ${digitos.slice(2, 7)}-${digitos.slice(7, 11)}`;
-}
 
 function ModalEdicao({ label, name, valor, icon, action, type, onClose }) {
   const [state, formAction, isPending] = useActionState(action, estadoInicial);
@@ -114,29 +105,14 @@ export default function CampoEditavel({ label, name, valor, icon, action, type =
   const [editando, setEditando] = useState(false);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end w-full gap-2 group">
-      <div className="flex items-center gap-2 min-w-[160px]">
-        {icon}
-        <span className="text-muted-foreground font-semibold text-body-sm tracking-wide uppercase">
-          {label}
-        </span>
-      </div>
-
-      <div className="hidden sm:block flex-grow border-b-2 border-dashed border-border mb-1 opacity-70 group-hover:border-tcc-neutro-300 transition-colors"></div>
-
-      <div className="flex items-center justify-between sm:justify-end gap-3 mt-1 sm:mt-0">
-        <span className={`text-body font-medium ${!valor ? "text-muted-foreground italic" : "text-foreground"}`}>
-          {valor || "Não cadastrado"}
-        </span>
-
-        <button
-          onClick={() => setEditando(true)}
-          aria-label={`Editar ${label}`}
-          className="h-11 w-11 bg-muted hover:bg-accent hover:text-accent-foreground rounded-full text-muted-foreground shadow-soft border border-border cursor-pointer transition-all duration-200 flex items-center justify-center"
-        >
-          <Pencil size={16} aria-hidden="true" />
-        </button>
-      </div>
+    <>
+      <LinhaCampo
+        icon={icon}
+        label={label}
+        valor={valor || "Não cadastrado"}
+        vazio={!valor}
+        onEditar={() => setEditando(true)}
+      />
 
       {editando && (
         <ModalEdicao
@@ -149,6 +125,6 @@ export default function CampoEditavel({ label, name, valor, icon, action, type =
           onClose={() => setEditando(false)}
         />
       )}
-    </div>
+    </>
   );
 }

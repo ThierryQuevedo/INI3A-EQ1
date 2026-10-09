@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import CardServicoCatalogo from "@/app/components/features/servicos/CardServicoCatalogo";
+import ServiceCard from "@/app/components/features/servicos/ServiceCard";
 
 export default function CatalogoGrid({ catalogo }) {
   const reduzMovimento = useReducedMotion();
@@ -28,7 +28,7 @@ export default function CatalogoGrid({ catalogo }) {
             visivel: { opacity: 1, y: 0, transition: { duration: 0.25, ease: [0.28, 0.11, 0.32, 1] } },
           }}
         >
-          <CardServicoCatalogo servico={servico} />
+          <ServiceCard servico={servico} />
         </motion.div>
       ))}
     </motion.div>

@@ -6,6 +6,8 @@ import { getSession } from '@/app/actions/auth.actions';
 import { listarServicosPorPrestador } from '@/app/actions/servicos.actions';
 import { listarDisponibilidades, criarDisponibilidade, deletarDisponibilidade } from '@/app/actions/disponibilidades.actions';
 import Skeleton from '@/app/components/ui/Skeleton';
+import { useToast } from '@/app/components/ui/ToastProvider';
+import { ChevronUp, ChevronDown, ArrowLeft, ArrowRight, Trash2, Briefcase } from 'lucide-react';
 
 const DIAS_ABREV = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const HORA_GRADE_INICIO = 0;
@@ -31,26 +33,8 @@ function normalizarBloco(b) {
   return { ...b, horaInicio: cortar(b.horaInicio), horaFim: cortar(b.horaFim) };
 }
 
-const IconChevronUp = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" {...props}><polyline points="18 15 12 9 6 15" /></svg>
-);
-const IconChevronDown = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" {...props}><polyline points="6 9 12 15 18 9" /></svg>
-);
-const IconArrowLeft = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" {...props}><polyline points="15 18 9 12 15 6" /></svg>
-);
-const IconArrowRight = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" {...props}><polyline points="9 18 15 12 9 6" /></svg>
-);
-const IconTrash = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-);
-const IconBriefcase = (props) => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" /></svg>
-);
-
 export default function DisponibilidadePage() {
+  const toast = useToast();
   const router = useRouter();
   const [prestadorId, setPrestadorId] = useState(null);
   const [disponibilidades, setDisponibilidades] = useState([]);
@@ -65,7 +49,6 @@ export default function DisponibilidadePage() {
 
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
-  const [toastSucesso, setToastSucesso] = useState(null);
   const [processando, setProcessando] = useState(false);
 
   const [blocoSelecionado, setBlocoSelecionado] = useState(null);
@@ -143,12 +126,6 @@ export default function DisponibilidadePage() {
     const t = setTimeout(() => setErro(null), 4000);
     return () => clearTimeout(t);
   }, [erro]);
-
-  useEffect(() => {
-    if (!toastSucesso) return;
-    const t = setTimeout(() => setToastSucesso(null), 4000);
-    return () => clearTimeout(t);
-  }, [toastSucesso]);
 
   const totalMinutosGrade = (HORA_GRADE_FIM - HORA_GRADE_INICIO + 1) * 60;
   const totalLinhas = Math.floor(totalMinutosGrade / passo);
@@ -251,7 +228,7 @@ export default function DisponibilidadePage() {
 
       const idsRemovidos = new Set(blocosParaFundir.map((b) => b.id));
       setDisponibilidades((prev) => [...prev.filter((d) => !idsRemovidos.has(d.id)), unificado]);
-      setToastSucesso('Disponibilidade salva com sucesso!');
+      toast.success('Disponibilidade salva com sucesso!');
 
     } catch (e) {
       setErro(e.message);
@@ -336,7 +313,7 @@ export default function DisponibilidadePage() {
       const atualizado = await criarBlocoBackend(bloco.diaSemana, minutosParaHHMM(inicioMin), minutosParaHHMM(fimMin));
       setDisponibilidades((prev) => [...prev.filter((d) => d.id !== bloco.id), atualizado]);
       setBlocoSelecionado(atualizado.id);
-      setToastSucesso('Horário atualizado com sucesso!');
+      toast.success('Horário atualizado com sucesso!');
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -366,7 +343,7 @@ export default function DisponibilidadePage() {
     try {
       const novo = await criarBlocoBackend(diaAlvo, bloco.horaInicio, bloco.horaFim);
       setDisponibilidades((prev) => [...prev, novo]);
-      setToastSucesso('Horário replicado com sucesso!');
+      toast.success('Horário replicado com sucesso!');
     } catch (e) {
       setErro(e.message);
     } finally {
@@ -381,7 +358,7 @@ export default function DisponibilidadePage() {
       await removerBlocoBackend(id);
       setDisponibilidades((prev) => prev.filter((d) => d.id !== id));
       setBlocoSelecionado(null);
-      setToastSucesso('Horário removido com sucesso!');
+      toast.success('Horário removido com sucesso!');
     } catch {
       setErro('Erro ao remover disponibilidade.');
     } finally {
@@ -407,7 +384,7 @@ export default function DisponibilidadePage() {
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-soft text-center max-w-sm">
           <div className="w-16 h-16 bg-tcc-azul-dark/10 rounded-full flex items-center justify-center text-tcc-azul-dark">
-            <IconBriefcase width={28} height={28} aria-hidden="true" />
+            <Briefcase width={28} height={28} aria-hidden="true" />
           </div>
           <h2 className="text-h6 font-bold text-foreground">Nenhum serviço cadastrado</h2>
           <p className="text-body-sm text-muted-foreground">Cadastre um serviço primeiro para poder configurar a disponibilidade dele.</p>
@@ -436,9 +413,7 @@ export default function DisponibilidadePage() {
             onClick={() => router.back()}
             className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-tcc-azul-dark font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <ArrowLeft size={16} aria-hidden="true" />
             Voltar
           </button>
           <h1 className="text-h4 font-extrabold text-foreground">Minha disponibilidade</h1>
@@ -454,7 +429,7 @@ export default function DisponibilidadePage() {
         {/* Seletor de serviço — cada serviço tem sua própria agenda */}
         <div className="bg-card rounded-2xl p-4 shadow-soft mb-4" onClick={(e) => e.stopPropagation()}>
           <label className="text-caption font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
-            <IconBriefcase width={13} height={13} aria-hidden="true" /> Serviço
+            <Briefcase width={13} height={13} aria-hidden="true" /> Serviço
           </label>
           <div className="flex gap-2 flex-wrap">
             {servicos.map((s) => {
@@ -627,22 +602,22 @@ export default function DisponibilidadePage() {
                                 aria-label="Copiar para dia anterior"
                                 className="w-9 h-9 rounded-lg bg-tcc-neutro-600 flex items-center justify-center text-tcc-laranja hover:bg-tcc-neutro-500 transition-colors cursor-pointer"
                               >
-                                <IconArrowLeft aria-hidden="true" />
+                                <ArrowLeft size={14} aria-hidden="true" />
                               </button>
 
                               <div className="flex flex-col gap-1 items-center bg-tcc-neutro-600 rounded-lg p-1.5">
                                 <span className="text-[10px] font-extrabold text-tcc-neutro-300 uppercase leading-none tracking-widest">Início</span>
                                 <div className="flex gap-1.5">
-                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'aumentar')} aria-label="Antecipar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronUp aria-hidden="true" /></button>
-                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'diminuir')} aria-label="Atrasar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronDown aria-hidden="true" /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'aumentar')} aria-label="Antecipar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronUp size={14} aria-hidden="true" /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'inicio', 'diminuir')} aria-label="Atrasar início" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronDown size={14} aria-hidden="true" /></button>
                                 </div>
                               </div>
 
                               <div className="flex flex-col gap-1 items-center bg-tcc-neutro-600 rounded-lg p-1.5">
                                 <span className="text-[10px] font-extrabold text-tcc-neutro-300 uppercase leading-none tracking-widest">Fim</span>
                                 <div className="flex gap-1.5">
-                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'diminuir')} aria-label="Antecipar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronUp aria-hidden="true" /></button>
-                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'aumentar')} aria-label="Atrasar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><IconChevronDown aria-hidden="true" /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'diminuir')} aria-label="Antecipar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronUp size={14} aria-hidden="true" /></button>
+                                  <button onClick={() => alterarTamanhoBloco(b, 'fim', 'aumentar')} aria-label="Atrasar fim" className="w-7 h-7 flex items-center justify-center bg-tcc-neutro-500 hover:bg-tcc-azul-medium text-white rounded cursor-pointer"><ChevronDown size={14} aria-hidden="true" /></button>
                                 </div>
                               </div>
 
@@ -651,7 +626,7 @@ export default function DisponibilidadePage() {
                                 aria-label="Copiar para próximo dia"
                                 className="w-9 h-9 rounded-lg bg-tcc-neutro-600 flex items-center justify-center text-tcc-laranja hover:bg-tcc-neutro-500 transition-colors cursor-pointer"
                               >
-                                <IconArrowRight aria-hidden="true" />
+                                <ArrowRight size={14} aria-hidden="true" />
                               </button>
 
                               <span className="w-px h-8 bg-tcc-neutro-600 mx-0.5" aria-hidden="true" />
@@ -661,7 +636,7 @@ export default function DisponibilidadePage() {
                                 aria-label="Apagar este horário"
                                 className="px-3 h-9 rounded-lg bg-destructive/20 text-destructive hover:bg-destructive hover:text-white font-bold text-caption flex items-center gap-1.5 transition-colors cursor-pointer"
                               >
-                                <IconTrash aria-hidden="true" />
+                                <Trash2 size={14} aria-hidden="true" />
                                 <span>Apagar</span>
                               </button>
                             </div>
@@ -677,29 +652,6 @@ export default function DisponibilidadePage() {
         </div>
 
       </div>
-
-      {toastSucesso && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-card border border-success/40 text-foreground px-4 py-3 rounded-2xl shadow-elevated animate-in fade-in slide-in-from-bottom-2"
-        >
-          <div className="w-7 h-7 rounded-full bg-success/20 text-success flex items-center justify-center flex-shrink-0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" aria-hidden="true">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-          <span className="text-body-sm font-semibold">{toastSucesso}</span>
-          <button
-            type="button"
-            onClick={() => setToastSucesso(null)}
-            className="text-muted-foreground hover:text-foreground text-caption ml-2 p-1 rounded-full cursor-pointer"
-            aria-label="Fechar notificação"
-          >
-            ✕
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -62,7 +62,7 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-sans">
       <Link href="/" className="w-56 mb-10">
         <Image src={logotipo} alt="Marca Aí — página inicial" priority />
       </Link>

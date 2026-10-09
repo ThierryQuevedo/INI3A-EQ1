@@ -1,12 +1,13 @@
 import Link from "next/link";
+import { CalendarClock, Plus, DollarSign, Star, Users } from "lucide-react";
 import { requireSession } from "@/app/actions/auth.actions";
-import BotaoStatusConfirm from "@/app/components/features/agendamentos/BotaoStatusConfirm";
-import CardServicoCatalogo from "@/app/components/features/servicos/CardServicoCatalogo";
+import BotaoAcaoAgendamento from "@/app/components/features/agendamentos/BotaoAcaoAgendamento";
 import DashboardCliente from "@/app/components/features/dashboard/DashboardCliente";
+import { Button } from "@/app/components/ui/button";
+import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { db } from "@/db";
-import { agendamentos, servicos, usuarios, categorias } from "@/db/schema";
-import { eq, and, gte, lt, desc } from "drizzle-orm";
-import { atualizarStatusAgendamento } from "@/app/actions/agendamentos.actions";
+import { agendamentos, servicos, usuarios } from "@/db/schema";
+import { eq, and, gte, lt } from "drizzle-orm";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
 import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
 
@@ -39,7 +40,7 @@ export default async function Dashboard() {
 
   const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-  const [agendamentosHoje, agendamentosFuturos, servicosDestaque, perfilPrestador, faturamento] = await Promise.all([
+  const [agendamentosHoje, agendamentosFuturos, perfilPrestador, faturamento] = await Promise.all([
     db.select(camposAgendamento)
       .from(agendamentos)
       .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -60,21 +61,6 @@ export default async function Dashboard() {
         gte(agendamentos.dataHora, amanha)
       ))
       .orderBy(agendamentos.dataHora),
-
-    db.select({
-        id: servicos.id,
-        slug: servicos.slug,
-        nomeServico: servicos.nome,
-        preco: servicos.preco,
-        duracao: servicos.duracaoEstimada,
-        nomeProfissional: usuarios.nome,
-        nomeCategoria: categorias.nome,
-      })
-      .from(servicos)
-      .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
-      .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-      .orderBy(desc(servicos.id))
-      .limit(8),
 
     buscarPerfilPrestador(prestadorId),
 
@@ -105,10 +91,10 @@ export default async function Dashboard() {
 
   function statusLabel(status) {
     const map = {
-      pendente:   { label: 'Aguardando confirmação',   bg: 'bg-warning/15', text: 'text-warning' },
-      confirmado: { label: 'Confirmado', bg: 'bg-tcc-azul/10', text: 'text-tcc-azul' },
-      concluido:  { label: 'Feito',      bg: 'bg-success/15', text: 'text-success' },
-      cancelado:  { label: 'Cancelado',  bg: 'bg-destructive/10', text: 'text-destructive' },
+      pendente:   { label: 'Aguardando confirmação', bg: 'bg-warning/15', text: 'text-warning' },
+      confirmado: { label: 'Confirmado', bg: 'bg-primary/10', text: 'text-primary' },
+      concluido:  { label: 'Feito', bg: 'bg-success/15', text: 'text-success' },
+      cancelado:  { label: 'Cancelado', bg: 'bg-destructive/10', text: 'text-destructive' },
     };
     return map[status] ?? { label: status, bg: 'bg-muted', text: 'text-muted-foreground' };
   }
@@ -122,8 +108,8 @@ export default async function Dashboard() {
     return (
       <div className="bg-card p-4 rounded-2xl shadow-soft border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex gap-6 items-center flex-1">
-          <div className="text-center min-w-52">
-            <span className="text-tcc-azul font-bold text-body block">{formatarHora(ag.dataHora)}</span>
+          <div className="text-center min-w-20">
+            <span className="text-primary font-bold text-body block">{formatarHora(ag.dataHora)}</span>
             <span className="text-muted-foreground text-caption">{formatarData(ag.dataHora)}</span>
           </div>
           <div>
@@ -132,41 +118,42 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className={`${bg} ${text} px-3 h-8 inline-flex items-center rounded-full text-caption font-bold uppercase`}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`${bg} ${text} px-3 h-8 inline-flex items-center rounded-full text-caption font-bold`}>
             {label}
           </span>
 
           {podeConfirmar && (
-            <BotaoStatusConfirm
-              action={atualizarStatusAgendamento.bind(null, ag.id, 'confirmado')}
-              textoBotao="Confirmar"
-              classeBotao="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
-              tituloModal="Confirmar agendamento?"
-              mensagemModal={`Deseja confirmar o agendamento de ${ag.clienteNome} para ${ag.servicoNome}?`}
-              classeConfirmar="bg-success text-white hover:bg-success/90"
+            <BotaoAcaoAgendamento
+              agendamentoId={ag.id}
+              novoStatus="confirmado"
+              label="Confirmar"
+              titulo="Confirmar agendamento?"
+              descricao={`Deseja confirmar o agendamento de ${ag.clienteNome} para ${ag.servicoNome}?`}
+              className="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
             />
           )}
 
           {podeConcluir && (
-            <BotaoStatusConfirm
-              action={atualizarStatusAgendamento.bind(null, ag.id, 'concluido')}
-              textoBotao="Concluir"
-              classeBotao="bg-tcc-azul hover:bg-tcc-azul-dark text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
-              tituloModal="Concluir agendamento?"
-              mensagemModal={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
-              classeConfirmar="bg-tcc-azul text-white hover:bg-tcc-azul-dark"
+            <BotaoAcaoAgendamento
+              agendamentoId={ag.id}
+              novoStatus="concluido"
+              label="Concluir"
+              titulo="Concluir agendamento?"
+              descricao={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
+              className="bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
             />
           )}
 
           {podeCancelar && (
-            <BotaoStatusConfirm
-              action={atualizarStatusAgendamento.bind(null, ag.id, 'cancelado')}
-              textoBotao="Cancelar"
-              classeBotao="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
-              tituloModal="Cancelar agendamento?"
-              mensagemModal={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
-              classeConfirmar="bg-destructive text-white hover:bg-destructive/90"
+            <BotaoAcaoAgendamento
+              agendamentoId={ag.id}
+              novoStatus="cancelado"
+              label="Cancelar"
+              titulo="Cancelar agendamento?"
+              descricao={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
+              variant="destructive"
+              className="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
             />
           )}
         </div>
@@ -181,63 +168,47 @@ export default async function Dashboard() {
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
           <div>
             <p className="text-muted-foreground text-body-sm">Painel do prestador</p>
-            <h1 className="text-h4 font-bold text-tcc-azul-dark dark:text-tcc-azul-light">{nome}</h1>
+            <h1 className="text-h4 font-bold text-foreground">{nome}</h1>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href={`/prestador/${usuario.slug || usuario.id}`}
-              className="bg-secondary hover:bg-muted text-foreground border border-border text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
-            >
-              Ver perfil público
-            </Link>
-            <Link
-              href="/disponibilidades"
-              className="bg-card hover:bg-muted text-tcc-azul-dark dark:text-tcc-azul-light border border-tcc-azul-dark/20 text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <rect x="3" y="4" width="18" height="18" rx="2" />
-                <line x1="16" y1="2" x2="16" y2="6" />
-                <line x1="8" y1="2" x2="8" y2="6" />
-                <line x1="3" y1="10" x2="21" y2="10" />
-              </svg>
-              Disponibilidade
-            </Link>
-            <Link
-              href="/servicos/novo"
-              className="bg-tcc-azul-dark hover:bg-tcc-azul-darker text-white text-body-sm font-bold px-4 h-11 rounded-full transition-colors duration-200 flex items-center gap-2"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Novo serviço
-            </Link>
+            <Button asChild variant="secondary">
+              <Link href={`/prestador/${usuario.slug || usuario.id}`}>Ver perfil público</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/disponibilidades">
+                <CalendarClock size={16} aria-hidden="true" /> Disponibilidade
+              </Link>
+            </Button>
+            <Button asChild variant="default">
+              <Link href="/servicos/novo">
+                <Plus size={16} aria-hidden="true" /> Novo serviço
+              </Link>
+            </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-          <div className="bg-card p-6 rounded-2xl border-l-4 border-tcc-azul shadow-soft">
-            <h3 className="text-tcc-azul text-h4 font-bold">{agendamentosHoje.length}</h3>
-            <p className="text-muted-foreground">agendamentos hoje</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
+            <CalendarClock size={20} className="text-primary mb-2" aria-hidden="true" />
+            <h3 className="text-h5 font-bold text-foreground">{agendamentosHoje.length}</h3>
+            <p className="text-muted-foreground text-caption">Agendamentos hoje</p>
           </div>
-          <div className="bg-card p-6 rounded-2xl border-l-4 border-tcc-laranja shadow-soft">
-            <h3 className="text-tcc-laranja-deep dark:text-tcc-laranja text-h4 font-bold">
-              R$ {faturamentoTotal.toFixed(2).replace('.', ',')}
-            </h3>
-            <p className="text-muted-foreground">este mês</p>
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
+            <DollarSign size={20} className="text-primary mb-2" aria-hidden="true" />
+            <h3 className="text-h5 font-bold text-foreground">{formatarPreco(faturamentoTotal)}</h3>
+            <p className="text-muted-foreground text-caption">Faturamento do mês</p>
           </div>
-          <div className="bg-card p-6 rounded-2xl border-l-4 border-success shadow-soft">
-            <p className="text-success font-semibold text-body-sm">Avaliação</p>
-            <h3 className="text-success text-h4 font-bold">
-              {perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}{' '}
-              <span className="text-h6">★</span>
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
+            <Star size={20} className="text-primary mb-2" aria-hidden="true" />
+            <h3 className="text-h5 font-bold text-foreground">
+              {perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}
             </h3>
-            <p className="text-muted-foreground">{perfilPrestador?.totalAvaliacoes ?? 0} avaliações</p>
+            <p className="text-muted-foreground text-caption">{perfilPrestador?.totalAvaliacoes ?? 0} avaliações</p>
           </div>
-          <div className="bg-card p-6 rounded-2xl border-l-4 border-foreground shadow-soft">
-            <h3 className="text-foreground text-h4 font-bold">
-              {perfilPrestador?.totalClientesAtendidos ?? 0}
-            </h3>
-            <p className="text-muted-foreground">Clientes atendidos</p>
+          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
+            <Users size={20} className="text-primary mb-2" aria-hidden="true" />
+            <h3 className="text-h5 font-bold text-foreground">{perfilPrestador?.totalClientesAtendidos ?? 0}</h3>
+            <p className="text-muted-foreground text-caption">Clientes atendidos</p>
           </div>
         </div>
 
@@ -254,7 +225,7 @@ export default async function Dashboard() {
           </div>
         </section>
 
-        <section className="mb-10">
+        <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-h6 font-bold text-foreground">Próximos agendamentos</h2>
             {agendamentosFuturos.length > 0 && (
@@ -271,26 +242,6 @@ export default async function Dashboard() {
             ) : (
               agendamentosFuturos.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
             )}
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-h6 font-bold text-foreground">Destaques da comunidade</h2>
-            <Link href="/servicos" className="text-body-sm font-medium text-tcc-azul hover:underline">
-              Ver catálogo completo
-            </Link>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-6">
-            {servicosDestaque.map((servico) => (
-              <Link
-                key={servico.id}
-                href={`/servicos/${servico.slug || servico.id}`}
-                className="rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <CardServicoCatalogo servico={servico} />
-              </Link>
-            ))}
           </div>
         </section>
 

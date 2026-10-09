@@ -5,6 +5,7 @@ import { db } from '@/db';
 import { servicos, usuarios, categorias } from '@/db/schema';
 import ServicosClient from './ServicosClient';
 import { comEstatisticas } from '@/lib/avaliacoes';
+import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.actions';
 
 export default async function ServicosPage() {
   const dadosBrutos = await db
@@ -14,7 +15,7 @@ export default async function ServicosPage() {
       nomeServico: servicos.nome,
       preco: servicos.preco,
       urlImagem: servicos.urlImagem,
-      duracao: servicos.duracaoEstimada,
+      duracaoEstimada: servicos.duracaoEstimada,
       prestadorId: servicos.prestadorId,
       prestadorSlug: usuarios.slug,
       nomeProfissional: usuarios.nome,
@@ -29,5 +30,9 @@ export default async function ServicosPage() {
     .select({ id: categorias.id, nome: categorias.nome })
     .from(categorias);
 
-  return <ServicosClient servicos={await comEstatisticas(dadosBrutos)} categorias={listaCategorias} />;
+  const comEstat = await comEstatisticas(dadosBrutos);
+  const proximosHorarios = await calcularProximosHorariosLivres(comEstat.map((s) => s.id));
+  const listaServicos = comEstat.map((s) => ({ ...s, proximoHorario: proximosHorarios[s.id] ?? null }));
+
+  return <ServicosClient servicos={listaServicos} categorias={listaCategorias} />;
 }

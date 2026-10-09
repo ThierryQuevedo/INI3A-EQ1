@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useActionState } from "react";
-import { Pencil, X } from "lucide-react";
+import { X } from "lucide-react";
 import { atualizarSenha } from "@/app/actions/auth.actions";
+import LinhaCampo from "./LinhaCampo";
 
 const estadoInicial = { erro: null };
 
@@ -105,31 +106,12 @@ export default function CampoSenha({ label, icon }) {
   const [editando, setEditando] = useState(false);
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-end w-full gap-2 group">
-      <div className="flex items-center gap-2 min-w-[160px]">
-        {icon}
-        <span className="text-muted-foreground font-semibold text-body-sm tracking-wide uppercase">
-          {label}
-        </span>
-      </div>
-
-      <div className="hidden sm:block flex-grow border-b-2 border-dashed border-border mb-1 opacity-70 group-hover:border-tcc-neutro-300 transition-colors"></div>
-
-      <div className="flex items-center justify-between sm:justify-end gap-3 mt-1 sm:mt-0">
-        <span className="text-body font-medium text-foreground">••••••••••••</span>
-
-        <button
-          onClick={() => setEditando(true)}
-          aria-label={`Editar ${label}`}
-          className="h-11 w-11 bg-muted hover:bg-accent hover:text-accent-foreground rounded-full text-muted-foreground shadow-soft border border-border cursor-pointer transition-all duration-200 flex items-center justify-center"
-        >
-          <Pencil size={16} aria-hidden="true" />
-        </button>
-      </div>
+    <>
+      <LinhaCampo icon={icon} label={label} valor="••••••••••••" onEditar={() => setEditando(true)} />
 
       {editando && (
         <ModalSenha label={label} icon={icon} onClose={() => setEditando(false)} />
       )}
-    </div>
+    </>
   );
 }

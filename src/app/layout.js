@@ -1,6 +1,8 @@
 import "./globals.css";
 import { Inter, Urbanist, Sora } from "next/font/google";
+import { MotionConfig } from "framer-motion";
 import { ThemeProvider } from "./components/theme-provider";
+import { ToastProvider } from "./components/ui/ToastProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -19,7 +21,10 @@ const sora = Sora({
 })
 
 export const metadata = {
-  title: "Marca Aí",
+  title: {
+    default: "Marca Aí",
+    template: "%s | Marca Aí",
+  },
   description: "Encontre profissionais locais e agende atendimentos em minutos.",
 }
 
@@ -28,10 +33,14 @@ export default function RootLayout({ children }) {
     <html lang="pt-BR" className={`${inter.variable} ${urbanist.variable} ${sora.variable}`} suppressHydrationWarning>
       <body className="font-sans antialiased bg-background text-foreground">
         <ThemeProvider>
-          <a href="#main-content" className="skip-link">
-            Pular para o conteúdo principal
-          </a>
-          {children}
+          <MotionConfig reducedMotion="user">
+            <ToastProvider>
+              <a href="#main-content" className="skip-link">
+                Pular para o conteúdo principal
+              </a>
+              {children}
+            </ToastProvider>
+          </MotionConfig>
         </ThemeProvider>
       </body>
     </html>

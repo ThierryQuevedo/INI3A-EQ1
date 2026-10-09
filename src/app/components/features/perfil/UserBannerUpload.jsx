@@ -266,7 +266,7 @@ export default function UserBannerUpload({
               className="px-3 py-2 rounded-xl bg-black/60 hover:bg-destructive text-white backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
             >
               <Trash2 size={15} aria-hidden="true" />
-              <span className="hidden sm:inline">Remover</span>
+              <span className="max-sm:hidden sm:inline">Remover</span>
             </button>
           )}
 

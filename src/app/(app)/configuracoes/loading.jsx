@@ -3,12 +3,12 @@ import Skeleton from "@/app/components/ui/Skeleton";
 
 export default function LoadingConfiguracoes() {
   return (
-    <div className="min-h-screen bg-tcc-azul-deep flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       <ProgressBar />
-      <section className="bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep pt-16 pb-28 flex flex-col items-center justify-center gap-3">
-        <Skeleton className="size-24 rounded-full bg-white/10" />
-        <Skeleton className="h-7 w-48 bg-white/10" />
-        <Skeleton className="h-6 w-24 rounded-full bg-white/10" />
+      <section className="bg-surface pt-16 pb-28 flex flex-col items-center justify-center gap-3 border-b border-border">
+        <Skeleton className="size-24 rounded-full" />
+        <Skeleton className="h-7 w-48" />
+        <Skeleton className="h-6 w-24 rounded-full" />
       </section>
 
       <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">

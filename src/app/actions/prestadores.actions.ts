@@ -1,6 +1,7 @@
 'use server';
 
 import { eq, or, and, avg, count, countDistinct, desc, isNotNull } from 'drizzle-orm';
+import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import {
   usuarios,
@@ -11,6 +12,7 @@ import {
   avaliacoes,
 } from '@/db/schema';
 import { comEstatisticas } from '@/lib/avaliacoes';
+import { getSession } from '@/app/actions/auth.actions';
 
 export async function buscarPerfilPrestador(identificador: string | number) {
   if (!identificador) return null;
@@ -32,6 +34,9 @@ export async function buscarPerfilPrestador(identificador: string | number) {
       criadoEm: usuarios.criadoEm,
       biografia: prestadores.biografia,
       raioAtendimentoKm: prestadores.raioAtendimentoKm,
+      latitude: prestadores.latitude,
+      longitude: prestadores.longitude,
+      enderecoTexto: prestadores.enderecoTexto,
     })
     .from(usuarios)
     .innerJoin(prestadores, eq(prestadores.usuarioId, usuarios.id))
@@ -117,4 +122,41 @@ export async function buscarPerfilPrestador(identificador: string | number) {
     totalAtendimentos: estatClientes?.totalAtendimentos ?? 0,
     avaliacoes: ultimasAvaliacoes,
   };
+}
+
+export async function atualizarLocalizacaoPrestador(dados: {
+  latitude?: number | null;
+  longitude?: number | null;
+  enderecoTexto?: string | null;
+}) {
+  const usuario = await getSession();
+  if (!usuario || usuario.tipo !== 'prestador') {
+    return { erro: 'Não autorizado.' };
+  }
+
+  const atualizacao: Record<string, number | string | null> = {};
+  if ('latitude' in dados) atualizacao.latitude = dados.latitude ?? null;
+  if ('longitude' in dados) atualizacao.longitude = dados.longitude ?? null;
+  if ('enderecoTexto' in dados) atualizacao.enderecoTexto = dados.enderecoTexto?.trim() || null;
+
+  if (Object.keys(atualizacao).length === 0) {
+    return { erro: null, sucesso: true };
+  }
+
+  await db
+    .update(prestadores)
+    .set(atualizacao)
+    .where(eq(prestadores.usuarioId, usuario.id));
+
+  revalidatePath('/configuracoes');
+  if (usuario.slug) revalidatePath(`/prestador/${usuario.slug}`);
+  revalidatePath(`/prestador/${usuario.id}`);
+
+  return { erro: null, sucesso: true };
+}
+
+/** Wrapper no formato useActionState (estadoAnterior, formData), usado por CampoEditavel em /configuracoes. */
+export async function atualizarEnderecoTextoAction(estadoAnterior: unknown, formData: FormData) {
+  const enderecoTexto = formData.get('enderecoTexto');
+  return atualizarLocalizacaoPrestador({ enderecoTexto: enderecoTexto ? String(enderecoTexto) : null });
 }

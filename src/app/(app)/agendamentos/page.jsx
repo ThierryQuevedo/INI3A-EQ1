@@ -3,6 +3,10 @@ import { CalendarClock, CalendarCheck2, Clock3, CheckCircle2, XCircle, User, Dol
 import { requireSession } from '@/app/actions/auth.actions';
 import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
+import BotaoAcaoAgendamento from '@/app/components/features/agendamentos/BotaoAcaoAgendamento';
+import { formatarPreco } from '@/app/components/ui/PriceTag';
+
+const STATUS_CANCELAVEL = ['pendente', 'confirmado'];
 
 export const dynamic = 'force-dynamic';
 
@@ -62,7 +66,7 @@ function CardAgendamento({ item, usuarioLogado }) {
           </div>
           {usuarioLogado.tipo === 'cliente' ? (
             <p className="text-body-sm text-muted-foreground truncate mt-1">
-              {item.prestadorNome} · <span className="text-success font-semibold">R$ {Number(item.servicoPreco).toFixed(2)}</span>
+              {item.prestadorNome} · <span className="text-success font-semibold">{formatarPreco(item.servicoPreco)}</span>
             </p>
           ) : (
             <p className="text-body-sm text-muted-foreground truncate mt-1">
@@ -71,10 +75,23 @@ function CardAgendamento({ item, usuarioLogado }) {
           )}
         </div>
 
-        <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-full text-caption font-semibold shrink-0 ${estilo}`}>
-          <Icon size={13} aria-hidden="true" />
-          {label}
-        </span>
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-full text-caption font-semibold ${estilo}`}>
+            <Icon size={13} aria-hidden="true" />
+            {label}
+          </span>
+          {STATUS_CANCELAVEL.includes(item.status) && (
+            <BotaoAcaoAgendamento
+              agendamentoId={item.id}
+              novoStatus="cancelado"
+              label="Cancelar"
+              titulo="Cancelar agendamento?"
+              descricao="Essa ação não pode ser desfeita."
+              variant="destructive"
+              className="inline-flex items-center gap-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+            />
+          )}
+        </div>
       </div>
 
       {usuarioLogado.tipo === 'cliente' && item.status === 'concluido' && (
@@ -143,8 +160,7 @@ export default async function AgendamentosPage() {
           <div>
             <h1 className="text-h4 font-bold text-foreground">Sua Agenda</h1>
             <p className="text-muted-foreground mt-1 text-body-sm">
-              Olá, <span className="font-semibold text-foreground">{usuarioLogado.nome}</span>.
-              Modo visualização: <span className="text-tcc-azul font-medium uppercase text-caption bg-secondary px-2.5 py-1 rounded-full">{usuarioLogado.tipo}</span>
+              Olá, <span className="font-semibold text-foreground">{usuarioLogado.nome}</span>. Aqui estão seus agendamentos.
             </p>
           </div>
           {usuarioLogado.tipo === 'cliente' && (

@@ -9,9 +9,8 @@ export default function CatalogoCardSkeleton() {
         <Skeleton className="h-4 w-3/5" />
         <Skeleton className="h-4 w-24 mt-1" />
       </div>
-      <div className="mt-auto px-4 pb-4 pt-1 flex items-center justify-between gap-2">
-        <Skeleton className="h-6 w-16" />
-        <Skeleton className="h-11 w-24 rounded-full" />
+      <div className="mt-auto px-4 pb-4 pt-1">
+        <Skeleton className="h-6 w-20" />
       </div>
     </div>
   );

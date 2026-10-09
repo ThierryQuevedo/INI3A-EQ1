@@ -1,54 +1,55 @@
 'use client';
 import { Suspense, useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ArrowLeft, CalendarDays, Clock, CheckCircle2, Check, Pencil } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock, CheckCircle2, Check, Pencil, Sun, CloudSun, Moon, CalendarPlus } from 'lucide-react';
 import { confirmarAgendamentoAction, listarAgendamentosPorPrestador } from '@/app/actions/agendamentos.actions';
 import { getSession } from '@/app/actions/auth.actions';
 import { buscarServico } from '@/app/actions/servicos.actions';
 import { listarDisponibilidades } from '@/app/actions/disponibilidades.actions';
 import Calendario from '@/app/components/features/agendamentos/Calendario';
 import Skeleton from '@/app/components/ui/Skeleton';
+import { ehDataPassada, agruparPorPeriodo, calcularSlotsLivresDoDia } from '@/lib/disponibilidade';
+import { formatarPreco } from '@/app/components/ui/PriceTag';
 
-function gerarSlots(horaInicio, horaFim, duracaoMin) {
-  const slots = [];
-  const [hIni, mIni] = horaInicio.split(':').map(Number);
-  const [hFim, mFim] = horaFim.split(':').map(Number);
-  let atual = hIni * 60 + mIni;
-  const fim = hFim * 60 + mFim;
-  while (atual + duracaoMin <= fim) {
-    const h = String(Math.floor(atual / 60)).padStart(2, '0');
-    const m = String(atual % 60).padStart(2, '0');
-    slots.push(`${h}:${m}`);
-    atual += duracaoMin;
-  }
-  return slots;
+function capitalizarPrimeira(texto) {
+  return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : texto;
 }
 
-function agruparPorPeriodo(slots) {
-  const grupos = { manha: [], tarde: [], noite: [] };
-  for (const s of slots) {
-    const hora = Number(s.split(':')[0]);
-    if (hora < 12) grupos.manha.push(s);
-    else if (hora < 18) grupos.tarde.push(s);
-    else grupos.noite.push(s);
-  }
-  return grupos;
+function formatarDataICS(data) {
+  return data.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 }
 
-const IconSun = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></svg>
-);
-const IconCloudSun = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><path d="M12 2v2M4.93 4.93l1.41 1.41" /><path d="M20 12a4 4 0 0 0-4-4 4.5 4.5 0 0 0-8.6 1.53A4 4 0 0 0 8 17h9a3 3 0 0 0 0-6" /></svg>
-);
-const IconMoon = (props) => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" {...props}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
-);
+function gerarLinkGoogleCalendar({ titulo, inicio, fim, detalhes }) {
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: titulo,
+    dates: `${formatarDataICS(inicio)}/${formatarDataICS(fim)}`,
+    details: detalhes || '',
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function gerarIcsDataUri({ titulo, inicio, fim, detalhes }) {
+  const conteudo = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'BEGIN:VEVENT',
+    `UID:${inicio.getTime()}@marcaai`,
+    `DTSTAMP:${formatarDataICS(new Date())}`,
+    `DTSTART:${formatarDataICS(inicio)}`,
+    `DTEND:${formatarDataICS(fim)}`,
+    `SUMMARY:${titulo}`,
+    `DESCRIPTION:${detalhes || ''}`,
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ].join('\r\n');
+  return `data:text/calendar;charset=utf-8,${encodeURIComponent(conteudo)}`;
+}
 
 const PERIODOS = [
-  { chave: 'manha', label: 'Manhã', Icon: IconSun },
-  { chave: 'tarde', label: 'Tarde', Icon: IconCloudSun },
-  { chave: 'noite', label: 'Noite', Icon: IconMoon },
+  { chave: 'manha', label: 'Manhã', Icon: Sun },
+  { chave: 'tarde', label: 'Tarde', Icon: CloudSun },
+  { chave: 'noite', label: 'Noite', Icon: Moon },
 ];
 
 function AgendarPageSkeleton() {
@@ -95,7 +96,7 @@ function PassosProgresso({ passoAtual }) {
                 {concluido ? <Check size={14} aria-hidden="true" /> : passo.numero}
               </span>
               <span
-                className={`text-caption font-semibold hidden sm:inline ${
+                className={`text-caption font-semibold max-sm:hidden sm:inline ${
                   atual ? 'text-foreground' : concluido ? 'text-foreground/70' : 'text-muted-foreground'
                 }`}
               >
@@ -136,6 +137,7 @@ function AgendarPageInner() {
   const [enviando, setEnviando] = useState(false);
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
+  const [resumoConfirmado, setResumoConfirmado] = useState(null);
 
   const refHorarioHeading = useRef(null);
   const refConfirmacaoHeading = useRef(null);
@@ -176,54 +178,15 @@ function AgendarPageInner() {
     carregar();
   }, [servicoId]);
 
-  function ehDataPassada(data) {
-    const d = new Date(data);
-    d.setHours(0, 0, 0, 0);
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-    return d < hoje;
-  }
-
   const slotsLivres = useCallback((diaObj) => {
     if (!servico || !diaObj) return [];
     const data = diaObj.data ? new Date(diaObj.data) : new Date(diaObj);
-    if (ehDataPassada(data)) return [];
-
-    const diaSemana = data.getDay();
-    // Obtém todos os blocos de disponibilidade explicitamente salvos para este dia da semana
-    const dispsDoDia = disponibilidades.filter((d) => Number(d.diaSemana) === diaSemana);
-    if (dispsDoDia.length === 0) return [];
-
-    // Lógica flexível: gera blocos de atendimento partindo do horário inicial de cada bloco (ex.: 09:00)
-    const todosSlots = [];
-    for (const disp of dispsDoDia) {
-      if (!disp.horaInicio || !disp.horaFim) continue;
-      const slots = gerarSlots(disp.horaInicio, disp.horaFim, servico.duracaoEstimada);
-      todosSlots.push(...slots);
-    }
-
-    const slotsUnicos = Array.from(new Set(todosSlots)).sort();
-    const dataStr = data.toDateString();
-
-    const ocupados = agendados
-      .filter((ag) => ag.status !== 'cancelado' && new Date(ag.dataHora).toDateString() === dataStr)
-      .map((ag) => {
-        const d = new Date(ag.dataHora);
-        return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      });
-
-    let livres = slotsUnicos.filter((s) => !ocupados.includes(s));
-
-    const agora = new Date();
-    if (dataStr === agora.toDateString()) {
-      const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-      livres = livres.filter((s) => {
-        const [h, m] = s.split(':').map(Number);
-        return h * 60 + m > minutosAgora;
-      });
-    }
-
-    return livres;
+    return calcularSlotsLivresDoDia({
+      data,
+      duracaoEstimada: servico.duracaoEstimada,
+      disponibilidades,
+      agendados,
+    });
   }, [servico, disponibilidades, agendados]);
 
   const diasInfo = useMemo(() => {
@@ -294,8 +257,8 @@ function AgendarPageInner() {
         return;
       }
 
+      setResumoConfirmado({ dataHora, nome: servico.nome, duracaoEstimada: servico.duracaoEstimada });
       setSucesso(true);
-      setTimeout(() => router.push('/agendamentos'), 2000);
     } catch (e) {
       setErro('Erro ao confirmar agendamento.');
     } finally {
@@ -374,17 +337,58 @@ function AgendarPageInner() {
 
   if (loading) return <AgendarPageSkeleton />;
 
-  if (sucesso) return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4" role="status">
-      <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-elevated text-center max-w-sm">
-        <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center">
-          <CheckCircle2 size={32} className="text-success" aria-hidden="true" />
+  if (sucesso && resumoConfirmado) {
+    const fim = new Date(resumoConfirmado.dataHora.getTime() + resumoConfirmado.duracaoEstimada * 60000);
+    const eventoCalendario = {
+      titulo: resumoConfirmado.nome,
+      inicio: resumoConfirmado.dataHora,
+      fim,
+      detalhes: 'Agendado pelo Marca Aí.',
+    };
+
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10" role="status">
+        <div className="bg-card rounded-2xl p-8 sm:p-10 flex flex-col items-center gap-4 shadow-elevated text-center max-w-sm w-full">
+          <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center">
+            <CheckCircle2 size={32} className="text-success" aria-hidden="true" />
+          </div>
+          <h2 className="text-h6 font-bold text-foreground">Agendamento confirmado!</h2>
+          <p className="text-body text-muted-foreground">
+            {resumoConfirmado.nome} em{' '}
+            {capitalizarPrimeira(
+              resumoConfirmado.dataHora.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+            )}{' '}
+            às {resumoConfirmado.dataHora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+
+          <div className="flex flex-col gap-2.5 w-full mt-2">
+            <a
+              href={gerarLinkGoogleCalendar(eventoCalendario)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-full border border-input text-body-sm font-semibold text-foreground hover:bg-muted transition-colors"
+            >
+              <CalendarDays size={16} aria-hidden="true" /> Adicionar ao Google Calendar
+            </a>
+            <a
+              href={gerarIcsDataUri(eventoCalendario)}
+              download={`agendamento-${resumoConfirmado.nome.replace(/\s+/g, '-').toLowerCase()}.ics`}
+              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-full border border-input text-body-sm font-semibold text-foreground hover:bg-muted transition-colors"
+            >
+              <CalendarDays size={16} aria-hidden="true" /> Baixar arquivo (.ics)
+            </a>
+            <button
+              type="button"
+              onClick={() => router.push('/agendamentos')}
+              className="w-full bg-tcc-azul-dark text-white rounded-full h-11 text-body-sm font-bold shadow-soft hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer"
+            >
+              Ver meus agendamentos
+            </button>
+          </div>
         </div>
-        <h2 className="text-h6 font-bold text-foreground">Agendamento confirmado!</h2>
-        <p className="text-body text-muted-foreground">Redirecionando para sua agenda...</p>
       </div>
-    </div>
-  );
+    );
+  }
 
   return (
     <main className={`min-h-screen bg-background py-8 sm:py-10 px-4 ${diaSelecionado && horarioSelecionado ? 'pb-52 sm:pb-56' : ''}`}>
@@ -398,7 +402,7 @@ function AgendarPageInner() {
           <h1 className="text-h4 font-extrabold text-foreground">Escolha um horário</h1>
           {servico && (
             <p className="text-body-lg text-muted-foreground mt-1.5">
-              {servico.nome} · {servico.duracaoEstimada} min · <span className="text-tcc-azul-dark dark:text-tcc-azul-light font-semibold">R$ {Number(servico.preco).toFixed(2)}</span>
+              {servico.nome} · {servico.duracaoEstimada} min · <span className="text-tcc-azul-dark dark:text-tcc-azul-light font-semibold">{formatarPreco(servico.preco)}</span>
             </p>
           )}
         </div>
@@ -442,8 +446,8 @@ function AgendarPageInner() {
               <Clock size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
               2. Escolha o horário
             </h2>
-            <p className="text-body-sm text-muted-foreground mb-5 capitalize">
-              {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })}
+            <p className="text-body-sm text-muted-foreground mb-5">
+              {capitalizarPrimeira(diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}
             </p>
             <p className="sr-only" aria-live="polite">
               {slotsDoDia.length === 0
@@ -524,8 +528,8 @@ function AgendarPageInner() {
                 <div className="flex justify-between items-center gap-2">
                   <span className="text-muted-foreground shrink-0">Data</span>
                   <span className="flex items-center gap-1.5">
-                    <span className="font-semibold text-foreground text-right capitalize">
-                      {diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
+                    <span className="font-semibold text-foreground text-right">
+                      {capitalizarPrimeira(diaSelecionado.data.toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' }))}
                     </span>
                     <button
                       onClick={() => rolarEfocar(refHorarioHeading.current ? { current: document.getElementById('titulo-passo-1') } : null) || document.getElementById('titulo-passo-1')?.scrollIntoView({ behavior: 'smooth' })}
@@ -552,7 +556,7 @@ function AgendarPageInner() {
                 <div className="h-px bg-border my-0.5 sm:my-1" />
                 <div className="flex justify-between text-body sm:text-body-lg">
                   <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">R$ {Number(servico?.preco).toFixed(2)}</span>
+                  <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">{formatarPreco(servico?.preco)}</span>
                 </div>
               </div>
               <button

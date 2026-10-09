@@ -6,11 +6,11 @@ export default function NovoServicoForm({ categorias = [], action }) {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
 
   return (
-    <div className="min-h-screen bg-tcc-azul-deep flex items-center justify-center p-4 antialiased">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4 antialiased">
       <div className="w-full max-w-xl bg-card rounded-2xl shadow-elevated border border-border p-8 md:p-10">
 
         <div className="text-center mb-8">
-          <h2 className="text-h5 md:text-h4 font-sora font-bold text-foreground tracking-tight">
+          <h2 className="text-h5 md:text-h4 font-display font-bold text-foreground tracking-tight">
             Novo Serviço
           </h2>
           <p className="text-caption md:text-body-sm font-inter text-tcc-neutro-400 mt-2">

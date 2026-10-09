@@ -9,29 +9,13 @@ import Image from "next/image";
 import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png"
 import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from "../../components/Icons/GoogleIcons";
+import { formatarTelefone as mascararTelefone } from "@/lib/formatarTelefone";
+import { Button } from "@/app/components/ui/button";
 
 const estadoInicial = { erro: null };
 
 // Regex de validação
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Aplica máscara (XX) XXXXX-XXXX (ou XXXX-XXXX se for fixo) enquanto o usuário digita
-function mascararTelefone(valor) {
-  const digitos = valor.replace(/\D/g, "").slice(0, 11);
-
-  if (digitos.length <= 2) {
-    return digitos.replace(/^(\d*)/, "($1");
-  }
-  if (digitos.length <= 6) {
-    return digitos.replace(/^(\d{2})(\d*)/, "($1) $2");
-  }
-  if (digitos.length <= 10) {
-    // fixo: (XX) XXXX-XXXX
-    return digitos.replace(/^(\d{2})(\d{4})(\d*)/, "($1) $2-$3");
-  }
-  // celular: (XX) XXXXX-XXXX
-  return digitos.replace(/^(\d{2})(\d{5})(\d*)/, "($1) $2-$3");
-}
 
 function validarCampos({ nome, email, cel, senha }) {
   const erros = {};
@@ -100,7 +84,7 @@ export default function CadastrarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-tcc-azul-deep flex flex-col items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-sans">
       <Link href="/" className="w-56 mb-10"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
       <div className="bg-card rounded-2xl shadow-elevated max-w-xl w-full p-8 md:p-12 border border-border">
 
@@ -235,32 +219,28 @@ export default function CadastrarPage() {
               Qual categoria você se enquadra?
             </span>
 
-            <div className="flex justify-center gap-4" role="group" aria-label="Categoria de conta">
-              <button
+            <div className="flex justify-center gap-3" role="group" aria-label="Categoria de conta">
+              <Button
                 type="button"
+                variant={categoria === "cliente" ? "default" : "outline"}
+                size="lg"
                 onClick={() => setCategoria("cliente")}
                 aria-pressed={categoria === "cliente"}
-                className={`w-36 h-14 rounded-2xl font-bold text-xl border-2 transition-all duration-200 ease-apple cursor-pointer text-center ${
-                  categoria === "cliente"
-                    ? "border-tcc-azul bg-secondary text-shadow-tcc-azul-medium shadow-soft"
-                    : "border-input bg-card text-muted-foreground hover:border-tcc-neutro-300"
-                }`}
+                className="flex-1 max-w-40"
               >
                 Cliente
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
+                variant={categoria === "prestador" ? "default" : "outline"}
+                size="lg"
                 onClick={() => setCategoria("prestador")}
                 aria-pressed={categoria === "prestador"}
-                className={`w-36 h-14 rounded-2xl font-bold text-xl border-2 transition-all duration-200 ease-apple cursor-pointer text-center ${
-                  categoria === "prestador"
-                    ? "border-tcc-azul bg-secondary text-shadow-tcc-azul-medium shadow-soft"
-                    : "border-input bg-card text-muted-foreground hover:border-tcc-neutro-300"
-                }`}
+                className="flex-1 max-w-40"
               >
                 Prestador
-              </button>
+              </Button>
             </div>
           </div>
 

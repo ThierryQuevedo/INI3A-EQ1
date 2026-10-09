@@ -1,4 +1,4 @@
-import { Calendar, DollarSign, Clock, Phone, Mail, Award } from 'lucide-react';
+import { Calendar, Phone, Mail, Award, Clock3 } from 'lucide-react';
 import Image from "next/image";
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -7,7 +7,11 @@ import { db } from '@/db';
 import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
+import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
+import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
+import { formatarPreco } from "@/app/components/ui/PriceTag";
+import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { estatisticasPorServico } from "@/lib/avaliacoes";
 
 export const dynamic = 'force-dynamic';
@@ -56,158 +60,157 @@ export default async function DetalheServico({ params }) {
   const servico = {
     id: dadosDb.id,
     nome: dadosDb.nome || "Serviço sem nome",
-    descricao: dadosDb.descricao || "Nenhuma descrição informada pelo prestador.",
+    descricao: dadosDb.descricao,
     preco: dadosDb.preco || "0.00",
     duracaoEstimada: dadosDb.duracaoEstimada || 0,
     urlImagem: dadosDb.urlImagem,
-    categoria: dadosDb.categoriaNome || "Sem categoria",
+    categoria: dadosDb.categoriaNome,
     avaliacaoMedia: estatisticas?.media ?? 0,
     totalAvaliacoes: estatisticas?.total ?? 0,
     prestadorId: dadosDb.prestadorId,
     prestadorSlug: dadosDb.prestadorSlug || dadosDb.prestadorId,
     prestador: {
       nome: dadosDb.prestadorNome || "Profissional",
-      biografia: dadosDb.prestadorBiografia || "Profissional parceiro do Marca Aí.",
-      telefone: dadosDb.prestadorTelefone || "Não informado",
-      email: dadosDb.prestadorEmail || "Não informado",
+      biografia: dadosDb.prestadorBiografia,
+      telefone: dadosDb.prestadorTelefone,
+      email: dadosDb.prestadorEmail,
       urlImagem: dadosDb.prestadorImagem,
     }
   };
 
   return (
-    <div className="bg-tcc-azul-deep min-h-screen text-white font-sans">
+    <div className="bg-background min-h-screen">
 
-      <div className="relative h-60 w-full bg-gradient-to-b from-tcc-azul-darker to-tcc-azul-deep overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://picsum.photos/1920/1080?blur=5')] bg-cover bg-center" />
-
+      <div className="relative h-52 sm:h-60 w-full bg-muted overflow-hidden">
+        <PlaceholderImage className="absolute inset-0" />
         <div className="absolute top-6 left-6 z-20">
           <BotaoVoltar fallbackHref="/servicos" />
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 -mt-24 relative z-10 pb-20">
+      <div className="max-w-5xl mx-auto px-6 -mt-16 relative z-10 pb-20">
 
-        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-tcc-azul-darker/60 backdrop-blur-md p-6 rounded-3xl shadow-2xl gap-6">
+        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-card border border-border p-6 rounded-3xl shadow-elevated gap-6">
           <div className="flex flex-col items-center md:flex-row gap-6">
 
-            <div className="relative size-32 rounded-2xl overflow-hidden border-4 border-tcc-azul-medium shadow-md bg-tcc-azul-dark">
-              <Image
-                src={servico.urlImagem || `https://picsum.photos/200/200?random=${servico.id}`}
-                alt={servico.nome}
-                fill
-                className="object-cover"
-              />
+            <div className="relative size-28 sm:size-32 rounded-2xl overflow-hidden border-4 border-background shadow-md bg-muted shrink-0">
+              {servico.urlImagem ? (
+                <Image src={servico.urlImagem} alt={servico.nome} fill className="object-cover" />
+              ) : (
+                <PlaceholderImage className="absolute inset-0" />
+              )}
             </div>
 
             <div className="flex flex-col justify-center">
-              <span className="text-caption font-bold uppercase tracking-widest text-tcc-laranja-pale mb-1">
-                {servico.categoria}
-              </span>
-              <h1 className="text-h4 font-extrabold font-display tracking-tight mb-2">
+              {servico.categoria && (
+                <span className="text-caption font-bold text-primary mb-1">{servico.categoria}</span>
+              )}
+              <h1 className="text-h4 font-extrabold font-display tracking-tight text-foreground mb-2">
                 {servico.nome}
               </h1>
-              <p className="text-tcc-azul-light font-medium mb-3">
+              <p className="text-muted-foreground font-medium mb-3">
                 Por:{' '}
                 <Link
                   href={`/prestador/${servico.prestadorSlug}`}
-                  className="font-bold underline text-white hover:text-tcc-laranja transition-colors"
+                  className="font-bold underline text-foreground hover:text-primary transition-colors"
                 >
                   {servico.prestador.nome}
                 </Link>
               </p>
 
-              <div className="bg-tcc-azul-dark w-fit mx-auto md:mx-0 px-4 py-1.5 rounded-full flex items-center gap-2 border border-tcc-azul/40">
+              <div className="bg-muted w-fit mx-auto md:mx-0 px-4 py-1.5 rounded-full flex items-center gap-2">
                 {servico.totalAvaliacoes > 0 ? (
                   <>
-                    <span className="text-body-sm font-bold text-tcc-laranja" aria-hidden="true">{servico.avaliacaoMedia.toFixed(1)}</span>
+                    <span className="text-body-sm font-bold text-foreground">{servico.avaliacaoMedia.toFixed(1)}</span>
                     <EstrelasNota nota={servico.avaliacaoMedia} tamanho={14} />
-                    <span className="text-caption text-tcc-azul-lightest" role="img" aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, ${rotuloAvaliacoes(servico.totalAvaliacoes)}`}>
+                    <span className="text-caption text-muted-foreground" role="img" aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, ${rotuloAvaliacoes(servico.totalAvaliacoes)}`}>
                       ({rotuloAvaliacoes(servico.totalAvaliacoes)})
                     </span>
                   </>
                 ) : (
                   <>
                     <EstrelasNota nota={0} tamanho={14} />
-                    <span className="text-caption text-tcc-azul-lightest">Sem avaliações ainda</span>
+                    <span className="text-caption text-muted-foreground">Sem avaliações ainda</span>
                   </>
                 )}
               </div>
             </div>
           </div>
 
-          <Link
-            href={`/agendamentos/novo?servico=${servico.id}`}
-            className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent-hover active:scale-[0.98] font-bold px-8 h-14 rounded-full shadow-elevated transition-all duration-200 ease-apple flex items-center justify-center gap-2 text-body-lg cursor-pointer"
-          >
-            <Calendar size={22} aria-hidden="true" /> Agendar Horário
-          </Link>
+          <Button asChild variant="accent" size="lg" className="w-full md:w-auto">
+            <Link href={`/agendamentos/novo?servico=${servico.id}`}>
+              <Calendar size={20} aria-hidden="true" /> Agendar horário
+            </Link>
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
 
           <div className="md:col-span-2 space-y-6">
-            <div className="bg-tcc-azul-darker/40 p-8 rounded-3xl shadow-card">
-              <h2 className="text-h6 font-bold font-display border-b border-tcc-azul-dark pb-3 mb-4 flex items-center gap-2">
-                <Award size={20} className="text-tcc-laranja" aria-hidden="true" /> Detalhes do Serviço
-              </h2>
-              <p className="text-tcc-azul-lightest leading-relaxed whitespace-pre-line">
-                {servico.descricao}
-              </p>
-            </div>
+            {servico.descricao && (
+              <div className="bg-card border border-border p-8 rounded-3xl shadow-soft">
+                <h2 className="text-h6 font-bold font-display text-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
+                  <Award size={20} className="text-primary" aria-hidden="true" /> Detalhes do serviço
+                </h2>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{servico.descricao}</p>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-tcc-azul-darker/40 p-5 rounded-2xl flex items-center gap-4">
-                <div className="bg-tcc-laranja/10 p-3 rounded-xl text-tcc-laranja">
-                  <DollarSign size={24} aria-hidden="true" />
+              <div className="bg-card border border-border p-5 rounded-2xl flex items-center gap-4">
+                <div className="bg-primary/10 p-3 rounded-xl text-primary">
+                  <span className="text-h6 font-bold leading-none">R$</span>
                 </div>
                 <div>
-                  <p className="text-caption text-tcc-azul-light font-medium">Valor do serviço</p>
-                  <p className="text-h6 font-bold text-white">R$ {parseFloat(servico.preco).toFixed(2).replace('.', ',')}</p>
+                  <p className="text-caption text-muted-foreground font-medium">Valor do serviço</p>
+                  <p className="text-h6 font-bold text-foreground">{formatarPreco(servico.preco)}</p>
                 </div>
               </div>
 
-              <div className="bg-tcc-azul-darker/40 p-5 rounded-2xl flex items-center gap-4">
-                <div className="bg-tcc-azul/20 p-3 rounded-xl text-tcc-azul-medium">
-                  <Clock size={24} aria-hidden="true" />
+              <div className="bg-card border border-border p-5 rounded-2xl flex items-center gap-4">
+                <div className="bg-primary/10 p-3 rounded-xl text-primary">
+                  <Clock3 size={24} aria-hidden="true" />
                 </div>
                 <div>
-                  <p className="text-caption text-tcc-azul-light font-medium">Tempo estimado</p>
-                  <p className="text-h6 font-bold text-white">{servico.duracaoEstimada} min</p>
+                  <p className="text-caption text-muted-foreground font-medium">Tempo estimado</p>
+                  <p className="text-h6 font-bold text-foreground">{formatarDuracao(servico.duracaoEstimada)}</p>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="space-y-6">
-            <div className="bg-tcc-azul-darker/40 p-6 rounded-3xl shadow-card">
-              <h2 className="text-body-lg font-bold font-display border-b border-tcc-azul-dark pb-3 mb-4">
-                Sobre o Profissional
+            <div className="bg-card border border-border p-6 rounded-3xl shadow-soft">
+              <h2 className="text-body-lg font-bold font-display text-foreground border-b border-border pb-3 mb-4">
+                Sobre o profissional
               </h2>
-              <p className="text-body-sm text-tcc-azul-lightest leading-relaxed mb-6">
-                {servico.prestador.biografia}
-              </p>
+              {servico.prestador.biografia && (
+                <p className="text-body-sm text-muted-foreground leading-relaxed mb-6">{servico.prestador.biografia}</p>
+              )}
 
-              <Link
-                href={`/prestador/${servico.prestadorSlug}`}
-                className="w-full mb-6 bg-tcc-azul-dark hover:bg-tcc-azul border border-tcc-azul-light/20 text-white text-body-sm font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-center"
-              >
-                Ver perfil e outros serviços
-              </Link>
+              <Button asChild variant="outline" className="w-full mb-6">
+                <Link href={`/prestador/${servico.prestadorSlug}`}>Ver perfil e outros serviços</Link>
+              </Button>
 
-              <h3 className="text-caption font-bold uppercase tracking-wider text-tcc-azul-light mb-3">
-                Canais de Contato
-              </h3>
-
-              <div className="space-y-3">
-                <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-3 text-body-sm text-tcc-azul-lightest hover:text-white transition-colors p-3 rounded-xl bg-tcc-azul-deep/50 border border-tcc-azul-dark/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-light">
-                  <Phone size={16} className="text-tcc-laranja" aria-hidden="true" />
-                  <span>{servico.prestador.telefone}</span>
-                </a>
-                <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-3 text-body-sm text-tcc-azul-lightest hover:text-white transition-colors p-3 rounded-xl bg-tcc-azul-deep/50 border border-tcc-azul-dark/30 overflow-hidden text-ellipsis focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-light">
-                  <Mail size={16} className="text-tcc-laranja" aria-hidden="true" />
-                  <span className="truncate">{servico.prestador.email}</span>
-                </a>
-              </div>
+              {(servico.prestador.telefone || servico.prestador.email) && (
+                <>
+                  <h3 className="text-caption font-bold text-muted-foreground mb-3">Canais de contato</h3>
+                  <div className="space-y-3">
+                    {servico.prestador.telefone && (
+                      <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-3 text-body-sm text-foreground hover:text-primary transition-colors p-3 rounded-xl bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <Phone size={16} className="text-primary shrink-0" aria-hidden="true" />
+                        <span>{servico.prestador.telefone}</span>
+                      </a>
+                    )}
+                    {servico.prestador.email && (
+                      <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-3 text-body-sm text-foreground hover:text-primary transition-colors p-3 rounded-xl bg-muted overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                        <Mail size={16} className="text-primary shrink-0" aria-hidden="true" />
+                        <span className="truncate">{servico.prestador.email}</span>
+                      </a>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

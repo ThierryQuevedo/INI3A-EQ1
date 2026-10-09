@@ -3,8 +3,8 @@ import { cadastrarServico, listarCategorias } from '@/app/actions/servicos.actio
 import NovoServicoForm from './NovoServicoForm';
 
 export default async function CadastroServicoPage() {
-  await requireSession();
+  const usuario = await requireSession();
   const categorias = await listarCategorias();
 
-  return <NovoServicoForm categorias={categorias} action={cadastrarServico} />;
+  return <NovoServicoForm categorias={categorias} action={cadastrarServico} nomePrestador={usuario.nome} />;
 }

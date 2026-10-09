@@ -7,6 +7,7 @@ import { getSession } from '@/app/actions/auth.actions';
 import { verificarPodeAvaliar } from '@/lib/avaliacoes';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import BotaoVoltar from '@/app/components/ui/BotaoVoltar';
+import PlaceholderImage from '@/app/components/ui/PlaceholderImage';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,12 +73,11 @@ export default async function AvaliarServicoPage({ params }) {
       <div className="bg-card border border-border rounded-2xl shadow-card overflow-hidden">
         <div className="flex items-center gap-4 p-6 border-b border-border">
           <div className="relative size-16 rounded-xl overflow-hidden bg-muted shrink-0">
-            <Image
-              src={agendamento.servicoImagem || `https://picsum.photos/200/200?random=${agendamento.servicoId}`}
-              alt=""
-              fill
-              className="object-cover"
-            />
+            {agendamento.servicoImagem ? (
+              <Image src={agendamento.servicoImagem} alt="" fill className="object-cover" />
+            ) : (
+              <PlaceholderImage className="absolute inset-0" />
+            )}
           </div>
           <div className="min-w-0">
             <h1 className="text-h5 font-bold font-display text-foreground truncate">
