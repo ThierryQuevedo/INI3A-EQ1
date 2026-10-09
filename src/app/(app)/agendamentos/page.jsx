@@ -80,6 +80,16 @@ function CardAgendamento({ item, usuarioLogado }) {
             <Icon size={13} aria-hidden="true" />
             {label}
           </span>
+          {usuarioLogado.tipo === 'prestador' && item.status === 'confirmado' && (
+            <BotaoAcaoAgendamento
+              agendamentoId={item.id}
+              novoStatus="concluido"
+              label="Concluir"
+              titulo="Concluir agendamento?"
+              descricao="Confirma que o serviço foi realizado?"
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+            />
+          )}
           {STATUS_CANCELAVEL.includes(item.status) && (
             <BotaoAcaoAgendamento
               agendamentoId={item.id}
