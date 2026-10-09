@@ -75,7 +75,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                     />
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+                <div className="flex max-md:flex-col md:flex-row max-md:gap-6 md:gap-8 items-start">
                     <FilterDrawer filtros={filtros} onChange={setFiltros} categorias={categorias} precoMaximo={precoMaximo} />
 
                     <div className="flex-1 min-w-0 w-full">
