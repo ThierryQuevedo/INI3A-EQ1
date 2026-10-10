@@ -9,6 +9,11 @@ import logotipo from "../../../public/images/Identidade visual marca ai/logotipo
 import Image from "next/image";
 import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from "../../components/Icons/GoogleIcons";
+import PageContainer from "@/app/components/ui/PageContainer";
+import { Card } from "@/app/components/ui/card";
+import FormField from "@/app/components/ui/FormField";
+import { Input } from "@/app/components/ui/input";
+import { Button } from "@/app/components/ui/button";
 
 const estadoInicial = { erro: null, errosCampos: {} };
 
@@ -62,12 +67,12 @@ function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-sans">
+    <PageContainer size="sm" className="min-h-screen flex flex-col items-center justify-center py-16">
       <Link href="/" className="w-56 mb-10">
         <Image src={logotipo} alt="Marca Aí — página inicial" priority />
       </Link>
 
-      <div className="bg-card rounded-2xl shadow-elevated max-w-xl w-full p-8 md:p-12 border border-border">
+      <Card className="w-full shadow-elevated p-8 md:p-12">
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Entrar na conta Marca Aí
         </h1>
@@ -79,12 +84,8 @@ function LoginForm() {
         )}
 
         <form action={formAction} onSubmit={handleSubmit} noValidate className="space-y-5">
-          {/* CAMPO DE E-MAIL */}
-          <div>
-            <label htmlFor="email" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
-              E-mail
-            </label>
-            <input
+          <FormField id="email" label="E-mail" error={erroEmail}>
+            <Input
               id="email"
               type="email"
               name="email"
@@ -94,26 +95,13 @@ function LoginForm() {
                 if (errosLocais.email) setErrosLocais((prev) => ({ ...prev, email: undefined }));
               }}
               placeholder="seuemail@exemplo.com"
-              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 transition-all duration-200 ${
-                erroEmail
-                  ? "border-destructive focus-visible:ring-destructive"
-                  : "border-input focus-visible:ring-ring focus-visible:border-transparent"
-              }`}
+              aria-invalid={erroEmail ? "true" : "false"}
             />
-            {erroEmail && (
-              <p className="mt-1.5 text-body-sm text-destructive font-medium">
-                {erroEmail}
-              </p>
-            )}
-          </div>
+          </FormField>
 
-          {/* CAMPO DE SENHA */}
-          <div>
-            <label htmlFor="senha" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
-              Senha
-            </label>
+          <FormField id="senha" label="Senha" error={erroSenha}>
             <div className="relative">
-              <input
+              <Input
                 id="senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
@@ -123,18 +111,15 @@ function LoginForm() {
                   if (errosLocais.senha) setErrosLocais((prev) => ({ ...prev, senha: undefined }));
                 }}
                 placeholder="Sua senha"
-                className={`w-full h-12 bg-background border rounded-xl px-4 pr-12 text-body text-foreground outline-none focus-visible:ring-2 transition-all duration-200 ${
-                  erroSenha
-                    ? "border-destructive focus-visible:ring-destructive"
-                    : "border-input focus-visible:ring-ring focus-visible:border-transparent"
-                }`}
+                aria-invalid={erroSenha ? "true" : "false"}
+                className="pr-12"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-fast cursor-pointer"
               >
                 {showPassword ? (
                   <Eye className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
@@ -143,37 +128,27 @@ function LoginForm() {
                 )}
               </button>
             </div>
-            {erroSenha && (
-              <p className="mt-1.5 text-body-sm text-destructive font-medium">
-                {erroSenha}
-              </p>
-            )}
-          </div>
+          </FormField>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full h-13 bg-accent hover:bg-accent-hover text-accent-foreground rounded-full py-3 text-body-lg font-bold transition-all duration-200 ease-apple active:scale-[0.98] mt-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 shadow-soft"
-          >
+          <Button type="submit" variant="accent" size="lg" className="w-full mt-2" disabled={isPending}>
             {isPending ? "Entrando..." : "Entrar"}
-          </button>
+          </Button>
         </form>
 
-        <Link
-          href="/api/auth/google"
-          className="w-full h-13 mt-4 flex items-center justify-center gap-2 rounded-2xl font-bold border-2 border-input bg-card text-muted-foreground hover:border-tcc-neutro-300 transition-all duration-200 ease-apple cursor-pointer text-center"
-        >
-          <GoogleIcon size={20} />
-          <span>Entrar com Google</span>
-        </Link>
+        <Button asChild variant="outline" size="lg" className="w-full mt-4">
+          <Link href="/api/auth/google">
+            <GoogleIcon size={20} />
+            <span>Entrar com Google</span>
+          </Link>
+        </Button>
 
         <div className="text-center mt-6">
-          <Link href="/cadastro" className="text-body-sm text-tcc-azul hover:underline font-medium">
+          <Link href="/cadastro" className="text-body-sm text-primary hover:underline font-medium">
             Ainda não tem uma conta? Cadastre-se
           </Link>
         </div>
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }
 

@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { CalendarClock, Plus, DollarSign, Star, Users } from "lucide-react";
+import { CalendarClock, Plus, DollarSign, Star, Users, CalendarX2 } from "lucide-react";
 import { requireSession } from "@/app/actions/auth.actions";
 import BotaoAcaoAgendamento from "@/app/components/features/agendamentos/BotaoAcaoAgendamento";
 import DashboardCliente from "@/app/components/features/dashboard/DashboardCliente";
 import { Button } from "@/app/components/ui/button";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
+import PageContainer, { PageHeader } from "@/app/components/ui/PageContainer";
+import { Card } from "@/app/components/ui/card";
+import EmptyState from "@/app/components/ui/EmptyState";
+import { rotuloStatus, statusBadgeClass } from "@/lib/statusAgendamento";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios } from "@/db/schema";
 import { eq, and, gte, lt } from "drizzle-orm";
@@ -89,24 +93,13 @@ export default async function Dashboard() {
     });
   }
 
-  function statusLabel(status) {
-    const map = {
-      pendente:   { label: 'Aguardando confirmação', bg: 'bg-warning/15', text: 'text-warning' },
-      confirmado: { label: 'Confirmado', bg: 'bg-primary/10', text: 'text-primary' },
-      concluido:  { label: 'Feito', bg: 'bg-success/15', text: 'text-success' },
-      cancelado:  { label: 'Cancelado', bg: 'bg-destructive/10', text: 'text-destructive' },
-    };
-    return map[status] ?? { label: status, bg: 'bg-muted', text: 'text-muted-foreground' };
-  }
-
   function CardAgendamento({ ag }) {
-    const { label, bg, text } = statusLabel(ag.status);
     const podeConfirmar = ag.status === 'pendente';
     const podeConcluir  = ag.status === 'confirmado';
     const podeCancelar  = ag.status !== 'cancelado' && ag.status !== 'concluido';
 
     return (
-      <div className="bg-card p-4 rounded-2xl shadow-soft border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <Card padding="sm" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex gap-6 items-center flex-1">
           <div className="text-center min-w-20">
             <span className="text-primary font-bold text-body block">{formatarHora(ag.dataHora)}</span>
@@ -119,8 +112,8 @@ export default async function Dashboard() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={`${bg} ${text} px-3 h-8 inline-flex items-center rounded-full text-caption font-bold`}>
-            {label}
+          <span className={`${statusBadgeClass(ag.status)} px-3 h-8 inline-flex items-center rounded-full text-caption font-bold`}>
+            {rotuloStatus(ag.status)}
           </span>
 
           {podeConfirmar && (
@@ -130,7 +123,7 @@ export default async function Dashboard() {
               label="Confirmar"
               titulo="Confirmar agendamento?"
               descricao={`Deseja confirmar o agendamento de ${ag.clienteNome} para ${ag.servicoNome}?`}
-              className="bg-success hover:bg-success/90 text-white text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              className="bg-success hover:bg-success/90 text-success-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
             />
           )}
 
@@ -141,7 +134,7 @@ export default async function Dashboard() {
               label="Concluir"
               titulo="Concluir agendamento?"
               descricao={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
-              className="bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              className="bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
             />
           )}
 
@@ -153,24 +146,21 @@ export default async function Dashboard() {
               titulo="Cancelar agendamento?"
               descricao={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
               variant="destructive"
-              className="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              className="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
             />
           )}
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="p-6 sm:p-8 max-w-7xl mx-auto">
-
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-          <div>
-            <p className="text-muted-foreground text-body-sm">Painel do prestador</p>
-            <h1 className="text-h4 font-bold text-foreground">{nome}</h1>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
+    <PageContainer size="2xl" className="py-6 sm:py-8">
+      <PageHeader
+        eyebrow="Painel do prestador"
+        title={nome}
+        actions={
+          <>
             <Button asChild variant="secondary">
               <Link href={`/prestador/${usuario.slug || usuario.id}`}>Ver perfil público</Link>
             </Button>
@@ -184,68 +174,67 @@ export default async function Dashboard() {
                 <Plus size={16} aria-hidden="true" /> Novo serviço
               </Link>
             </Button>
-          </div>
+          </>
+        }
+      />
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        <Card padding="default">
+          <CalendarClock size={20} className="text-primary mb-2" aria-hidden="true" />
+          <h3 className="text-h5 font-bold text-foreground">{agendamentosHoje.length}</h3>
+          <p className="text-muted-foreground text-caption">Agendamentos hoje</p>
+        </Card>
+        <Card padding="default">
+          <DollarSign size={20} className="text-primary mb-2" aria-hidden="true" />
+          <h3 className="text-h5 font-bold text-foreground">{formatarPreco(faturamentoTotal)}</h3>
+          <p className="text-muted-foreground text-caption">Faturamento do mês</p>
+        </Card>
+        <Card padding="default">
+          <Star size={20} className="text-primary mb-2" aria-hidden="true" />
+          <h3 className="text-h5 font-bold text-foreground">
+            {perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}
+          </h3>
+          <p className="text-muted-foreground text-caption">{perfilPrestador?.totalAvaliacoes ?? 0} avaliações</p>
+        </Card>
+        <Card padding="default">
+          <Users size={20} className="text-primary mb-2" aria-hidden="true" />
+          <h3 className="text-h5 font-bold text-foreground">{perfilPrestador?.totalClientesAtendidos ?? 0}</h3>
+          <p className="text-muted-foreground text-caption">Clientes atendidos</p>
+        </Card>
+      </div>
+
+      <section className="mb-10">
+        <h2 className="text-h6 font-bold mb-4 text-foreground">Agenda de hoje</h2>
+        <div className="space-y-3">
+          {agendamentosHoje.length === 0 ? (
+            <Card dashed padding="default" className="shadow-none">
+              <EmptyState icon={CalendarClock} title="Nenhum agendamento para hoje" />
+            </Card>
+          ) : (
+            agendamentosHoje.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
+          )}
         </div>
+      </section>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
-            <CalendarClock size={20} className="text-primary mb-2" aria-hidden="true" />
-            <h3 className="text-h5 font-bold text-foreground">{agendamentosHoje.length}</h3>
-            <p className="text-muted-foreground text-caption">Agendamentos hoje</p>
-          </div>
-          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
-            <DollarSign size={20} className="text-primary mb-2" aria-hidden="true" />
-            <h3 className="text-h5 font-bold text-foreground">{formatarPreco(faturamentoTotal)}</h3>
-            <p className="text-muted-foreground text-caption">Faturamento do mês</p>
-          </div>
-          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
-            <Star size={20} className="text-primary mb-2" aria-hidden="true" />
-            <h3 className="text-h5 font-bold text-foreground">
-              {perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}
-            </h3>
-            <p className="text-muted-foreground text-caption">{perfilPrestador?.totalAvaliacoes ?? 0} avaliações</p>
-          </div>
-          <div className="bg-card p-5 rounded-2xl border border-border shadow-soft">
-            <Users size={20} className="text-primary mb-2" aria-hidden="true" />
-            <h3 className="text-h5 font-bold text-foreground">{perfilPrestador?.totalClientesAtendidos ?? 0}</h3>
-            <p className="text-muted-foreground text-caption">Clientes atendidos</p>
-          </div>
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-h6 font-bold text-foreground">Próximos agendamentos</h2>
+          {agendamentosFuturos.length > 0 && (
+            <span className="bg-secondary text-secondary-foreground text-caption font-bold px-3 h-7 inline-flex items-center rounded-full">
+              {agendamentosFuturos.length} agendamento{agendamentosFuturos.length !== 1 ? 's' : ''}
+            </span>
+          )}
         </div>
-
-        <section className="mb-10">
-          <h2 className="text-h6 font-bold mb-4 text-foreground">Agenda de hoje</h2>
-          <div className="space-y-3">
-            {agendamentosHoje.length === 0 ? (
-              <div className="bg-card p-6 rounded-2xl shadow-soft border border-border text-center text-muted-foreground text-body-sm">
-                Nenhum agendamento para hoje.
-              </div>
-            ) : (
-              agendamentosHoje.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
-            )}
-          </div>
-        </section>
-
-        <section>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-h6 font-bold text-foreground">Próximos agendamentos</h2>
-            {agendamentosFuturos.length > 0 && (
-              <span className="bg-secondary text-secondary-foreground text-caption font-bold px-3 h-7 inline-flex items-center rounded-full">
-                {agendamentosFuturos.length} agendamento{agendamentosFuturos.length !== 1 ? 's' : ''}
-              </span>
-            )}
-          </div>
-          <div className="space-y-3">
-            {agendamentosFuturos.length === 0 ? (
-              <div className="bg-card p-6 rounded-2xl shadow-soft border border-border text-center text-muted-foreground text-body-sm">
-                Nenhum agendamento futuro.
-              </div>
-            ) : (
-              agendamentosFuturos.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
-            )}
-          </div>
-        </section>
-
-      </main>
-    </div>
+        <div className="space-y-3">
+          {agendamentosFuturos.length === 0 ? (
+            <Card dashed padding="default" className="shadow-none">
+              <EmptyState icon={CalendarX2} title="Nenhum agendamento futuro" />
+            </Card>
+          ) : (
+            agendamentosFuturos.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
+          )}
+        </div>
+      </section>
+    </PageContainer>
   );
 }

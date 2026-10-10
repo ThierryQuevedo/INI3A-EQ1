@@ -8,30 +8,45 @@
      Brand palette — do not use these tcc-* raw values directly in
      markup. Prefer the semantic tokens below (bg-primary, text-
      muted-foreground, etc.) so light/dark both stay correct.
+
+     Escala numérica 50→950 (mesmos matizes de marca de sempre,
+     só com mais pontos intermediários para dar hierarquia real).
      ============================================================ */
-  --color-tcc-azul-lightest: #DCE5FE;
-  --color-tcc-azul-light: #A1BDFD;
-  --color-tcc-azul-medium: #5696FC;
-  --color-tcc-azul: #1471D5; /* DEFAULT */
-  --color-tcc-azul-dark: #0B4F98;
-  --color-tcc-azul-darker: #042F5F;
-  --color-tcc-azul-deep: #01112A;
+  --color-tcc-azul-50: #EFF4FE;
+  --color-tcc-azul-100: #DCE5FE;
+  --color-tcc-azul-200: #BBD0FD;
+  --color-tcc-azul-300: #A1BDFD;
+  --color-tcc-azul-400: #5696FC;
+  --color-tcc-azul-500: #1471D5;
+  --color-tcc-azul-600: #0E5CB3;
+  --color-tcc-azul-700: #0B4F98;
+  --color-tcc-azul-800: #083A70;
+  --color-tcc-azul-900: #042F5F;
+  --color-tcc-azul-950: #01112A;
 
-  --color-tcc-laranja-soft: #FFEDE6;
-  --color-tcc-laranja-pale: #FECCB4;
-  --color-tcc-laranja: #FD953A; /* DEFAULT */
-  --color-tcc-laranja-dark: #CC7313;
-  --color-tcc-laranja-deep: #98540B;
-  --color-tcc-laranja-wood: #673705;
-  --color-tcc-laranja-black: #3A1D01;
+  --color-tcc-laranja-50: #FFF4EE;
+  --color-tcc-laranja-100: #FFEDE6;
+  --color-tcc-laranja-200: #FECCB4;
+  --color-tcc-laranja-300: #FDB27E;
+  --color-tcc-laranja-400: #FD953A;
+  --color-tcc-laranja-500: #EB7D1C;
+  --color-tcc-laranja-600: #CC7313;
+  --color-tcc-laranja-700: #98540B;
+  --color-tcc-laranja-800: #673705;
+  --color-tcc-laranja-900: #3A1D01;
 
-  --color-tcc-neutro-100: #E5E6E7;
-  --color-tcc-neutro-200: #BCBEC2;
-  --color-tcc-neutro-300: #94979E;
-  --color-tcc-neutro-400: #707378;
-  --color-tcc-neutro-500: #4E5054;
-  --color-tcc-neutro-600: #2E3032;
-  --color-tcc-neutro-700: #111213;
+  /* Neutro — de cinza frio para monocromático quente (editorial),
+     mantendo os degraus 100-700 já usados pelo código existente. */
+  --color-tcc-neutro-50: #FAF9F7;
+  --color-tcc-neutro-100: #F0EEEA;
+  --color-tcc-neutro-200: #E1DDD6;
+  --color-tcc-neutro-300: #C7C1B6;
+  --color-tcc-neutro-400: #9C9488;
+  --color-tcc-neutro-500: #6E6760;
+  --color-tcc-neutro-600: #4A453F;
+  --color-tcc-neutro-700: #2B2724;
+  --color-tcc-neutro-800: #1A1714;
+  --color-tcc-neutro-900: #100E0C;
 
   --color-success: #16A34A;
   --color-success-foreground: #FFFFFF;
@@ -55,22 +70,27 @@
   --color-popover: #FFFFFF;
   --color-popover-foreground: var(--color-tcc-neutro-700);
 
-  --color-primary: var(--color-tcc-azul);
+  --color-primary: var(--color-tcc-azul-500);
   --color-primary-foreground: #FFFFFF;
-  --color-primary-hover: var(--color-tcc-azul-dark);
+  --color-primary-hover: var(--color-tcc-azul-700);
 
-  --color-secondary: var(--color-tcc-azul-lightest);
-  --color-secondary-foreground: var(--color-tcc-azul-darker);
+  --color-secondary: var(--color-tcc-azul-100);
+  --color-secondary-foreground: var(--color-tcc-azul-900);
 
-  --color-accent: var(--color-tcc-laranja);
+  --color-accent: var(--color-tcc-laranja-400);
   /* Texto escuro sobre o laranja da marca: branco só dá 2.2:1 de
      contraste (falha WCAG AA 4.5:1); esta cor dá 9.5:1+. */
-  --color-accent-foreground: var(--color-tcc-laranja-black);
-  --color-accent-hover: var(--color-tcc-laranja-dark);
+  --color-accent-foreground: var(--color-tcc-laranja-900);
+  --color-accent-hover: var(--color-tcc-laranja-600);
+
+  /* Token informativo neutro (badges "Hoje"/"Amanhã", tags de
+     categoria) — separado de `accent` para que o laranja fique
+     reservado a CTAs/ações de destaque, não a rótulos passivos. */
+  --color-info: var(--color-tcc-azul-400);
+  --color-info-foreground: var(--color-tcc-azul-950);
 
   --color-muted: #EBEDF5;
-  /* neutro-500 (#4E5054) dá ~7:1 de contraste contra branco/cinza-claro — passa WCAG AA.
-     neutro-400 (#707378) anterior ficava em ~4.3:1, abaixo do mínimo de 4.5:1. */
+  /* neutro-500 dá ~7:1 de contraste contra branco/cinza-claro — passa WCAG AA. */
   --color-muted-foreground: var(--color-tcc-neutro-500);
 
   --color-destructive: var(--color-danger);
@@ -78,16 +98,15 @@
 
   --color-border: #E2E5EF;
   --color-input: #E2E5EF;
-  --color-ring: var(--color-tcc-azul-medium);
+  --color-ring: var(--color-tcc-azul-400);
 
   /* ============================================================
-     Fonts — Inter/Urbanist/Sora load first, System (SF-style)
-     stack is the fallback, matching the platform-native feel of
-     an Apple-style UI on every OS.
+     Fonts — Inter (corpo) + Urbanist (títulos, aplicada automati-
+     camente via @layer base abaixo). System (SF-style) stack é o
+     fallback, mantendo a sensação nativa em qualquer OS.
      ============================================================ */
   --font-inter: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --font-urbanist: var(--font-urbanist), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  --font-sora: var(--font-sora), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --font-display: var(--font-urbanist), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
 
@@ -114,7 +133,10 @@
   --text-h1: 3.75rem;
   --text-h1--line-height: 1.05;
 
-  /* Radius — generous, Apple-style rounding */
+  /* Radius — generous, Apple-style rounding.
+     Disciplina de uso: rounded-full em elementos interativos
+     (botões, nav, tags); rounded-xl em inputs; rounded-2xl em
+     superfícies/cards. */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
@@ -122,12 +144,23 @@
   --radius-2xl: 2rem;
   --radius-full: 9999px;
 
-  /* Shadows — soft, low-opacity, large blur (Apple elevation) */
+  /* Shadows — soft, low-opacity, large blur (Apple elevation).
+     Disciplina de uso: shadow-soft em repouso; shadow-card só em
+     hover de elementos clicáveis; shadow-elevated reservada para
+     camadas flutuantes de verdade (modal, sheet, dropdown, toast). */
   --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
   --shadow-card: 0 2px 8px rgba(16, 24, 40, 0.05), 0 10px 28px rgba(16, 24, 40, 0.07);
   --shadow-elevated: 0 16px 40px rgba(16, 24, 40, 0.14), 0 4px 14px rgba(16, 24, 40, 0.08);
 
-  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);
+  /* Motion — um easing/duração por intenção, não um único valor
+     genérico para tudo. */
+  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);     /* transições de estado */
+  --ease-out-apple: cubic-bezier(0.16, 1, 0.3, 1);     /* entradas */
+  --ease-in-apple: cubic-bezier(0.7, 0, 0.84, 0);      /* saídas */
+
+  --duration-fast: 150ms;  /* hover, press, toggle */
+  --duration-base: 220ms;  /* dropdown, toast, transição de página */
+  --duration-slow: 320ms;  /* modal, bottom sheet */
 }
 
 /* ================================================================
@@ -136,40 +169,43 @@
    lighter so contrast stays WCAG AA against dark backgrounds.
    ================================================================ */
 .dark {
-  --color-background: var(--color-tcc-azul-deep);
+  --color-background: var(--color-tcc-azul-950);
   --color-foreground: var(--color-tcc-neutro-100);
 
-  --color-card: var(--color-tcc-azul-darker);
+  --color-card: var(--color-tcc-azul-900);
   --color-card-foreground: var(--color-tcc-neutro-100);
-  --color-surface: var(--color-tcc-azul-darker);
+  --color-surface: var(--color-tcc-azul-900);
   --color-surface-foreground: var(--color-tcc-neutro-100);
 
-  --color-popover: var(--color-tcc-azul-darker);
+  --color-popover: var(--color-tcc-azul-900);
   --color-popover-foreground: var(--color-tcc-neutro-100);
 
-  --color-primary: var(--color-tcc-azul-medium);
-  --color-primary-foreground: var(--color-tcc-azul-deep);
-  --color-primary-hover: var(--color-tcc-azul-light);
+  --color-primary: var(--color-tcc-azul-400);
+  --color-primary-foreground: var(--color-tcc-azul-950);
+  --color-primary-hover: var(--color-tcc-azul-300);
 
   --color-secondary: rgba(161, 189, 253, 0.14);
-  --color-secondary-foreground: var(--color-tcc-azul-lightest);
+  --color-secondary-foreground: var(--color-tcc-azul-100);
 
-  --color-accent: var(--color-tcc-laranja);
-  --color-accent-foreground: var(--color-tcc-azul-deep);
-  --color-accent-hover: var(--color-tcc-laranja-pale);
+  --color-accent: var(--color-tcc-laranja-400);
+  --color-accent-foreground: var(--color-tcc-azul-950);
+  --color-accent-hover: var(--color-tcc-laranja-200);
+
+  --color-info: var(--color-tcc-azul-300);
+  --color-info-foreground: var(--color-tcc-azul-950);
 
   --color-muted: rgba(220, 229, 254, 0.08);
   --color-muted-foreground: var(--color-tcc-neutro-300);
 
   --color-destructive: #F87171;
-  --color-destructive-foreground: var(--color-tcc-azul-deep);
+  --color-destructive-foreground: var(--color-tcc-azul-950);
 
   --color-success: #4ADE80;
   --color-warning: #FBBF24;
 
   --color-border: rgba(220, 229, 254, 0.14);
   --color-input: rgba(220, 229, 254, 0.14);
-  --color-ring: var(--color-tcc-azul-light);
+  --color-ring: var(--color-tcc-azul-300);
 
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.28);
   --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.28), 0 10px 28px rgba(0, 0, 0, 0.32);
@@ -196,6 +232,17 @@
     transition: background-color 0.2s var(--ease-apple), color 0.2s var(--ease-apple);
   }
 
+  /* Tipografia como protagonista: títulos usam a fonte de display
+     (Urbanist) e tracking mais justo automaticamente, sem depender
+     de cada página lembrar de aplicar font-display manualmente. */
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
+  h4, h5, h6 {
+    letter-spacing: -0.01em;
+  }
+
   /* Visible, consistent keyboard-focus ring everywhere — required
      for accessibility across ages/abilities, not just mouse users. */
   :focus-visible {
@@ -205,8 +252,8 @@
   }
 
   ::selection {
-    background-color: var(--color-tcc-azul-light);
-    color: var(--color-tcc-azul-deep);
+    background-color: var(--color-tcc-azul-300);
+    color: var(--color-tcc-azul-950);
   }
 
   @media (prefers-reduced-motion: reduce) {

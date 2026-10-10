@@ -1,25 +1,19 @@
 import Link from 'next/link';
-import { CalendarClock, CalendarCheck2, Clock3, CheckCircle2, XCircle, User, DollarSign, Phone, CalendarPlus, CalendarX2, Star } from 'lucide-react';
+import { CalendarClock, CheckCircle2, CalendarPlus, CalendarX2, Star } from 'lucide-react';
 import { requireSession } from '@/app/actions/auth.actions';
 import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import BotaoAcaoAgendamento from '@/app/components/features/agendamentos/BotaoAcaoAgendamento';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
+import { rotuloStatus, statusBadgeClass, STATUS_AGENDAMENTO } from '@/lib/statusAgendamento';
+import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
+import { Card } from '@/app/components/ui/card';
+import EmptyState from '@/app/components/ui/EmptyState';
+import { Button } from '@/app/components/ui/button';
 
 const STATUS_CANCELAVEL = ['pendente', 'confirmado'];
 
 export const dynamic = 'force-dynamic';
-
-const STATUS_CONFIG = {
-  pendente: { estilo: 'bg-warning/15 text-warning', Icon: Clock3, label: 'Aguardando Confirmação' },
-  confirmado: { estilo: 'bg-success/15 text-success', Icon: CalendarCheck2, label: 'Confirmado' },
-  concluido: { estilo: 'bg-tcc-azul/10 text-tcc-azul', Icon: CheckCircle2, label: 'Concluído' },
-  cancelado: { estilo: 'bg-destructive/10 text-destructive', Icon: XCircle, label: 'Cancelado' },
-};
-
-function getStatusConfig(status) {
-  return STATUS_CONFIG[status?.toLowerCase()] || { estilo: 'bg-muted text-muted-foreground', Icon: Clock3, label: status };
-}
 
 function formatarData(data) {
   const d = new Date(data);
@@ -41,7 +35,7 @@ function formatarHora(data) {
 
 // Card individual de agendamento
 function CardAgendamento({ item, usuarioLogado }) {
-  const { estilo, Icon, label } = getStatusConfig(item.status);
+  const { Icon = CalendarPlus } = STATUS_AGENDAMENTO[item.status?.toLowerCase()] || {};
   const dataLabel = formatarData(item.dataHora);
   const destaque = dataLabel === 'Hoje' || dataLabel === 'Amanhã';
   const dataTag = destaque
@@ -49,10 +43,10 @@ function CardAgendamento({ item, usuarioLogado }) {
     : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
 
   return (
-    <div className="bg-card rounded-xl border border-border p-5 hover:shadow-card transition-shadow duration-200">
+    <Card padding="default" interactive>
       <div className="flex items-center gap-5">
-        <div className={`w-16 h-16 shrink-0 flex items-center justify-center rounded-xl ${destaque ? 'bg-accent/15' : 'bg-secondary'}`}>
-          <p className={`text-body-sm font-bold ${destaque ? 'text-tcc-laranja' : 'text-tcc-azul-dark dark:text-tcc-azul-light'}`}>
+        <div className={`w-16 h-16 shrink-0 flex items-center justify-center rounded-xl ${destaque ? 'bg-info/15' : 'bg-secondary'}`}>
+          <p className={`text-body-sm font-bold ${destaque ? 'text-info' : 'text-primary'}`}>
             {formatarHora(item.dataHora)}
           </p>
         </div>
@@ -60,7 +54,7 @@ function CardAgendamento({ item, usuarioLogado }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-body-lg font-bold text-foreground truncate">{item.servicoNome}</h3>
-            <span className={`px-2 h-5 inline-flex items-center rounded-full text-[10px] font-bold uppercase shrink-0 ${destaque ? 'bg-tcc-laranja/15 text-tcc-laranja' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-2 h-5 inline-flex items-center rounded-full text-[10px] font-bold uppercase shrink-0 ${destaque ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
               {dataTag}
             </span>
           </div>
@@ -76,9 +70,9 @@ function CardAgendamento({ item, usuarioLogado }) {
         </div>
 
         <div className="flex flex-col items-end gap-2 shrink-0">
-          <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-full text-caption font-semibold ${estilo}`}>
+          <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-full text-caption font-semibold ${statusBadgeClass(item.status)}`}>
             <Icon size={13} aria-hidden="true" />
-            {label}
+            {rotuloStatus(item.status)}
           </span>
           {usuarioLogado.tipo === 'prestador' && item.status === 'confirmado' && (
             <BotaoAcaoAgendamento
@@ -87,7 +81,7 @@ function CardAgendamento({ item, usuarioLogado }) {
               label="Concluir"
               titulo="Concluir agendamento?"
               descricao="Confirma que o serviço foi realizado?"
-              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
             />
           )}
           {STATUS_CANCELAVEL.includes(item.status) && (
@@ -98,7 +92,7 @@ function CardAgendamento({ item, usuarioLogado }) {
               titulo="Cancelar agendamento?"
               descricao="Essa ação não pode ser desfeita."
               variant="destructive"
-              className="inline-flex items-center gap-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-200 cursor-pointer"
+              className="inline-flex items-center gap-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
             />
           )}
         </div>
@@ -116,21 +110,21 @@ function CardAgendamento({ item, usuarioLogado }) {
           />
           <Link
             href={`/avaliar/${item.id}`}
-            className="mt-3 inline-flex items-center gap-1.5 h-11 px-4 rounded-full border border-border bg-card hover:bg-muted text-body-sm font-semibold text-foreground transition-colors duration-200"
+            className="mt-3 inline-flex items-center gap-1.5 h-11 px-4 rounded-full border border-border bg-card hover:bg-muted text-body-sm font-semibold text-foreground transition-colors duration-fast"
           >
             <Star size={15} aria-hidden="true" />
             {item.avaliacaoNota ? 'Ver avaliação' : 'Abrir página de avaliação'}
           </Link>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
 // Cartão de contagem por status, no resumo do topo
 function CardResumo({ label, valor, Icon, cor }) {
   return (
-    <div className="bg-card rounded-2xl border border-border px-4 py-3.5 flex items-center gap-3 shadow-soft">
+    <Card padding="sm" className="flex items-center gap-3">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${cor}`}>
         <Icon size={18} aria-hidden="true" />
       </div>
@@ -138,7 +132,7 @@ function CardResumo({ label, valor, Icon, cor }) {
         <p className="text-h6 font-extrabold text-foreground leading-none">{valor}</p>
         <p className="text-caption text-muted-foreground mt-1">{label}</p>
       </div>
-    </div>
+    </Card>
   );
 }
 
@@ -163,110 +157,94 @@ export default async function AgendamentosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-5xl mx-auto p-6 sm:p-8 font-sans">
-
-        <div className="border-b border-border pb-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-h4 font-bold text-foreground">Sua Agenda</h1>
-            <p className="text-muted-foreground mt-1 text-body-sm">
-              Olá, <span className="font-semibold text-foreground">{usuarioLogado.nome}</span>. Aqui estão seus agendamentos.
-            </p>
-          </div>
-          {usuarioLogado.tipo === 'cliente' && (
-            <Link
-              href="/servicos"
-              className="bg-accent hover:bg-accent-hover text-accent-foreground text-body-sm font-bold px-4 h-11 inline-flex items-center rounded-full transition-colors duration-200 w-fit"
-            >
-              Agendar novo horário
-            </Link>
-          )}
-        </div>
-
-        {meusAgendamentos.length === 0 ? (
-          <div className="text-center py-16 px-6 border-2 border-dashed border-border rounded-2xl bg-card flex flex-col items-center gap-3">
-            <div className="w-14 h-14 rounded-2xl bg-secondary flex items-center justify-center">
-              <CalendarPlus size={28} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
-            </div>
-            <p className="text-foreground text-body-lg font-semibold">Nenhum agendamento por aqui ainda</p>
-            <p className="text-muted-foreground text-body-sm max-w-xs">
-              {usuarioLogado.tipo === 'cliente'
-                ? 'Que tal escolher um serviço e marcar seu primeiro horário?'
-                : 'Assim que um cliente agendar um horário com você, ele aparece aqui.'}
-            </p>
-            {usuarioLogado.tipo === 'cliente' && (
-              <Link
-                href="/servicos"
-                className="mt-2 bg-accent hover:bg-accent-hover text-accent-foreground text-body-sm font-bold px-5 h-11 inline-flex items-center rounded-full transition-colors duration-200"
-              >
-                Ver serviços disponíveis
-              </Link>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* Resumo rápido */}
-            <div className="grid grid-cols-3 gap-3 mb-8">
-              <CardResumo
-                label="Próximos"
-                valor={contagem.proximos}
-                Icon={CalendarClock}
-                cor="bg-tcc-azul/10 text-tcc-azul-dark dark:text-tcc-azul-light"
-              />
-              <CardResumo
-                label="Concluídos"
-                valor={contagem.concluidos}
-                Icon={CheckCircle2}
-                cor="bg-success/15 text-success"
-              />
-              <CardResumo
-                label="Cancelados"
-                valor={contagem.cancelados}
-                Icon={CalendarX2}
-                cor="bg-destructive/10 text-destructive"
-              />
-            </div>
-
-            {/* Próximos agendamentos */}
-            <section className="mb-8">
-              <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                <CalendarClock size={19} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
-                Próximos
-                {proximos.length > 0 && (
-                  <span className="text-caption font-medium text-muted-foreground">· {proximos.length}</span>
-                )}
-              </h2>
-              {proximos.length === 0 ? (
-                <div className="text-center py-8 border border-dashed border-border rounded-2xl bg-card">
-                  <p className="text-muted-foreground text-body-sm">Nenhum agendamento futuro no momento.</p>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {proximos.map((item) => (
-                    <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* Histórico */}
-            {historico.length > 0 && (
-              <section>
-                <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                  <CheckCircle2 size={19} className="text-muted-foreground" aria-hidden="true" />
-                  Histórico
-                  <span className="text-caption font-medium text-muted-foreground">· {historico.length}</span>
-                </h2>
-                <div className="grid gap-4 opacity-90">
-                  {historico.map((item) => (
-                    <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </>
+    <PageContainer size="xl" className="py-6 sm:py-8">
+      <PageHeader
+        title="Sua Agenda"
+        description={<>Olá, <span className="font-semibold text-foreground">{usuarioLogado.nome}</span>. Aqui estão seus agendamentos.</>}
+        actions={usuarioLogado.tipo === 'cliente' && (
+          <Button asChild variant="accent">
+            <Link href="/servicos">Agendar novo horário</Link>
+          </Button>
         )}
-      </div>
-    </div>
+      />
+
+      {meusAgendamentos.length === 0 ? (
+        <Card dashed padding="default" className="shadow-none">
+          <EmptyState
+            icon={CalendarPlus}
+            title="Nenhum agendamento por aqui ainda"
+            description={
+              usuarioLogado.tipo === 'cliente'
+                ? 'Que tal escolher um serviço e marcar seu primeiro horário?'
+                : 'Assim que um cliente agendar um horário com você, ele aparece aqui.'
+            }
+            actionLabel={usuarioLogado.tipo === 'cliente' ? 'Ver serviços disponíveis' : undefined}
+            actionHref={usuarioLogado.tipo === 'cliente' ? '/servicos' : undefined}
+          />
+        </Card>
+      ) : (
+        <>
+          {/* Resumo rápido */}
+          <div className="grid grid-cols-3 gap-3 mb-8">
+            <CardResumo
+              label="Próximos"
+              valor={contagem.proximos}
+              Icon={CalendarClock}
+              cor="bg-primary/10 text-primary"
+            />
+            <CardResumo
+              label="Concluídos"
+              valor={contagem.concluidos}
+              Icon={CheckCircle2}
+              cor="bg-success/15 text-success"
+            />
+            <CardResumo
+              label="Cancelados"
+              valor={contagem.cancelados}
+              Icon={CalendarX2}
+              cor="bg-destructive/10 text-destructive"
+            />
+          </div>
+
+          {/* Próximos agendamentos */}
+          <section className="mb-8">
+            <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
+              <CalendarClock size={19} className="text-primary" aria-hidden="true" />
+              Próximos
+              {proximos.length > 0 && (
+                <span className="text-caption font-medium text-muted-foreground">· {proximos.length}</span>
+              )}
+            </h2>
+            {proximos.length === 0 ? (
+              <Card dashed padding="default" className="shadow-none text-center">
+                <p className="text-muted-foreground text-body-sm">Nenhum agendamento futuro no momento.</p>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {proximos.map((item) => (
+                  <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Histórico */}
+          {historico.length > 0 && (
+            <section>
+              <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                <CheckCircle2 size={19} className="text-muted-foreground" aria-hidden="true" />
+                Histórico
+                <span className="text-caption font-medium text-muted-foreground">· {historico.length}</span>
+              </h2>
+              <div className="grid gap-4 opacity-90">
+                {historico.map((item) => (
+                  <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
+                ))}
+              </div>
+            </section>
+          )}
+        </>
+      )}
+    </PageContainer>
   );
 }

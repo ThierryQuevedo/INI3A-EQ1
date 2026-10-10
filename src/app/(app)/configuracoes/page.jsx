@@ -25,11 +25,11 @@ export default async function PaginaConfiguracoes() {
   const ehPrestador = usuario.tipo === 'prestador';
 
   return (
-    <div className="min-h-screen bg-background font-sans flex flex-col antialiased">
+    <div className="min-h-screen flex flex-col">
       <section className="bg-surface pt-16 pb-28 flex flex-col items-center justify-center relative border-b border-border">
         <ProfileAvatar usuario={usuario} inicialNome={inicialNome} />
 
-        <h1 className="text-foreground text-h4 font-bold font-display tracking-tight mt-4">
+        <h1 className="text-foreground text-h4 font-bold tracking-tight mt-4">
           {usuario.nome}
         </h1>
 
@@ -39,7 +39,7 @@ export default async function PaginaConfiguracoes() {
       </section>
 
       <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
-        <div className="bg-card rounded-3xl p-6 md:p-10 w-full max-w-2xl shadow-elevated flex flex-col border border-border">
+        <div className="bg-card rounded-2xl p-6 md:p-10 w-full max-w-2xl shadow-elevated flex flex-col border border-border">
 
           <div className="mb-8">
             <h2 className="text-h6 font-bold text-foreground tracking-tight mb-3">Banner do perfil</h2>

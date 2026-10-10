@@ -94,7 +94,7 @@ export default function ServiceCard({ servico, interativo = true }) {
   return (
     <article
       aria-label={`${nomeServico || "Serviço"}, por ${nomeProfissional || "Profissional"}`}
-      className="group w-full bg-card rounded-2xl shadow-soft hover:shadow-elevated border border-border transition-all duration-300 ease-apple hover:-translate-y-1 flex flex-col h-full overflow-hidden"
+      className="group w-full bg-card rounded-2xl shadow-soft hover:shadow-card border border-border transition-all duration-base ease-apple hover:-translate-y-1 flex flex-col h-full overflow-hidden"
     >
       {interativo ? (
         <Link href={hrefDetalhe} className={classeConteudo}>{conteudo}</Link>
@@ -103,7 +103,7 @@ export default function ServiceCard({ servico, interativo = true }) {
       )}
 
       <div className="mt-auto px-4 pb-4 pt-1 flex items-baseline justify-between gap-2">
-        <span className="text-body-lg font-bold text-primary dark:text-tcc-azul-light whitespace-nowrap">
+        <span className="text-body-lg font-bold text-primary whitespace-nowrap">
           {formatarPreco(preco)}
         </span>
         {duracaoEstimada != null && (

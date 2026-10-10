@@ -62,7 +62,7 @@ export default function Calendario({
           onClick={irParaMesAnterior}
           disabled={bloqueiaMesAnterior}
           aria-label="Mês anterior"
-          className="w-11 h-11 rounded-full flex items-center justify-center text-tcc-azul-dark dark:text-tcc-azul-light hover:bg-tcc-azul-dark/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-fast cursor-pointer"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -75,7 +75,7 @@ export default function Calendario({
           type="button"
           onClick={irParaProximoMes}
           aria-label="Próximo mês"
-          className="w-11 h-11 rounded-full flex items-center justify-center text-tcc-azul-dark dark:text-tcc-azul-light hover:bg-tcc-azul-dark/10 transition-colors duration-200 cursor-pointer"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 transition-colors duration-fast cursor-pointer"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
@@ -109,10 +109,10 @@ export default function Calendario({
 
       <div className="flex flex-wrap items-center gap-5 mt-6 pt-5 border-t border-border text-body-sm text-muted-foreground font-medium">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-tcc-laranja-dark" aria-hidden="true" /> Disponível
+          <span className="w-3 h-3 rounded-full bg-accent" aria-hidden="true" /> Disponível
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-3.5 rounded ring-2 ring-tcc-laranja-dark" aria-hidden="true" /> Hoje
+          <span className="w-3.5 h-3.5 rounded ring-2 ring-accent" aria-hidden="true" /> Hoje
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3.5 h-3.5 rounded bg-muted" aria-hidden="true" /> Indisponível

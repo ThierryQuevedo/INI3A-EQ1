@@ -14,7 +14,7 @@ export default function BotaoExcluirConfirm({ mensagem = "Tem certeza que deseja
         ref={botaoRef}
         type="button"
         onClick={() => setAberto(true)}
-        className="bg-destructive/10 hover:bg-destructive hover:text-white text-destructive text-caption font-bold px-4 h-10 rounded-full transition-colors duration-200 cursor-pointer"
+        className="bg-destructive/10 hover:bg-destructive hover:text-destructive-foreground text-destructive text-caption font-bold px-4 h-10 rounded-full transition-colors duration-fast cursor-pointer"
       >
         {children}
       </button>

@@ -4,6 +4,10 @@ import { revalidatePath } from 'next/cache';
 import { eq } from 'drizzle-orm';
 import { requireAdmin } from '@/app/actions/auth.actions';
 import BotaoExcluirConfirm from '@/app/components/ui/BotaoExcluirConfirm';
+import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
+import { Card } from '@/app/components/ui/card';
+import { Input } from '@/app/components/ui/input';
+import { Button } from '@/app/components/ui/button';
 
 export default async function page(){
     await requireAdmin();
@@ -24,26 +28,26 @@ export default async function page(){
         revalidatePath('/admin/categorias');
     }
 return (
-        <div className="min-h-screen bg-background py-10 px-4 sm:px-6">
-            <div className="max-w-3xl mx-auto flex flex-col gap-6">
-                <h1 className="text-h4 font-bold text-foreground">Categorias</h1>
+        <PageContainer size="md" className="py-10">
+            <PageHeader eyebrow="Administração" title="Categorias" />
 
-                <form action={criarCategoria} className="bg-card rounded-2xl border border-border shadow-soft p-4 flex flex-col sm:flex-row gap-3">
+            <form action={criarCategoria} className="mb-6">
+                <Card padding="sm" className="flex flex-col sm:flex-row gap-3">
                     <label htmlFor="nome-categoria" className="sr-only-status">Nome da categoria</label>
-                    <input
+                    <Input
                         id="nome-categoria"
                         type="text"
                         name="nome"
                         placeholder="Nome da nova categoria"
                         required
-                        className="flex-1 h-11 bg-background border border-input rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+                        className="flex-1 h-11"
                     />
-                    <button type="submit" className="h-11 px-6 rounded-full bg-tcc-azul-dark hover:bg-tcc-azul-darker text-white font-bold text-body-sm transition-colors duration-200 cursor-pointer">
-                        Adicionar
-                    </button>
-                </form>
+                    <Button type="submit">Adicionar</Button>
+                </Card>
+            </form>
 
-                <div className="bg-card rounded-2xl border border-border shadow-soft overflow-hidden">
+            <Card padding="none" className="overflow-hidden">
+                <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-border bg-muted/50">
@@ -68,7 +72,7 @@ return (
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </div>
+            </Card>
+        </PageContainer>
     );
 }

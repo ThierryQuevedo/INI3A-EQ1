@@ -24,7 +24,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
               <Star
                 key={n}
                 size={16}
-                className={n <= nota ? "fill-amber-400 stroke-amber-400" : "stroke-muted-foreground"}
+                className={n <= nota ? "fill-warning stroke-warning" : "stroke-muted-foreground"}
               />
             ))}
           </div>
@@ -84,7 +84,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
           >
             <Star
               size={naPagina ? 32 : 26}
-              className={notaExibida >= n ? "fill-amber-400 stroke-amber-400" : "stroke-muted-foreground"}
+              className={notaExibida >= n ? "fill-warning stroke-warning" : "stroke-muted-foreground"}
             />
           </button>
         ))}

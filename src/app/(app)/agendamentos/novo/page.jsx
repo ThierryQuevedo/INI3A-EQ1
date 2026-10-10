@@ -10,6 +10,8 @@ import Calendario from '@/app/components/features/agendamentos/Calendario';
 import Skeleton from '@/app/components/ui/Skeleton';
 import { ehDataPassada, agruparPorPeriodo, calcularSlotsLivresDoDia } from '@/lib/disponibilidade';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
+import PageContainer from '@/app/components/ui/PageContainer';
+import { Card } from '@/app/components/ui/card';
 
 function capitalizarPrimeira(texto) {
   return texto ? texto.charAt(0).toUpperCase() + texto.slice(1) : texto;
@@ -54,14 +56,12 @@ const PERIODOS = [
 
 function AgendarPageSkeleton() {
   return (
-    <div className="min-h-screen bg-background py-10 px-4">
-      <div className="max-w-2xl mx-auto">
-        <Skeleton className="h-9 w-64 mb-2" />
-        <Skeleton className="h-4 w-48 mb-8" />
-        <Skeleton className="h-80 rounded-2xl mb-4" />
-        <Skeleton className="h-40 rounded-2xl" />
-      </div>
-    </div>
+    <PageContainer size="sm" className="py-10">
+      <Skeleton className="h-9 w-64 mb-2" />
+      <Skeleton className="h-4 w-48 mb-8" />
+      <Skeleton className="h-80 rounded-2xl mb-4" />
+      <Skeleton className="h-40 rounded-2xl" />
+    </PageContainer>
   );
 }
 
@@ -87,9 +87,9 @@ function PassosProgresso({ passoAtual }) {
               <span
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-caption font-bold border-2 transition-colors ${
                   concluido
-                    ? 'bg-tcc-azul-dark border-tcc-azul-dark text-white'
+                    ? 'bg-primary border-primary text-primary-foreground'
                     : atual
-                    ? 'border-tcc-azul-dark text-tcc-azul-dark dark:text-tcc-azul-light dark:border-tcc-azul-light'
+                    ? 'border-primary text-primary'
                     : 'border-border text-muted-foreground'
                 }`}
               >
@@ -104,7 +104,7 @@ function PassosProgresso({ passoAtual }) {
               </span>
             </div>
             {idx < passos.length - 1 && (
-              <div className={`h-0.5 flex-1 rounded-full ${concluido ? 'bg-tcc-azul-dark' : 'bg-border'}`} aria-hidden="true" />
+              <div className={`h-0.5 flex-1 rounded-full ${concluido ? 'bg-primary' : 'bg-border'}`} aria-hidden="true" />
             )}
           </li>
         );
@@ -347,8 +347,8 @@ function AgendarPageInner() {
     };
 
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10" role="status">
-        <div className="bg-card rounded-2xl p-8 sm:p-10 flex flex-col items-center gap-4 shadow-elevated text-center max-w-sm w-full">
+      <div className="min-h-screen flex items-center justify-center px-4 py-10" role="status">
+        <Card className="p-8 sm:p-10 flex flex-col items-center gap-4 shadow-elevated text-center max-w-sm w-full">
           <div className="w-16 h-16 bg-success/15 rounded-full flex items-center justify-center">
             <CheckCircle2 size={32} className="text-success" aria-hidden="true" />
           </div>
@@ -380,29 +380,29 @@ function AgendarPageInner() {
             <button
               type="button"
               onClick={() => router.push('/agendamentos')}
-              className="w-full bg-tcc-azul-dark text-white rounded-full h-11 text-body-sm font-bold shadow-soft hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer"
+              className="w-full bg-primary text-primary-foreground rounded-full h-11 text-body-sm font-bold shadow-soft hover:bg-primary-hover transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer"
             >
               Ver meus agendamentos
             </button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
 
   return (
-    <main className={`min-h-screen bg-background py-8 sm:py-10 px-4 ${diaSelecionado && horarioSelecionado ? 'pb-52 sm:pb-56' : ''}`}>
-      <div className="max-w-2xl mx-auto">
+    <main className={`min-h-screen py-8 sm:py-10 ${diaSelecionado && horarioSelecionado ? 'pb-52 sm:pb-56' : ''}`}>
+      <PageContainer size="sm">
 
         <div className="mb-6">
-          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-full text-body text-tcc-azul-dark dark:text-tcc-azul-light font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-tcc-azul-dark">
+          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-full text-body text-primary font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
             <ArrowLeft size={18} aria-hidden="true" />
             Voltar
           </button>
           <h1 className="text-h4 font-extrabold text-foreground">Escolha um horário</h1>
           {servico && (
             <p className="text-body-lg text-muted-foreground mt-1.5">
-              {servico.nome} · {servico.duracaoEstimada} min · <span className="text-tcc-azul-dark dark:text-tcc-azul-light font-semibold">{formatarPreco(servico.preco)}</span>
+              {servico.nome} · {servico.duracaoEstimada} min · <span className="text-primary font-semibold">{formatarPreco(servico.preco)}</span>
             </p>
           )}
         </div>
@@ -420,9 +420,9 @@ function AgendarPageInner() {
           </div>
         )}
 
-        <section className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4" aria-labelledby="titulo-passo-1">
+        <section className="bg-card rounded-2xl border border-border p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4" aria-labelledby="titulo-passo-1">
           <h2 id="titulo-passo-1" className="flex items-center gap-2 text-body-lg font-bold text-foreground self-start">
-            <CalendarDays size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
+            <CalendarDays size={20} className="text-primary" aria-hidden="true" />
             1. Escolha o dia
           </h2>
           <Calendario
@@ -436,14 +436,14 @@ function AgendarPageInner() {
         </section>
 
         {diaSelecionado && (
-          <section className="bg-card rounded-2xl p-5 sm:p-7 shadow-soft mb-6" aria-labelledby="titulo-passo-2">
+          <section className="bg-card rounded-2xl border border-border p-5 sm:p-7 shadow-soft mb-6" aria-labelledby="titulo-passo-2">
             <h2
               ref={refHorarioHeading}
               id="titulo-passo-2"
               tabIndex={-1}
               className="flex items-center gap-2 text-body-lg font-bold text-foreground mb-1 focus:outline-none"
             >
-              <Clock size={20} className="text-tcc-azul-dark dark:text-tcc-azul-light" aria-hidden="true" />
+              <Clock size={20} className="text-primary" aria-hidden="true" />
               2. Escolha o horário
             </h2>
             <p className="text-body-sm text-muted-foreground mb-5">
@@ -490,10 +490,10 @@ function AgendarPageInner() {
                               tabIndex={selecionado || ehFocoInicial ? 0 : -1}
                               onClick={() => setHorarioSelecionado(slot)}
                               onKeyDown={(e) => handleSlotKeyDown(e, slot)}
-                              className={`rounded-xl h-12 text-body font-bold border-2 transition-all duration-200 ease-apple cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-tcc-azul-dark focus-visible:ring-offset-2
+                              className={`rounded-xl h-12 text-body font-bold border-2 transition-all duration-200 ease-apple cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
                                 ${selecionado
-                                  ? 'border-tcc-laranja bg-accent text-accent-foreground shadow-soft scale-[1.02]'
-                                  : 'border-transparent bg-muted text-foreground hover:border-tcc-laranja/40'}
+                                  ? 'border-accent bg-accent text-accent-foreground shadow-soft scale-[1.02]'
+                                  : 'border-transparent bg-muted text-foreground hover:border-accent/40'}
                               `}
                             >
                               {slot}
@@ -533,7 +533,7 @@ function AgendarPageInner() {
                     </span>
                     <button
                       onClick={() => rolarEfocar(refHorarioHeading.current ? { current: document.getElementById('titulo-passo-1') } : null) || document.getElementById('titulo-passo-1')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="text-tcc-azul-dark dark:text-tcc-azul-light p-1 -m-1 rounded-full hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-tcc-azul-dark"
+                      className="text-primary p-1 -m-1 rounded-full hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                       aria-label="Alterar dia"
                     >
                       <Pencil size={13} aria-hidden="true" />
@@ -546,7 +546,7 @@ function AgendarPageInner() {
                     <span className="font-semibold text-foreground">{horarioSelecionado}</span>
                     <button
                       onClick={() => document.getElementById('titulo-passo-2')?.scrollIntoView({ behavior: 'smooth' })}
-                      className="text-tcc-azul-dark dark:text-tcc-azul-light p-1 -m-1 rounded-full hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-tcc-azul-dark"
+                      className="text-primary p-1 -m-1 rounded-full hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring"
                       aria-label="Alterar horário"
                     >
                       <Pencil size={13} aria-hidden="true" />
@@ -556,20 +556,20 @@ function AgendarPageInner() {
                 <div className="h-px bg-border my-0.5 sm:my-1" />
                 <div className="flex justify-between text-body sm:text-body-lg">
                   <span className="text-muted-foreground">Total</span>
-                  <span className="font-bold text-tcc-azul-dark dark:text-tcc-azul-light">{formatarPreco(servico?.preco)}</span>
+                  <span className="font-bold text-primary">{formatarPreco(servico?.preco)}</span>
                 </div>
               </div>
               <button
                 onClick={confirmarAgendamento}
                 disabled={enviando}
-                className="w-full bg-tcc-azul-dark text-white rounded-full h-11 sm:h-13 text-body font-bold shadow-elevated hover:bg-tcc-azul-darker transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                className="w-full bg-primary text-primary-foreground rounded-full h-11 sm:h-13 text-body font-bold shadow-elevated hover:bg-primary-hover transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
               >
                 {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
               </button>
             </div>
           </div>
         )}
-      </div>
+      </PageContainer>
     </main>
   );
 }

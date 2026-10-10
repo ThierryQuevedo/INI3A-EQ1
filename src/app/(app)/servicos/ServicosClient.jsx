@@ -8,6 +8,7 @@ import EmptyState from '@/app/components/ui/EmptyState';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import FilterDrawer, { FILTROS_PADRAO } from '@/app/components/features/servicos/FilterDrawer';
 import { ehHoje } from '@/lib/disponibilidade';
+import PageContainer from '@/app/components/ui/PageContainer';
 
 export default function ServicosClient({ servicos = [], categorias = [] }) {
     const searchParams = useSearchParams();
@@ -53,11 +54,10 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
     }, [servicos, termoBusca, filtros]);
 
     return (
-        <div className="bg-background min-h-screen">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        <PageContainer size="xl" className="py-8 sm:py-10">
 
                 <div className="mb-6">
-                    <h1 className="font-display text-foreground font-bold text-h4">Catálogo de serviços</h1>
+                    <h1 className="text-foreground font-bold text-h4">Catálogo de serviços</h1>
                     <p className="text-muted-foreground text-body mt-1">
                         Encontre um profissional pelo nome, categoria ou tipo de serviço.
                     </p>
@@ -94,7 +94,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                                 }
                             />
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
                                 {servicosFiltrados.map((servico) => (
                                     <ServiceCard key={servico.id} servico={servico} />
                                 ))}
@@ -102,7 +102,6 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                         )}
                     </div>
                 </div>
-            </div>
-        </div>
+        </PageContainer>
     );
 }

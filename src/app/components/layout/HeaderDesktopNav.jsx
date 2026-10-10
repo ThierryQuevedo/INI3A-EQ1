@@ -29,6 +29,7 @@ export default function HeaderDesktopNav({ usuario, className }) {
             href={href}
             aria-current={ativo ? "page" : undefined}
             className={cn(
+              
               "px-3.5 h-11 inline-flex items-center rounded-full text-body-sm font-semibold transition-colors",
               ativo ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}

@@ -1,4 +1,6 @@
 import { Mail } from 'lucide-react';
+import PageContainer from "@/app/components/ui/PageContainer";
+import { Card } from "@/app/components/ui/card";
 
 export const metadata = { title: 'Suporte' };
 
@@ -32,39 +34,37 @@ const PERGUNTAS = [
 
 export default function SuportePage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <span className="text-caption font-bold text-primary font-display">Ajuda</span>
-        <h1 className="text-h4 lg:text-h3 font-black font-display tracking-tight text-foreground mt-2 mb-6">
-          Suporte
-        </h1>
+    <PageContainer size="md" className="py-16">
+      <span className="text-caption font-bold text-primary">Ajuda</span>
+      <h1 className="text-h4 lg:text-h3 font-black tracking-tight text-foreground mt-2 mb-6">
+        Suporte
+      </h1>
 
-        <div className="space-y-3 mb-10">
-          {PERGUNTAS.map((item) => (
-            <details key={item.pergunta} className="group bg-card border border-border rounded-2xl p-5 shadow-soft">
-              <summary className="font-bold text-foreground cursor-pointer list-none flex items-center justify-between gap-3">
-                {item.pergunta}
-                <span className="text-muted-foreground text-body-lg group-open:rotate-45 transition-transform shrink-0" aria-hidden="true">+</span>
-              </summary>
-              <p className="text-body-sm text-muted-foreground leading-relaxed mt-3">{item.resposta}</p>
-            </details>
-          ))}
-        </div>
-
-        <div className="bg-card border border-border rounded-2xl p-6 shadow-soft">
-          <h2 className="text-body-lg font-bold text-foreground mb-2">Não encontrou o que precisava?</h2>
-          <p className="text-body-sm text-muted-foreground mb-4">
-            Mande sua dúvida para o nosso e-mail de suporte — respondemos o mais rápido possível.
-          </p>
-          <a
-            href="mailto:contato@marcaai.com.br"
-            className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
-          >
-            <Mail size={16} aria-hidden="true" />
-            contato@marcaai.com.br
-          </a>
-        </div>
+      <div className="space-y-3 mb-10">
+        {PERGUNTAS.map((item) => (
+          <details key={item.pergunta} className="group bg-card border border-border rounded-2xl p-5 shadow-soft">
+            <summary className="font-bold text-foreground cursor-pointer list-none flex items-center justify-between gap-3">
+              {item.pergunta}
+              <span className="text-muted-foreground text-body-lg group-open:rotate-45 transition-transform shrink-0" aria-hidden="true">+</span>
+            </summary>
+            <p className="text-body-sm text-muted-foreground leading-relaxed mt-3">{item.resposta}</p>
+          </details>
+        ))}
       </div>
-    </div>
+
+      <Card padding="default">
+        <h2 className="text-body-lg font-bold text-foreground mb-2">Não encontrou o que precisava?</h2>
+        <p className="text-body-sm text-muted-foreground mb-4">
+          Mande sua dúvida para o nosso e-mail de suporte — respondemos o mais rápido possível.
+        </p>
+        <a
+          href="mailto:contato@marcaai.com.br"
+          className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+        >
+          <Mail size={16} aria-hidden="true" />
+          contato@marcaai.com.br
+        </a>
+      </Card>
+    </PageContainer>
   );
 }

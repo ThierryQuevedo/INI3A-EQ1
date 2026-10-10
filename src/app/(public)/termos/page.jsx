@@ -1,3 +1,5 @@
+import PageContainer from "@/app/components/ui/PageContainer";
+
 export const metadata = { title: 'Termos de uso' };
 
 const SECOES = [
@@ -44,27 +46,25 @@ const SECOES = [
 
 export default function TermosPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-6 py-16">
-        <span className="text-caption font-bold text-primary font-display">Legal</span>
-        <h1 className="text-h4 lg:text-h3 font-black font-display tracking-tight text-foreground mt-2 mb-2">
-          Termos de uso
-        </h1>
-        <p className="text-body-sm text-muted-foreground mb-8">Última atualização: outubro de 2026</p>
+    <PageContainer size="md" className="py-16">
+      <span className="text-caption font-bold text-primary">Legal</span>
+      <h1 className="text-h4 lg:text-h3 font-black tracking-tight text-foreground mt-2 mb-2">
+        Termos de uso
+      </h1>
+      <p className="text-body-sm text-muted-foreground mb-8">Última atualização: outubro de 2026</p>
 
-        <div className="space-y-8">
-          {SECOES.map((secao) => (
-            <section key={secao.titulo}>
-              <h2 className="text-body-lg font-bold text-foreground mb-2">{secao.titulo}</h2>
-              <div className="space-y-3">
-                {secao.paragrafos.map((p, i) => (
-                  <p key={i} className="text-body text-muted-foreground leading-relaxed">{p}</p>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+      <div className="space-y-8">
+        {SECOES.map((secao) => (
+          <section key={secao.titulo}>
+            <h2 className="text-body-lg font-bold text-foreground mb-2">{secao.titulo}</h2>
+            <div className="space-y-3">
+              {secao.paragrafos.map((p, i) => (
+                <p key={i} className="text-body text-muted-foreground leading-relaxed">{p}</p>
+              ))}
+            </div>
+          </section>
+        ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -13,6 +13,7 @@ import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { estatisticasPorServico } from "@/lib/avaliacoes";
+import PageContainer from "@/app/components/ui/PageContainer";
 
 export const dynamic = 'force-dynamic';
 
@@ -79,7 +80,7 @@ export default async function DetalheServico({ params }) {
   };
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
 
       <div className="relative h-52 sm:h-60 w-full bg-muted overflow-hidden">
         <PlaceholderImage className="absolute inset-0" />
@@ -88,9 +89,9 @@ export default async function DetalheServico({ params }) {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 -mt-16 relative z-10 pb-20">
+      <PageContainer size="lg" className="-mt-16 relative z-10 pb-20">
 
-        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-card border border-border p-6 rounded-3xl shadow-elevated gap-6">
+        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-card border border-border p-6 rounded-2xl shadow-elevated gap-6">
           <div className="flex flex-col items-center md:flex-row gap-6">
 
             <div className="relative size-28 sm:size-32 rounded-2xl overflow-hidden border-4 border-background shadow-md bg-muted shrink-0">
@@ -105,7 +106,7 @@ export default async function DetalheServico({ params }) {
               {servico.categoria && (
                 <span className="text-caption font-bold text-primary mb-1">{servico.categoria}</span>
               )}
-              <h1 className="text-h4 font-extrabold font-display tracking-tight text-foreground mb-2">
+              <h1 className="text-h4 font-extrabold tracking-tight text-foreground mb-2">
                 {servico.nome}
               </h1>
               <p className="text-muted-foreground font-medium mb-3">
@@ -148,8 +149,8 @@ export default async function DetalheServico({ params }) {
 
           <div className="md:col-span-2 space-y-6">
             {servico.descricao && (
-              <div className="bg-card border border-border p-8 rounded-3xl shadow-soft">
-                <h2 className="text-h6 font-bold font-display text-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
+              <div className="bg-card border border-border p-8 rounded-2xl shadow-soft">
+                <h2 className="text-h6 font-bold text-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
                   <Award size={20} className="text-primary" aria-hidden="true" /> Detalhes do serviço
                 </h2>
                 <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{servico.descricao}</p>
@@ -180,8 +181,8 @@ export default async function DetalheServico({ params }) {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-card border border-border p-6 rounded-3xl shadow-soft">
-              <h2 className="text-body-lg font-bold font-display text-foreground border-b border-border pb-3 mb-4">
+            <div className="bg-card border border-border p-6 rounded-2xl shadow-soft">
+              <h2 className="text-body-lg font-bold text-foreground border-b border-border pb-3 mb-4">
                 Sobre o profissional
               </h2>
               {servico.prestador.biografia && (
@@ -216,7 +217,7 @@ export default async function DetalheServico({ params }) {
 
         </div>
 
-      </div>
+      </PageContainer>
     </div>
   );
 }

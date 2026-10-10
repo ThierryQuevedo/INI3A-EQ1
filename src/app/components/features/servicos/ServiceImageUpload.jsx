@@ -154,9 +154,9 @@ export default function ServiceImageUpload({
       {/* Label e indicador de opcional/obrigatório */}
       <div className="flex items-center justify-between">
         <label className="text-sm font-inter font-medium text-foreground">
-          {label} {required && <span className="text-tcc-laranja-dark">*</span>}
+          {label} {required && <span className="text-destructive">*</span>}
         </label>
-        <span className="text-caption text-tcc-neutro-400 font-inter">
+        <span className="text-caption text-muted-foreground font-inter">
           {required ? "Obrigatório" : "Opcional"}
         </span>
       </div>
@@ -280,7 +280,7 @@ export default function ServiceImageUpload({
                     Enviando foto...
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
+                  <span className="inline-flex items-center gap-1 text-success">
                     <CheckCircle2 size={14} aria-hidden="true" />
                     Foto pronta para o anúncio
                   </span>
@@ -309,7 +309,7 @@ export default function ServiceImageUpload({
               disabled={isUploading}
               title="Remover foto"
               aria-label="Remover foto do serviço"
-              className="p-2 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-white border border-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
+              className="p-2 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
             >
               <Trash2 size={16} aria-hidden="true" />
             </button>

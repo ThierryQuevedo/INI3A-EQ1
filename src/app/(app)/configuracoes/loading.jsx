@@ -3,7 +3,7 @@ import Skeleton from "@/app/components/ui/Skeleton";
 
 export default function LoadingConfiguracoes() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <ProgressBar />
       <section className="bg-surface pt-16 pb-28 flex flex-col items-center justify-center gap-3 border-b border-border">
         <Skeleton className="size-24 rounded-full" />
@@ -12,7 +12,7 @@ export default function LoadingConfiguracoes() {
       </section>
 
       <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
-        <div className="bg-card rounded-3xl p-6 md:p-10 w-full max-w-2xl shadow-elevated border border-border space-y-6">
+        <div className="bg-card rounded-2xl p-6 md:p-10 w-full max-w-2xl shadow-elevated border border-border space-y-6">
           <Skeleton className="h-6 w-40 mb-2" />
           <Skeleton className="h-24 w-full rounded-2xl" />
 

@@ -5,9 +5,10 @@ import { ArrowLeft } from 'lucide-react';
 import ServiceImageUpload from '@/app/components/features/servicos/ServiceImageUpload';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import Combobox from '@/app/components/ui/Combobox';
+import PageContainer from '@/app/components/ui/PageContainer';
 
 const CAMPO_CLASSE =
-  'w-full px-4 py-3 rounded-xl bg-white dark:bg-input border border-border text-foreground text-body-sm placeholder:text-muted-foreground shadow-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all';
+  'w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground text-body-sm placeholder:text-muted-foreground shadow-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all';
 
 export default function NovoServicoForm({ categorias = [], action, nomePrestador }) {
   const router = useRouter();
@@ -59,19 +60,18 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 font-sans">
-      <div className="max-w-5xl mx-auto">
+    <PageContainer size="lg" className="py-8">
 
         <div className="mb-6">
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-tcc-azul-dark font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
+            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors duration-fast cursor-pointer"
           >
             <ArrowLeft size={16} aria-hidden="true" />
             Voltar
           </button>
-          <h1 className="text-h4 font-display font-extrabold text-foreground tracking-tight">Novo serviço</h1>
+          <h1 className="text-h4 font-extrabold text-foreground tracking-tight">Novo serviço</h1>
           <p className="text-body-sm text-muted-foreground mt-1">
             Preencha as informações abaixo. O card à direita mostra como ele vai aparecer para os clientes.
           </p>
@@ -83,7 +83,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="nome" className="text-body-sm font-medium text-foreground">
-                Nome do serviço <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
+                Nome do serviço <span className="text-destructive" aria-hidden="true">*</span>
               </label>
               <input
                 type="text"
@@ -99,7 +99,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="categoriaId" className="text-body-sm font-medium text-foreground">
-                Categoria <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
+                Categoria <span className="text-destructive" aria-hidden="true">*</span>
               </label>
               <input type="hidden" name="categoriaId" value={categoriaSelecionada} />
               <Combobox
@@ -122,7 +122,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
             {categoriaSelecionada === 'outro' && (
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="novaCategoria" className="text-body-sm font-medium text-foreground">
-                  Qual é a nova categoria? <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
+                  Qual é a nova categoria? <span className="text-destructive" aria-hidden="true">*</span>
                 </label>
                 <input
                   type="text"
@@ -141,7 +141,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="preco" className="text-body-sm font-medium text-foreground">
-                  Preço (R$) <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
+                  Preço (R$) <span className="text-destructive" aria-hidden="true">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground text-body-sm pointer-events-none">
@@ -171,7 +171,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="duracaoEstimada" className="text-body-sm font-medium text-foreground">
-                  Duração estimada <span className="text-tcc-laranja-dark" aria-hidden="true">*</span>
+                  Duração estimada <span className="text-destructive" aria-hidden="true">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -241,7 +241,6 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
         </div>
 
-      </div>
-    </div>
+    </PageContainer>
   );
 }

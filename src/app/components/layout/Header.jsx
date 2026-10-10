@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import HeaderDesktopNav from './HeaderDesktopNav';
 import PerfilDropdown from './MenuPerfilDropdown';
+import ThemeToggle from '@/app/components/ui/ThemeToggle';
 import logotipo from '../../../public/images/Identidade visual marca ai/logotipo.png';
 
 export default function Header({ usuario }) {
@@ -44,7 +45,8 @@ export default function Header({ usuario }) {
                             <PerfilDropdown user={usuario} />
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-1 sm:gap-3">
+                            <ThemeToggle className="max-sm:hidden" />
                             <Link href="/login" className="text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 h-11 inline-flex items-center rounded-full">
                                 Entrar
                             </Link>

@@ -232,7 +232,7 @@ export default function ProfileAvatar({
             onClick={handleRemoverFoto}
             title="Remover foto de perfil"
             aria-label="Remover foto de perfil"
-            className="absolute -bottom-1 -right-1 z-20 w-8 h-8 rounded-full bg-card hover:bg-destructive hover:text-white text-muted-foreground border border-border shadow-soft flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute -bottom-1 -right-1 z-20 w-8 h-8 rounded-full bg-card hover:bg-destructive hover:text-destructive-foreground text-muted-foreground border border-border shadow-soft flex items-center justify-center transition-colors cursor-pointer"
           >
             <Trash2 size={14} aria-hidden="true" />
           </button>
@@ -245,14 +245,14 @@ export default function ProfileAvatar({
           aria-live="polite"
           className={`mt-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-caption font-medium border shadow-soft transition-all duration-200 animate-in fade-in slide-in-from-top-1 ${
             toast.tipo === "sucesso"
-              ? "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-200 dark:border-emerald-800"
-              : "bg-red-50 text-red-800 border-red-300 dark:bg-red-950/60 dark:text-red-200 dark:border-red-800"
+              ? "bg-success/10 text-success border-success/30"
+              : "bg-destructive/10 text-destructive border-destructive/30"
           }`}
         >
           {toast.tipo === "sucesso" ? (
-            <CheckCircle2 size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" aria-hidden="true" />
+            <CheckCircle2 size={15} className="text-success shrink-0" aria-hidden="true" />
           ) : (
-            <AlertCircle size={15} className="text-red-600 dark:text-red-400 shrink-0" aria-hidden="true" />
+            <AlertCircle size={15} className="text-destructive shrink-0" aria-hidden="true" />
           )}
           <span>{toast.mensagem}</span>
           <button

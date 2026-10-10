@@ -174,12 +174,12 @@ export default function UserBannerUpload({
           aria-live="polite"
           className={`absolute top-3 right-3 z-30 max-w-sm flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-elevated border text-body-sm transition-all duration-300 animate-in fade-in slide-in-from-top-2 ${
             toast.tipo === "sucesso"
-              ? "bg-card text-foreground border-emerald-500/30 dark:border-emerald-500/40 shadow-emerald-500/10"
+              ? "bg-card text-foreground border-success/30 shadow-success/10"
               : "bg-card text-foreground border-destructive/30 dark:border-destructive/40 shadow-destructive/10"
           }`}
         >
           {toast.tipo === "sucesso" ? (
-            <CheckCircle2 size={18} className="text-emerald-500 shrink-0" aria-hidden="true" />
+            <CheckCircle2 size={18} className="text-success shrink-0" aria-hidden="true" />
           ) : (
             <AlertCircle size={18} className="text-destructive shrink-0" aria-hidden="true" />
           )}
@@ -263,7 +263,7 @@ export default function UserBannerUpload({
               onClick={handleRemoverCapa}
               title="Remover capa"
               aria-label="Remover capa do perfil"
-              className="px-3 py-2 rounded-xl bg-black/60 hover:bg-destructive text-white backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
+              className="px-3 py-2 rounded-xl bg-black/60 hover:bg-destructive text-white hover:text-destructive-foreground backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
             >
               <Trash2 size={15} aria-hidden="true" />
               <span className="max-sm:hidden sm:inline">Remover</span>

@@ -12,15 +12,15 @@ export default function DiaCalendario({
   let classes = "relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center text-body-lg sm:text-h6 font-bold transition-all duration-200 ease-apple ";
 
   if (selecionado) {
-    classes += "bg-tcc-azul-dark text-white shadow-card scale-105";
+    classes += "bg-primary text-primary-foreground shadow-card scale-105";
   } else if (desabilitado) {
     classes += "text-muted-foreground/50 cursor-not-allowed";
   } else {
-    classes += "bg-background text-foreground hover:bg-tcc-azul-dark/10 hover:text-tcc-azul-dark cursor-pointer";
+    classes += "bg-background text-foreground hover:bg-primary/10 hover:text-primary cursor-pointer";
   }
 
   if (hoje && !selecionado) {
-    classes += " ring-2 ring-tcc-laranja-dark ring-offset-1 ring-offset-card";
+    classes += " ring-2 ring-accent ring-offset-1 ring-offset-card";
   }
 
   const titulo = desabilitado
@@ -39,7 +39,7 @@ export default function DiaCalendario({
     >
       <span>{numero}</span>
       {!desabilitado && (
-        <span className={`w-2 h-2 rounded-full mt-1 ${selecionado ? "bg-white" : "bg-tcc-laranja-dark"}`} aria-hidden="true" />
+        <span className={`w-2 h-2 rounded-full mt-1 ${selecionado ? "bg-primary-foreground" : "bg-accent"}`} aria-hidden="true" />
       )}
     </button>
   );

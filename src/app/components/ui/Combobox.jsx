@@ -85,7 +85,7 @@ export default function Combobox({
         aria-haspopup="listbox"
         aria-expanded={aberto}
         aria-label={ariaLabel}
-        className="h-10 w-full rounded-xl border border-input bg-white dark:bg-input px-3 text-body-sm font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition-colors"
+        className="h-10 w-full rounded-xl border border-input bg-card px-3 text-body-sm font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition-colors"
       >
         <span className="truncate">{selecionado ? selecionado.label : placeholder}</span>
         <ChevronDown

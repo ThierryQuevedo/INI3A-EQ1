@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "./button";
 
@@ -21,8 +22,6 @@ export default function ConfirmDialog({
 }) {
   const [pendente, setPendente] = useState(false);
 
-  if (!open) return null;
-
   async function handleConfirmar() {
     setPendente(true);
     try {
@@ -34,17 +33,27 @@ export default function ConfirmDialog({
   }
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-dialog-titulo"
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
-      onClick={() => !pendente && onOpenChange?.(false)}
-    >
-      <div
-        className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full border border-border"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-dialog-titulo"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
+          onClick={() => !pendente && onOpenChange?.(false)}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          <motion.div
+            className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full border border-border"
+            onClick={(e) => e.stopPropagation()}
+            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: 8 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+          >
         <div className="flex items-center justify-between mb-3">
           <h3 id="confirm-dialog-titulo" className="text-body font-bold text-foreground">
             {title}
@@ -84,7 +93,9 @@ export default function ConfirmDialog({
             {pendente ? "Salvando..." : confirmLabel}
           </Button>
         </div>
-      </div>
-    </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

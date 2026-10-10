@@ -15,6 +15,9 @@ import ConfirmDialog from '@/app/components/ui/ConfirmDialog';
 import DiaDisponibilidadeCard from '@/app/components/features/disponibilidades/DiaDisponibilidadeCard';
 import { useToast } from '@/app/components/ui/ToastProvider';
 import { ArrowLeft, Briefcase } from 'lucide-react';
+import PageContainer from '@/app/components/ui/PageContainer';
+import { Card } from '@/app/components/ui/card';
+import EmptyState from '@/app/components/ui/EmptyState';
 
 const DIAS = [
   { valor: 0, nome: 'Domingo' },
@@ -299,29 +302,27 @@ export default function DisponibilidadePage() {
   }
 
   if (carregandoServicos) return (
-    <div className="min-h-screen bg-background py-8 px-4 font-sans">
-      <div className="max-w-3xl mx-auto">
-        <Skeleton className="h-9 w-64 mb-2" />
-        <Skeleton className="h-4 w-80 mb-6" />
-        <Skeleton className="h-16 rounded-2xl mb-4" />
-        {Array.from({ length: 7 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-2xl mb-3" />
-        ))}
-      </div>
-    </div>
+    <PageContainer size="lg" className="py-8">
+      <Skeleton className="h-9 w-64 mb-2" />
+      <Skeleton className="h-4 w-80 mb-6" />
+      <Skeleton className="h-16 rounded-2xl mb-4" />
+      {Array.from({ length: 7 }).map((_, i) => (
+        <Skeleton key={i} className="h-16 rounded-2xl mb-3" />
+      ))}
+    </PageContainer>
   );
 
   // Prestador sem nenhum serviço cadastrado ainda
   if (servicos.length === 0) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center px-4">
-        <div className="bg-card rounded-2xl p-10 flex flex-col items-center gap-4 shadow-soft text-center max-w-sm">
-          <div className="w-16 h-16 bg-tcc-azul-dark/10 rounded-full flex items-center justify-center text-tcc-azul-dark">
-            <Briefcase width={28} height={28} aria-hidden="true" />
-          </div>
-          <h2 className="text-h6 font-bold text-foreground">Nenhum serviço cadastrado</h2>
-          <p className="text-body-sm text-muted-foreground">Cadastre um serviço primeiro para poder configurar a disponibilidade dele.</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <Card padding="default" className="p-10 max-w-sm">
+          <EmptyState
+            icon={Briefcase}
+            title="Nenhum serviço cadastrado"
+            description="Cadastre um serviço primeiro para poder configurar a disponibilidade dele."
+          />
+        </Card>
       </div>
     );
   }
@@ -336,79 +337,76 @@ export default function DisponibilidadePage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 font-sans">
-      <div className="max-w-3xl mx-auto">
+    <PageContainer size="lg" className="py-8">
 
-        <div className="mb-6">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-tcc-azul-dark font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-            Voltar
-          </button>
-          <h1 className="text-h4 font-extrabold text-foreground">Minha disponibilidade</h1>
-          <p className="text-body-sm text-muted-foreground mt-1.5">
-            Ative os dias em que você atende e defina os horários de cada um.
-          </p>
-        </div>
-
-        {erro && (
-          <div role="alert" className="mb-4 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm font-semibold rounded-xl px-4 py-3 shadow-soft">{erro}</div>
-        )}
-
-        {/* Seletor de serviço — cada serviço tem sua própria agenda */}
-        <div className="bg-card rounded-2xl p-4 shadow-soft mb-5">
-          <label className="text-caption font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
-            <Briefcase width={13} height={13} aria-hidden="true" /> Serviço
-          </label>
-          <div className="flex gap-2 flex-wrap">
-            {servicos.map((s) => {
-              const ativo = s.id === servicoSelecionadoId;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setServicoSelecionadoId(s.id)}
-                  aria-pressed={ativo}
-                  className={`px-4 h-10 rounded-full text-body-sm font-bold transition-all duration-200 border-2 cursor-pointer ${
-                    ativo
-                      ? 'bg-tcc-azul-dark border-tcc-azul-dark text-white shadow-soft'
-                      : 'bg-background border-transparent text-foreground hover:border-tcc-azul-dark/30'
-                  }`}
-                >
-                  {s.nome}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 rounded-2xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {DIAS.map((dia) => (
-              <DiaDisponibilidadeCard
-                key={dia.valor}
-                dia={dia}
-                ehHoje={dia.valor === diaAtual}
-                ranges={blocosPorDia[dia.valor] || []}
-                processando={diasProcessando.has(dia.valor)}
-                erro={errosPorDia[dia.valor] || null}
-                onToggleDia={onToggleDia}
-                onAdicionarHorario={onAdicionarHorario}
-                onAlterarHorario={onAlterarHorario}
-                onPedirRemoverHorario={onPedirRemoverHorario}
-              />
-            ))}
-          </div>
-        )}
-
+      <div className="mb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors duration-fast cursor-pointer"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
+          Voltar
+        </button>
+        <h1 className="text-h4 font-extrabold text-foreground">Minha disponibilidade</h1>
+        <p className="text-body-sm text-muted-foreground mt-1.5">
+          Ative os dias em que você atende e defina os horários de cada um.
+        </p>
       </div>
+
+      {erro && (
+        <div role="alert" className="mb-4 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm font-semibold rounded-xl px-4 py-3 shadow-soft">{erro}</div>
+      )}
+
+      {/* Seletor de serviço — cada serviço tem sua própria agenda */}
+      <Card padding="sm" className="mb-5">
+        <label className="text-caption font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
+          <Briefcase width={13} height={13} aria-hidden="true" /> Serviço
+        </label>
+        <div className="flex gap-2 flex-wrap">
+          {servicos.map((s) => {
+            const ativo = s.id === servicoSelecionadoId;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setServicoSelecionadoId(s.id)}
+                aria-pressed={ativo}
+                className={`px-4 h-10 rounded-full text-body-sm font-bold transition-all duration-fast border-2 cursor-pointer ${
+                  ativo
+                    ? 'bg-primary border-primary text-primary-foreground shadow-soft'
+                    : 'bg-background border-transparent text-foreground hover:border-primary/30'
+                }`}
+              >
+                {s.nome}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-2xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {DIAS.map((dia) => (
+            <DiaDisponibilidadeCard
+              key={dia.valor}
+              dia={dia}
+              ehHoje={dia.valor === diaAtual}
+              ranges={blocosPorDia[dia.valor] || []}
+              processando={diasProcessando.has(dia.valor)}
+              erro={errosPorDia[dia.valor] || null}
+              onToggleDia={onToggleDia}
+              onAdicionarHorario={onAdicionarHorario}
+              onAlterarHorario={onAlterarHorario}
+              onPedirRemoverHorario={onPedirRemoverHorario}
+            />
+          ))}
+        </div>
+      )}
 
       <ConfirmDialog
         open={!!confirmacao}
@@ -419,6 +417,6 @@ export default function DisponibilidadePage() {
         variant="destructive"
         onConfirm={confirmarAcao}
       />
-    </div>
+    </PageContainer>
   );
 }

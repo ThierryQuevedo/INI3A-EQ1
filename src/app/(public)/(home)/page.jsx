@@ -13,6 +13,7 @@ import { listarCategorias } from "@/app/actions/servicos.actions";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
 import { calcularProximosHorariosLivres } from "@/app/actions/disponibilidades.actions";
 import { ehHoje } from "@/lib/disponibilidade";
+import PageContainer from "@/app/components/ui/PageContainer";
 
 export const dynamic = "force-dynamic";
 
@@ -57,9 +58,9 @@ export default async function Home() {
   const agendamentoProximo = proximoAgendamento?.proximos?.[0] ?? null;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <section className="max-w-6xl mx-auto px-6 pt-10 pb-8">
-        <h1 className="text-h4 sm:text-h3 font-black font-display tracking-tight text-foreground mb-2">
+    <PageContainer size="xl">
+      <section className="pt-10 pb-8">
+        <h1 className="text-h4 sm:text-h3 font-black tracking-tight text-foreground mb-2">
           Encontre um profissional e agende na hora.
         </h1>
         <p className="text-muted-foreground text-body mb-6">
@@ -86,7 +87,7 @@ export default async function Home() {
       </section>
 
       {agendamentoProximo && (
-        <section className="max-w-6xl mx-auto px-6 pb-8">
+        <section className="w-full pb-8">
           <Link
             href="/agendamentos"
             className="flex items-center gap-4 bg-secondary text-secondary-foreground rounded-2xl p-4 sm:p-5 hover:bg-secondary/80 transition-colors"
@@ -108,12 +109,12 @@ export default async function Home() {
       )}
 
       {listaCategorias.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-8 border-t border-border">
+        <section className="w-full py-8 border-t border-border">
           <div className="mb-5">
-            <p className="text-h6 font-bold text-foreground">O que você está procurando hoje?</p>
+            <h2 className="text-h6 font-bold text-foreground">O que você está procurando hoje?</h2>
           </div>
           <nav
-            className="flex flex-nowrap gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-1"
+            className="flex flex-nowrap gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pb-1"
             aria-label="Categorias de serviço"
           >
             {listaCategorias.map((categoria) => (
@@ -126,10 +127,10 @@ export default async function Home() {
       <SecaoPertoDeVoce catalogo={catalogoComHorario} />
 
       {comHorarioHoje.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-10 border-t border-border">
+        <section className="w-full py-10 border-t border-border">
           <div className="flex items-center gap-2 mb-6">
             <Clock size={18} className="text-primary" aria-hidden="true" />
-            <p className="text-h6 font-bold text-foreground">Com horário hoje</p>
+            <h2 className="text-h6 font-bold text-foreground">Com horário hoje</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
             {comHorarioHoje.map((servico) => (
@@ -140,10 +141,10 @@ export default async function Home() {
       )}
 
       {maisBemAvaliados.length > 0 && (
-        <section className="max-w-6xl mx-auto px-6 py-10 border-t border-border">
+        <section className="w-full py-10 border-t border-border">
           <div className="flex items-center gap-2 mb-6">
             <Star size={18} className="text-primary" aria-hidden="true" />
-            <p className="text-h6 font-bold text-foreground">Mais bem avaliados</p>
+            <h2 className="text-h6 font-bold text-foreground">Mais bem avaliados</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
             {maisBemAvaliados.map((servico) => (
@@ -153,15 +154,15 @@ export default async function Home() {
         </section>
       )}
 
-      <section className="max-w-6xl mx-auto px-6 py-10 border-t border-border">
+      <section className="w-full py-10 border-t border-border">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-h6 font-bold text-foreground">Catálogo completo</p>
+          <h2 className="text-h6 font-bold text-foreground">Catálogo completo</h2>
           <Link href="/servicos" className="text-body-sm font-medium text-primary hover:underline shrink-0">
             Ver tudo
           </Link>
         </div>
         <CatalogoGrid catalogo={catalogoComHorario} />
       </section>
-    </div>
+    </PageContainer>
   );
 }

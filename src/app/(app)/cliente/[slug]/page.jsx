@@ -8,6 +8,7 @@ import BotaoVoltar from '@/app/components/ui/BotaoVoltar';
 import { Button } from '@/app/components/ui/button';
 import EstrelasNota from '@/app/components/ui/EstrelasNota';
 import PlaceholderImage from '@/app/components/ui/PlaceholderImage';
+import PageContainer from '@/app/components/ui/PageContainer';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,7 +36,7 @@ export default async function PerfilClientePage({ params }) {
   );
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="min-h-screen">
       <div className="relative h-52 sm:h-60 w-full bg-muted overflow-hidden">
         {usuario.urlBanner ? (
           <Image src={usuario.urlBanner} alt="" fill className="object-cover" />
@@ -48,8 +49,8 @@ export default async function PerfilClientePage({ params }) {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 -mt-16 relative z-10 pb-20">
-        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-card border border-border p-6 rounded-3xl shadow-elevated gap-6">
+      <PageContainer size="lg" className="-mt-16 relative z-10 pb-20">
+        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-card border border-border p-6 rounded-2xl shadow-elevated gap-6">
           <div className="flex flex-col items-center md:flex-row gap-6">
             <div className="relative size-28 sm:size-32 rounded-2xl overflow-hidden border-4 border-background shadow-md bg-muted flex items-center justify-center shrink-0">
               {usuario.urlImagem ? (
@@ -63,7 +64,7 @@ export default async function PerfilClientePage({ params }) {
 
             <div className="flex flex-col justify-center">
               <span className="text-caption font-bold text-primary mb-1">Cliente Marca Aí</span>
-              <h1 className="text-h4 font-extrabold font-display tracking-tight text-foreground mb-2">
+              <h1 className="text-h4 font-extrabold tracking-tight text-foreground mb-2">
                 {usuario.nome}
               </h1>
 
@@ -107,7 +108,7 @@ export default async function PerfilClientePage({ params }) {
         </div>
 
         <div className="mt-10">
-          <h2 className="text-h6 font-bold font-display text-foreground mb-4">
+          <h2 className="text-h6 font-bold text-foreground mb-4">
             Avaliações e comentários de prestadores
           </h2>
 
@@ -149,7 +150,7 @@ export default async function PerfilClientePage({ params }) {
           )}
         </div>
 
-      </div>
+      </PageContainer>
     </div>
   );
 }

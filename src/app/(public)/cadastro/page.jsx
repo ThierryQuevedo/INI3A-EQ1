@@ -11,6 +11,10 @@ import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from "../../components/Icons/GoogleIcons";
 import { formatarTelefone as mascararTelefone } from "@/lib/formatarTelefone";
 import { Button } from "@/app/components/ui/button";
+import PageContainer from "@/app/components/ui/PageContainer";
+import { Card } from "@/app/components/ui/card";
+import FormField from "@/app/components/ui/FormField";
+import { Input } from "@/app/components/ui/input";
 
 const estadoInicial = { erro: null };
 
@@ -84,9 +88,9 @@ export default function CadastrarPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 font-sans">
+    <PageContainer size="sm" className="min-h-screen flex flex-col items-center justify-center py-16">
       <Link href="/" className="w-56 mb-10"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
-      <div className="bg-card rounded-2xl shadow-elevated max-w-xl w-full p-8 md:p-12 border border-border">
+      <Card className="w-full shadow-elevated p-8 md:p-12">
 
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Criar conta Marca Aí
@@ -102,55 +106,32 @@ export default function CadastrarPage() {
 
           <input type="hidden" name="tipo" value={categoria} />
 
-          <div>
-            <label htmlFor="nome" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
-              Nome Completo
-            </label>
-            <input
+          <FormField id="nome" label="Nome Completo" error={erros.nome}>
+            <Input
               id="nome"
               type="text"
               name="nome"
               value={campos.nome}
               onChange={handleChange}
               aria-invalid={!!erros.nome}
-              aria-describedby={erros.nome ? "nome-erro" : undefined}
               placeholder="Ex: Maria da Silva"
-              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
-                erros.nome ? "border-destructive" : "border-input"
-              }`}
             />
-            {erros.nome && (
-              <p id="nome-erro" className="mt-1 text-body-sm text-destructive">{erros.nome}</p>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label htmlFor="email" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
-              E-mail
-            </label>
-            <input
+          <FormField id="email" label="E-mail" error={erros.email}>
+            <Input
               id="email"
               type="email"
               name="email"
               value={campos.email}
               onChange={handleChange}
               aria-invalid={!!erros.email}
-              aria-describedby={erros.email ? "email-erro" : undefined}
               placeholder="seuemail@exemplo.com"
-              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
-                erros.email ? "border-destructive" : "border-input"
-              }`}
             />
-            {erros.email && (
-              <p id="email-erro" className="mt-1 text-body-sm text-destructive">{erros.email}</p>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label htmlFor="cel" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
-              Telefone
-            </label>
-            <input
+          <FormField id="cel" label="Telefone" error={erros.cel}>
+            <Input
               id="cel"
               type="text"
               name="cel"
@@ -165,42 +146,29 @@ export default function CadastrarPage() {
                 }
               }}
               aria-invalid={!!erros.cel}
-              aria-describedby={erros.cel ? "cel-erro" : undefined}
               placeholder="(11) 91234-5678"
               maxLength={15}
-              className={`w-full h-12 bg-background border rounded-xl px-4 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
-                erros.cel ? "border-destructive" : "border-input"
-              }`}
             />
-            {erros.cel && (
-              <p id="cel-erro" className="mt-1 text-body-sm text-destructive">{erros.cel}</p>
-            )}
-          </div>
+          </FormField>
 
-          <div>
-            <label htmlFor="senha" className="block text-muted-foreground text-body-sm font-medium mb-1.5">
-              Senha
-            </label>
+          <FormField id="senha" label="Senha" error={erros.senha}>
             <div className="relative">
-              <input
+              <Input
                 id="senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
                 value={campos.senha}
                 onChange={handleChange}
                 aria-invalid={!!erros.senha}
-                aria-describedby={erros.senha ? "senha-erro" : undefined}
                 placeholder="Crie uma senha"
-                className={`w-full h-12 bg-background border rounded-xl px-4 pr-12 text-body text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200 ${
-                  erros.senha ? "border-destructive" : "border-input"
-                }`}
+                className="pr-12"
               />
 
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                className="absolute right-2 top-1/2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-fast cursor-pointer"
               >
                 {showPassword ? (
                   <Eye className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
@@ -209,10 +177,7 @@ export default function CadastrarPage() {
                 )}
               </button>
             </div>
-            {erros.senha && (
-              <p id="senha-erro" className="mt-1 text-body-sm text-destructive">{erros.senha}</p>
-            )}
-          </div>
+          </FormField>
 
           <div className="pt-2">
             <span className="block text-foreground text-body-sm font-semibold mb-3">
@@ -244,30 +209,25 @@ export default function CadastrarPage() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isPending}
-            className="w-full h-13 bg-accent hover:bg-accent-hover text-accent-foreground rounded-full py-3 text-body-lg font-bold transition-all duration-200 ease-apple active:scale-[0.98] mt-4 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100 shadow-soft"
-          >
+          <Button type="submit" variant="accent" size="lg" className="w-full mt-2" disabled={isPending}>
             {isPending ? "Cadastrando..." : "Cadastrar"}
-          </button>
+          </Button>
         </form>
 
-        <Link
-          href="/api/auth/google"
-          className="w-full h-13 mt-4 flex items-center justify-center gap-2 rounded-2xl font-bold border-2 border-input bg-card text-muted-foreground hover:border-tcc-neutro-300 transition-all duration-200 ease-apple cursor-pointer text-center"
-        >
-          <GoogleIcon/>
-          <span>Entrar com Google</span>
-        </Link>
+        <Button asChild variant="outline" size="lg" className="w-full mt-4">
+          <Link href="/api/auth/google">
+            <GoogleIcon size={20} />
+            <span>Entrar com Google</span>
+          </Link>
+        </Button>
 
         <div className="text-center mt-6">
-          <Link href="/login" className="text-body-sm text-tcc-azul hover:underline font-medium">
+          <Link href="/login" className="text-body-sm text-primary hover:underline font-medium">
             Já tem uma conta? Faça login
           </Link>
         </div>
 
-      </div>
-    </div>
+      </Card>
+    </PageContainer>
   );
 }
