@@ -10,9 +10,14 @@ export default function PlaceholderImage({ className, icon: Icon = ImageOff, lab
     <div
       role="img"
       aria-label={label}
-      className={cn("flex items-center justify-center bg-muted text-muted-foreground", className)}
+      className={cn(
+        "flex items-center justify-center bg-gradient-to-br from-primary/10 via-secondary/10 to-primary/15",
+        className
+      )}
     >
-      <Icon size={28} aria-hidden="true" />
+      <div className="flex items-center justify-center rounded-full bg-background/50 size-11 shadow-sm">
+        <Icon size={20} className="text-primary/60" aria-hidden="true" />
+      </div>
     </div>
   );
 }

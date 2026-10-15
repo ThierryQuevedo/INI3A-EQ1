@@ -1,4 +1,5 @@
 import { User, ShieldCheck, Mail, Phone, Calendar, MapPin, ExternalLink } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { requireSession, atualizarNome, atualizarEmail, atualizarTelefone } from "@/app/actions/auth.actions";
 import { atualizarEnderecoTextoAction } from "@/app/actions/prestadores.actions";
@@ -26,16 +27,34 @@ export default async function PaginaConfiguracoes() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <section className="bg-surface pt-16 pb-28 flex flex-col items-center justify-center relative border-b border-border">
-        <ProfileAvatar usuario={usuario} inicialNome={inicialNome} />
+      <section className="relative overflow-hidden pt-16 pb-28 flex flex-col items-center justify-center bg-surface">
+        {usuario.urlBanner ? (
+          <>
+            <Image
+              src={usuario.urlBanner}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/45 to-surface" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/10 to-surface" />
+        )}
 
-        <h1 className="text-foreground text-h4 font-bold tracking-tight mt-4">
-          {usuario.nome}
-        </h1>
+        <div className="relative z-10 flex flex-col items-center">
+          <ProfileAvatar usuario={usuario} inicialNome={inicialNome} />
 
-        <span className="mt-2 px-3 h-7 inline-flex items-center bg-muted text-muted-foreground text-caption font-semibold rounded-full">
-          {TIPO_LABEL[usuario.tipo] || "Usuário"}
-        </span>
+          <h1 className="text-foreground text-h4 font-bold tracking-tight mt-4 drop-shadow-sm">
+            {usuario.nome}
+          </h1>
+
+          <span className="mt-2 px-3 h-7 inline-flex items-center bg-card/90 backdrop-blur-sm text-foreground text-caption font-semibold rounded-full shadow-sm">
+            {TIPO_LABEL[usuario.tipo] || "Usuário"}
+          </span>
+        </div>
       </section>
 
       <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">

@@ -5,7 +5,7 @@ import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { formatarDistancia } from "@/lib/geo";
-import CategoryIcon from "./CategoryIcon";
+import CategoryIcon, { getCategoryIcon } from "./CategoryIcon";
 import AvailabilityBadge from "./AvailabilityBadge";
 
 /** `interativo=false` renderiza o mesmo card sem o link clicável — usado no preview ao vivo de "Novo serviço". */
@@ -40,7 +40,11 @@ export default function ServiceCard({ servico, interativo = true }) {
             sizes="(max-width: 768px) 50vw, 240px"
           />
         ) : (
-          <PlaceholderImage className="absolute inset-0" />
+          <PlaceholderImage
+            className="absolute inset-0"
+            icon={getCategoryIcon(nomeCategoria)}
+            label={nomeCategoria ? `Sem foto — ${nomeCategoria}` : "Sem foto"}
+          />
         )}
 
         {nomeCategoria && (
