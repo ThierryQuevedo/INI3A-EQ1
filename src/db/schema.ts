@@ -92,6 +92,19 @@ export const avaliacoes = pgTable('avaliacoes', {
   comentarioCliente: text('comentario_cliente'),
 });
 
+export const mensagens = pgTable('mensagens', {
+  id: serial('id').primaryKey(),
+  agendamentoId: integer('agendamento_id')
+    .notNull()
+    .references(() => agendamentos.id, { onDelete: 'cascade' }),
+  remetenteId: integer('remetente_id')
+    .notNull()
+    .references(() => usuarios.id, { onDelete: 'cascade' }),
+  texto: text('texto').notNull(),
+  lidaEm: timestamp('lida_em'),
+  criadoEm: timestamp('criado_em').defaultNow().notNull(),
+});
+
 export const notificacoes = pgTable('notificacoes', {
   id: serial('id').primaryKey(),
   usuarioId: integer('usuario_id')

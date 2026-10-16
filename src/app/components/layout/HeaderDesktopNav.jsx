@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import BadgeNaoLidas from "@/app/components/features/mensagens/BadgeNaoLidas";
 
 /** Navegação horizontal no desktop (≥md) — substitui o hambúrguer. */
 export default function HeaderDesktopNav({ usuario, className }) {
@@ -17,6 +18,7 @@ export default function HeaderDesktopNav({ usuario, className }) {
           { href: "/agendamentos", label: "Agenda" },
         ]
       : []),
+    ...(usuario ? [{ href: "/mensagens", label: "Mensagens" }] : []),
   ];
 
   return (
@@ -29,12 +31,12 @@ export default function HeaderDesktopNav({ usuario, className }) {
             href={href}
             aria-current={ativo ? "page" : undefined}
             className={cn(
-              
-              "px-3.5 h-11 inline-flex items-center rounded-full text-body-sm font-semibold transition-colors",
+              "relative px-3.5 h-11 inline-flex items-center rounded-full text-body-sm font-semibold transition-colors",
               ativo ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             {label}
+            {label === "Mensagens" && <BadgeNaoLidas className="top-1 right-1" />}
           </Link>
         );
       })}

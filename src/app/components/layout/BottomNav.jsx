@@ -2,19 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, CalendarDays, User, LayoutDashboard, CalendarClock, Briefcase } from "lucide-react";
+import { Home, Search, CalendarDays, User, LayoutDashboard, CalendarClock, Briefcase, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import BadgeNaoLidas from "@/app/components/features/mensagens/BadgeNaoLidas";
 
 const ITENS_CLIENTE = [
   { href: "/", label: "Início", Icon: Home },
   { href: "/servicos", label: "Buscar", Icon: Search },
   { href: "/agendamentos", label: "Agenda", Icon: CalendarDays },
+  { href: "/mensagens", label: "Mensagens", Icon: MessageCircle },
 ];
 
 const ITENS_PRESTADOR = [
   { href: "/dashboard", label: "Painel", Icon: LayoutDashboard },
   { href: "/disponibilidades", label: "Agenda", Icon: CalendarClock },
   { href: "/servicos/novo", label: "Serviços", Icon: Briefcase },
+  { href: "/mensagens", label: "Mensagens", Icon: MessageCircle },
 ];
 
 /** Navegação principal no mobile (<md). Substitui o menu hambúrguer. */
@@ -32,7 +35,7 @@ export default function BottomNav({ usuario }) {
       aria-label="Navegação principal"
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border pb-[env(safe-area-inset-bottom,0px)]"
     >
-      <ul className="grid grid-cols-4 h-16">
+      <ul className="grid grid-cols-5 h-16">
         {itens.map(({ href, label, Icon }) => {
           const ativo = href === "/" ? pathname === "/" : pathname?.startsWith(href);
           return (
@@ -45,7 +48,10 @@ export default function BottomNav({ usuario }) {
                   ativo ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Icon size={22} strokeWidth={ativo ? 2.25 : 2} aria-hidden="true" />
+                <span className="relative">
+                  <Icon size={22} strokeWidth={ativo ? 2.25 : 2} aria-hidden="true" />
+                  {label === "Mensagens" && <BadgeNaoLidas />}
+                </span>
                 {label}
               </Link>
             </li>
