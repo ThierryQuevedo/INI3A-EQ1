@@ -4,9 +4,12 @@ import { notFound } from 'next/navigation';
 
 import { buscarPerfilPrestador } from '@/app/actions/prestadores.actions';
 import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.actions';
+import { listarIdsFavoritos } from '@/app/actions/favoritos.actions';
+import { getSession } from '@/app/actions/auth.actions';
 import BotaoVoltar from '@/app/components/ui/BotaoVoltar';
 import { Button } from '@/app/components/ui/button';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
+import FavoritoButton from '@/app/components/features/favoritos/FavoritoButton';
 import PlaceholderImage from '@/app/components/ui/PlaceholderImage';
 import EstrelasNota from '@/app/components/ui/EstrelasNota';
 import PageContainer from '@/app/components/ui/PageContainer';
@@ -32,6 +35,14 @@ export default async function PerfilPrestador({ params }) {
 
   const { usuario, servicos, avaliacaoMedia, totalAvaliacoes, totalClientesAtendidos, avaliacoes } = perfil;
 
+  const [visitante, { servicos: idsServicosFavoritados, prestadores: idsPrestadoresFavoritados }] = await Promise.all([
+    getSession(),
+    listarIdsFavoritos(),
+  ]);
+  const favoritosServicoSet = new Set(idsServicosFavoritados);
+  const prestadorFavoritado = idsPrestadoresFavoritados.includes(usuario.id);
+  const souOPrestador = visitante?.id === usuario.id;
+
   const membroDesde = primeiraLetraMaiuscula(
     new Date(usuario.criadoEm).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
   );
@@ -55,6 +66,7 @@ export default async function PerfilPrestador({ params }) {
     avaliacaoMedia: s.avaliacaoMedia,
     totalAvaliacoes: s.totalAvaliacoes,
     proximoHorario: proximosHorarios[s.id] ?? null,
+    favoritoInicial: favoritosServicoSet.has(s.id),
   }));
 
   const primeiroServico = servicosFormatados[0] ?? null;
@@ -109,6 +121,15 @@ export default async function PerfilPrestador({ params }) {
           </div>
 
           <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3">
+            {!souOPrestador && (
+              <FavoritoButton
+                tipo="prestador"
+                alvoId={usuario.id}
+                favoritoInicial={prestadorFavoritado}
+                variant="standalone"
+                className="mx-auto sm:mx-0"
+              />
+            )}
             {usuario.telefone && (
               <Button asChild variant="outline" size="lg">
                 <a href={`tel:${usuario.telefone}`}>

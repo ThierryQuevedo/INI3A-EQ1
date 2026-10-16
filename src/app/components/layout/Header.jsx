@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import HeaderDesktopNav from './HeaderDesktopNav';
 import PerfilDropdown from './MenuPerfilDropdown';
+import NotificacoesDropdown from '@/app/components/features/notificacoes/NotificacoesDropdown';
 import ThemeToggle from '@/app/components/ui/ThemeToggle';
 import logotipo from '../../../public/images/Identidade visual marca ai/logotipo.png';
 
@@ -42,6 +43,7 @@ export default function Header({ usuario }) {
                                 Olá, <span className="text-foreground font-semibold">{usuario.nome}</span>
                             </Link>
 
+                            <NotificacoesDropdown />
                             <PerfilDropdown user={usuario} />
                         </div>
                     ) : (

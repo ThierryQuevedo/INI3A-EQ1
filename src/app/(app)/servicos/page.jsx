@@ -6,6 +6,7 @@ import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
 import ServicosClient from './ServicosClient';
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.actions';
+import { listarIdsFavoritos } from '@/app/actions/favoritos.actions';
 
 export default async function ServicosPage() {
   const dadosBrutos = await db
@@ -35,7 +36,13 @@ export default async function ServicosPage() {
 
   const comEstat = await comEstatisticas(dadosBrutos);
   const proximosHorarios = await calcularProximosHorariosLivres(comEstat.map((s) => s.id));
-  const listaServicos = comEstat.map((s) => ({ ...s, proximoHorario: proximosHorarios[s.id] ?? null }));
+  const { servicos: idsFavoritados } = await listarIdsFavoritos();
+  const favoritosSet = new Set(idsFavoritados);
+  const listaServicos = comEstat.map((s) => ({
+    ...s,
+    proximoHorario: proximosHorarios[s.id] ?? null,
+    favoritoInicial: favoritosSet.has(s.id),
+  }));
 
   return <ServicosClient servicos={listaServicos} categorias={listaCategorias} />;
 }

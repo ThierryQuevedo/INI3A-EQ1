@@ -13,6 +13,8 @@ import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { estatisticasPorServico } from "@/lib/avaliacoes";
+import { listarIdsFavoritos } from "@/app/actions/favoritos.actions";
+import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 import PageContainer from "@/app/components/ui/PageContainer";
 
 export const dynamic = 'force-dynamic';
@@ -57,6 +59,8 @@ export default async function DetalheServico({ params }) {
 
   const dadosDb = resultadoBanco[0];
   const estatisticas = (await estatisticasPorServico([dadosDb.id])).get(dadosDb.id);
+  const { servicos: idsServicosFavoritados } = await listarIdsFavoritos();
+  const favoritoInicial = idsServicosFavoritados.includes(dadosDb.id);
 
   const servico = {
     id: dadosDb.id,
@@ -138,11 +142,19 @@ export default async function DetalheServico({ params }) {
             </div>
           </div>
 
-          <Button asChild variant="accent" size="lg" className="w-full md:w-auto">
-            <Link href={`/agendamentos/novo?servico=${servico.id}`}>
-              <Calendar size={20} aria-hidden="true" /> Agendar horário
-            </Link>
-          </Button>
+          <div className="w-full md:w-auto flex items-center gap-3">
+            <FavoritoButton
+              tipo="servico"
+              alvoId={servico.id}
+              favoritoInicial={favoritoInicial}
+              variant="standalone"
+            />
+            <Button asChild variant="accent" size="lg" className="flex-1 md:flex-initial">
+              <Link href={`/agendamentos/novo?servico=${servico.id}`}>
+                <Calendar size={20} aria-hidden="true" /> Agendar horário
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">

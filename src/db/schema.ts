@@ -105,6 +105,17 @@ export const mensagens = pgTable('mensagens', {
   criadoEm: timestamp('criado_em').defaultNow().notNull(),
 });
 
+export const favoritos = pgTable('favoritos', {
+  id: serial('id').primaryKey(),
+  usuarioId: integer('usuario_id')
+    .notNull()
+    .references(() => usuarios.id, { onDelete: 'cascade' }),
+  // Exatamente um dos dois é preenchido: favorito de serviço ou de prestador.
+  servicoId: integer('servico_id').references(() => servicos.id, { onDelete: 'cascade' }),
+  prestadorId: integer('prestador_id').references(() => usuarios.id, { onDelete: 'cascade' }),
+  criadoEm: timestamp('criado_em').defaultNow().notNull(),
+});
+
 export const notificacoes = pgTable('notificacoes', {
   id: serial('id').primaryKey(),
   usuarioId: integer('usuario_id')

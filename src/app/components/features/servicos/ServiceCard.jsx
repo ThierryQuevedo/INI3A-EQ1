@@ -7,8 +7,13 @@ import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { formatarDistancia } from "@/lib/geo";
 import CategoryIcon, { getCategoryIcon } from "./CategoryIcon";
 import AvailabilityBadge from "./AvailabilityBadge";
+import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 
-/** `interativo=false` renderiza o mesmo card sem o link clicável — usado no preview ao vivo de "Novo serviço". */
+/**
+ * `interativo=false` renderiza o mesmo card sem o link clicável — usado no preview ao vivo de "Novo serviço".
+ * O coração de favoritar só aparece quando `servico.favoritoInicial` vem definido (boolean) — páginas que não
+ * buscam esse dado (home, preview) simplesmente não mostram o botão.
+ */
 export default function ServiceCard({ servico, interativo = true }) {
   const {
     id,
@@ -23,7 +28,9 @@ export default function ServiceCard({ servico, interativo = true }) {
     avaliacaoMedia = 0,
     totalAvaliacoes = 0,
     proximoHorario,
+    favoritoInicial,
   } = servico;
+  const mostrarFavorito = interativo && favoritoInicial !== undefined;
 
   const hrefDetalhe = `/servicos/${slug || id}`;
   const classeConteudo = "flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card rounded-t-2xl";
@@ -31,6 +38,7 @@ export default function ServiceCard({ servico, interativo = true }) {
   const conteudo = (
     <>
       <div className="relative w-full aspect-square overflow-hidden shrink-0">
+        {mostrarFavorito && <FavoritoButton tipo="servico" alvoId={id} favoritoInicial={favoritoInicial} />}
         {urlImagem ? (
           <Image
             className="object-cover transition-transform duration-300 ease-apple group-hover:scale-105"

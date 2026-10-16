@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { User, LogOut, UserRound } from "lucide-react";
+import { User, LogOut, UserRound, Heart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { logout } from "@/app/actions/auth.actions";
@@ -91,6 +91,15 @@ export default function PerfilDropdown({ user }) {
                             <span className="text-body-sm font-semibold">Perfil Público</span>
                         </Link>
                     )}
+                    <Link
+                        href="/favoritos"
+                        role="menuitem"
+                        onClick={() => setAberto(false)}
+                        className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
+                    >
+                        <Heart size={18} className="text-destructive" aria-hidden="true" />
+                        <span className="text-body-sm font-semibold">Favoritos</span>
+                    </Link>
                     <ThemeToggle variant="menuitem" onNavigate={() => setAberto(false)} />
                     <button
                         type="button"
