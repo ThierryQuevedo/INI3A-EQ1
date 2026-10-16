@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { SlidersHorizontal, Check } from "lucide-react";
+import { SlidersHorizontal, Check, MapPin } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import BottomSheet from "@/app/components/ui/BottomSheet";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
@@ -12,6 +12,7 @@ export const FILTROS_PADRAO = {
   precoMax: null,
   avaliacaoMin: 0,
   comHorarioHoje: false,
+  pertoDeMim: false,
   ordenacao: "relevancia",
 };
 
@@ -21,6 +22,7 @@ export function filtrosAtivos(filtros, precoMaximo) {
     (filtros.precoMax != null && filtros.precoMax < precoMaximo) ||
     filtros.avaliacaoMin > 0 ||
     filtros.comHorarioHoje ||
+    filtros.pertoDeMim ||
     filtros.ordenacao !== "relevancia"
   );
 }
@@ -42,10 +44,19 @@ function Pill({ ativo, children, ...props }) {
   );
 }
 
-function CamposFiltro({ filtros, onChange, categorias, precoMaximo }) {
+function CamposFiltro({
+  filtros,
+  onChange,
+  categorias,
+  precoMaximo,
+  statusLocalizacao,
+  onAtivarPertoDeMim,
+  onDesativarPertoDeMim,
+}) {
   const idPreco = useId();
   const idOrdenacao = useId();
   const avaliacoes = [0, 3, 4, 4.5];
+  const localizando = statusLocalizacao === "buscando";
 
   return (
     <div className="space-y-6">
@@ -65,6 +76,29 @@ function CamposFiltro({ filtros, onChange, categorias, precoMaximo }) {
             </Pill>
           ))}
         </div>
+      </div>
+
+      <div>
+        <p className="font-semibold text-body-sm text-foreground mb-2.5">Localização</p>
+        <button
+          type="button"
+          onClick={() => (filtros.pertoDeMim ? onDesativarPertoDeMim() : onAtivarPertoDeMim())}
+          disabled={localizando}
+          className={cn(
+            "w-full flex items-center justify-center gap-2 h-11 rounded-full text-body-sm font-semibold border transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait",
+            filtros.pertoDeMim
+              ? "bg-primary text-primary-foreground border-primary"
+              : "bg-background text-foreground border-border hover:bg-muted"
+          )}
+        >
+          <MapPin size={16} aria-hidden="true" />
+          {localizando ? "Localizando..." : filtros.pertoDeMim ? "Perto de mim ativado" : "Perto de mim"}
+        </button>
+        {statusLocalizacao === "erro" && (
+          <p className="text-caption text-destructive mt-2">
+            Não foi possível acessar sua localização. Verifique a permissão do navegador.
+          </p>
+        )}
       </div>
 
       <div>
@@ -132,9 +166,26 @@ function CamposFiltro({ filtros, onChange, categorias, precoMaximo }) {
 }
 
 /** Sheet no mobile, sidebar fixa no desktop — substitui MenuFiltros.jsx. */
-export default function FilterDrawer({ filtros, onChange, categorias, precoMaximo }) {
+export default function FilterDrawer({
+  filtros,
+  onChange,
+  categorias,
+  precoMaximo,
+  statusLocalizacao,
+  onAtivarPertoDeMim,
+  onDesativarPertoDeMim,
+}) {
   const [abertoMobile, setAbertoMobile] = useState(false);
   const ativo = filtrosAtivos(filtros, precoMaximo);
+  const propsCampos = {
+    filtros,
+    onChange,
+    categorias,
+    precoMaximo,
+    statusLocalizacao,
+    onAtivarPertoDeMim,
+    onDesativarPertoDeMim,
+  };
 
   return (
     <>
@@ -145,7 +196,7 @@ export default function FilterDrawer({ filtros, onChange, categorias, precoMaxim
           {ativo && <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-accent" aria-hidden="true" />}
         </Button>
         <BottomSheet open={abertoMobile} onClose={() => setAbertoMobile(false)} title="Filtros">
-          <CamposFiltro filtros={filtros} onChange={onChange} categorias={categorias} precoMaximo={precoMaximo} />
+          <CamposFiltro {...propsCampos} />
           <div className="flex gap-3 mt-8 pb-2">
             <Button variant="outline" className="flex-1" onClick={() => onChange(FILTROS_PADRAO)}>
               Limpar
@@ -170,7 +221,7 @@ export default function FilterDrawer({ filtros, onChange, categorias, precoMaxim
             </button>
           )}
         </div>
-        <CamposFiltro filtros={filtros} onChange={onChange} categorias={categorias} precoMaximo={precoMaximo} />
+        <CamposFiltro {...propsCampos} />
       </aside>
     </>
   );

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, PackageSearch } from 'lucide-react';
 import { Input } from '@/app/components/ui/InputCatalogo';
@@ -8,6 +8,7 @@ import EmptyState from '@/app/components/ui/EmptyState';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import FilterDrawer, { FILTROS_PADRAO } from '@/app/components/features/servicos/FilterDrawer';
 import { ehHoje } from '@/lib/disponibilidade';
+import { haversineKm } from '@/lib/geo';
 import PageContainer from '@/app/components/ui/PageContainer';
 
 export default function ServicosClient({ servicos = [], categorias = [] }) {
@@ -17,6 +18,29 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
         ...FILTROS_PADRAO,
         categoriaId: searchParams.get('categoria') || '',
     }));
+    const [posicao, setPosicao] = useState(null);
+    const [statusLocalizacao, setStatusLocalizacao] = useState('idle'); // idle | buscando | pronta | erro
+
+    const ativarPertoDeMim = useCallback(() => {
+        if (typeof navigator === 'undefined' || !navigator.geolocation) {
+            setStatusLocalizacao('erro');
+            return;
+        }
+        setStatusLocalizacao('buscando');
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                setPosicao({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+                setStatusLocalizacao('pronta');
+                setFiltros((f) => ({ ...f, pertoDeMim: true }));
+            },
+            () => setStatusLocalizacao('erro'),
+            { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
+        );
+    }, []);
+
+    const desativarPertoDeMim = useCallback(() => {
+        setFiltros((f) => ({ ...f, pertoDeMim: false }));
+    }, []);
 
     const precoMaximo = useMemo(() => {
         const maior = servicos.reduce((max, s) => Math.max(max, Number(s.preco) || 0), 0);
@@ -38,11 +62,27 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
             const correspondePreco = filtros.precoMax == null || Number(servico.preco) <= filtros.precoMax;
             const correspondeAvaliacao = (servico.avaliacaoMedia || 0) >= filtros.avaliacaoMin;
             const correspondeHorario = !filtros.comHorarioHoje || ehHoje(servico.proximoHorario);
+            const correspondeProximidade =
+                !filtros.pertoDeMim || (servico.prestadorLatitude != null && servico.prestadorLongitude != null);
 
-            return correspondeBusca && correspondeCategoria && correspondePreco && correspondeAvaliacao && correspondeHorario;
+            return (
+                correspondeBusca &&
+                correspondeCategoria &&
+                correspondePreco &&
+                correspondeAvaliacao &&
+                correspondeHorario &&
+                correspondeProximidade
+            );
         });
 
-        if (filtros.ordenacao === 'avaliacao') {
+        if (filtros.pertoDeMim && posicao) {
+            resultado = resultado
+                .map((servico) => ({
+                    ...servico,
+                    distanciaKm: haversineKm(posicao.lat, posicao.lng, servico.prestadorLatitude, servico.prestadorLongitude),
+                }))
+                .sort((a, b) => a.distanciaKm - b.distanciaKm);
+        } else if (filtros.ordenacao === 'avaliacao') {
             resultado = [...resultado].sort((a, b) => (b.avaliacaoMedia || 0) - (a.avaliacaoMedia || 0));
         } else if (filtros.ordenacao === 'preco_asc') {
             resultado = [...resultado].sort((a, b) => Number(a.preco) - Number(b.preco));
@@ -51,10 +91,10 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
         }
 
         return resultado;
-    }, [servicos, termoBusca, filtros]);
+    }, [servicos, termoBusca, filtros, posicao]);
 
     return (
-        <PageContainer size="xl" className="py-8 sm:py-10">
+        <PageContainer size="2xl" className="py-8 sm:py-10">
 
                 <div className="mb-6">
                     <h1 className="text-foreground font-bold text-h4">Catálogo de serviços</h1>
@@ -76,7 +116,15 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                 </div>
 
                 <div className="flex max-md:flex-col md:flex-row max-md:gap-6 md:gap-8 items-start">
-                    <FilterDrawer filtros={filtros} onChange={setFiltros} categorias={categorias} precoMaximo={precoMaximo} />
+                    <FilterDrawer
+                        filtros={filtros}
+                        onChange={setFiltros}
+                        categorias={categorias}
+                        precoMaximo={precoMaximo}
+                        statusLocalizacao={statusLocalizacao}
+                        onAtivarPertoDeMim={ativarPertoDeMim}
+                        onDesativarPertoDeMim={desativarPertoDeMim}
+                    />
 
                     <div className="flex-1 min-w-0 w-full">
                         <p className="text-body-sm text-muted-foreground mb-4">
@@ -90,11 +138,13 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                                 description={
                                     servicos.length === 0
                                         ? 'Volte em breve — novos profissionais aparecem aqui assim que se cadastram.'
-                                        : 'Tente ajustar os filtros ou buscar por outro termo.'
+                                        : filtros.pertoDeMim
+                                          ? 'Nenhum profissional com localização cadastrada perto de você ainda.'
+                                          : 'Tente ajustar os filtros ou buscar por outro termo.'
                                 }
                             />
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                                 {servicosFiltrados.map((servico) => (
                                     <ServiceCard key={servico.id} servico={servico} />
                                 ))}

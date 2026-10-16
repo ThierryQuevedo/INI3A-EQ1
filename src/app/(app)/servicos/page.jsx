@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
-import { servicos, usuarios, categorias } from '@/db/schema';
+import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
 import ServicosClient from './ServicosClient';
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.actions';
@@ -21,10 +21,13 @@ export default async function ServicosPage() {
       nomeProfissional: usuarios.nome,
       categoriaId: servicos.categoriaId,
       nomeCategoria: categorias.nome,
+      prestadorLatitude: prestadores.latitude,
+      prestadorLongitude: prestadores.longitude,
     })
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
-    .leftJoin(categorias, eq(servicos.categoriaId, categorias.id));
+    .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
+    .leftJoin(prestadores, eq(prestadores.usuarioId, servicos.prestadorId));
 
   const listaCategorias = await db
     .select({ id: categorias.id, nome: categorias.nome })
