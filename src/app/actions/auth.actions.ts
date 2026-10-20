@@ -95,12 +95,18 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
     const usuario = resultado[0];
 
     if (!usuario) {
-      return { erro: 'E-mail ou senha inválidos.' };
+      return {
+        erro: 'Não existe uma conta com este e-mail.',
+        errosCampos: { email: 'Não existe uma conta com este e-mail.' },
+      };
     }
 
     const senhaValida = await bcrypt.compare(String(senha), usuario.senha);
     if (!senhaValida) {
-      return { erro: 'E-mail ou senha inválidos.' };
+      return {
+        erro: 'Senha incorreta.',
+        errosCampos: { senha: 'Senha incorreta.' },
+      };
     }
 
     await criarSessao(usuario.id);

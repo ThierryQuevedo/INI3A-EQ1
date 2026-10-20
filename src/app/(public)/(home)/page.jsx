@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Form from "next/form";
 import { Search, CalendarDays, Clock, Star } from "lucide-react";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
@@ -67,7 +68,7 @@ export default async function Home() {
           Veja os horários livres na agenda de quem você procura e marque sem sair do app.
         </p>
 
-        <form action="/servicos" method="GET" className="flex items-center gap-2 bg-card border border-border rounded-full shadow-soft px-2 py-2 max-w-xl">
+        <Form action="/servicos/" className="flex items-center gap-2 bg-card border border-border rounded-full shadow-soft px-2 py-2 max-w-xl">
           <Search size={18} className="text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
           <label htmlFor="busca-home" className="sr-only">Buscar por serviço, prestador ou categoria</label>
           <input
@@ -83,7 +84,7 @@ export default async function Home() {
           >
             Buscar
           </button>
-        </form>
+        </Form>
       </section>
 
       {agendamentoProximo && (

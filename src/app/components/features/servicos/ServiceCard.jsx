@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Calendar } from "lucide-react";
+import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
 import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
@@ -122,6 +124,16 @@ export default function ServiceCard({ servico, interativo = true }) {
           <span className="text-caption text-muted-foreground whitespace-nowrap">{formatarDuracao(duracaoEstimada)}</span>
         )}
       </div>
+
+      {interativo && (
+        <div className="px-4 pb-4">
+          <Button asChild variant="accent" size="sm" className="w-full">
+            <Link href={`/agendamentos/novo/?servico=${id}`}>
+              <Calendar size={16} aria-hidden="true" /> Agendar serviço
+            </Link>
+          </Button>
+        </div>
+      )}
     </article>
   );
 }

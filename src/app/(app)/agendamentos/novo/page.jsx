@@ -148,10 +148,13 @@ function AgendarPageInner() {
   useEffect(() => {
     async function verificarSessao() {
       const usuario = await getSession();
-      if (!usuario) router.push('/login');
+      if (!usuario) {
+        const destino = servicoId ? `/agendamentos/novo/?servico=${servicoId}` : '/agendamentos/novo/';
+        router.push(`/api/auth/entrar/?proximo=${encodeURIComponent(destino)}`);
+      }
     }
     verificarSessao();
-  }, [router]);
+  }, [router, servicoId]);
 
   useEffect(() => {
     if (!servicoId) return;

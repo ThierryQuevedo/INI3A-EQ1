@@ -11,6 +11,10 @@ import { ehHoje } from '@/lib/disponibilidade';
 import { haversineKm } from '@/lib/geo';
 import PageContainer from '@/app/components/ui/PageContainer';
 
+function normalizarTexto(valor) {
+    return (valor || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+}
+
 export default function ServicosClient({ servicos = [], categorias = [] }) {
     const searchParams = useSearchParams();
     const [termoBusca, setTermoBusca] = useState(searchParams.get('q') || '');
@@ -48,15 +52,20 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
     }, [servicos]);
 
     const servicosFiltrados = useMemo(() => {
-        const termo = termoBusca.toLowerCase();
+        const termo = normalizarTexto(termoBusca.trim());
 
         let resultado = servicos.filter((servico) => {
-            const nomeServico = servico.nomeServico?.toLowerCase() || '';
-            const nomePrestador = servico.nomeProfissional?.toLowerCase() || '';
-            const nomeCategoria = servico.nomeCategoria?.toLowerCase() || '';
+            const nomeServico = normalizarTexto(servico.nomeServico);
+            const nomePrestador = normalizarTexto(servico.nomeProfissional);
+            const nomeCategoria = normalizarTexto(servico.nomeCategoria);
+            const descricao = normalizarTexto(servico.descricao);
 
             const correspondeBusca =
-                !termo || nomeServico.includes(termo) || nomePrestador.includes(termo) || nomeCategoria.includes(termo);
+                !termo ||
+                nomeServico.includes(termo) ||
+                nomePrestador.includes(termo) ||
+                nomeCategoria.includes(termo) ||
+                descricao.includes(termo);
 
             const correspondeCategoria = !filtros.categoriaId || String(servico.categoriaId) === filtros.categoriaId;
             const correspondePreco = filtros.precoMax == null || Number(servico.preco) <= filtros.precoMax;

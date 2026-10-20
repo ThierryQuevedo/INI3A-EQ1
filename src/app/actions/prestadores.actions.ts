@@ -160,3 +160,23 @@ export async function atualizarEnderecoTextoAction(estadoAnterior: unknown, form
   const enderecoTexto = formData.get('enderecoTexto');
   return atualizarLocalizacaoPrestador({ enderecoTexto: enderecoTexto ? String(enderecoTexto) : null });
 }
+export async function tornarPrestadorAction() {
+  const usuario = await getSession();
+  if (!usuario) {
+    return { erro: 'Não autenticado.' };
+  }
+  if (usuario.tipo === 'prestador') {
+    return { erro: null, sucesso: true };
+  }
+
+  try {
+    await db.update(usuarios).set({ tipo: 'prestador' }).where(eq(usuarios.id, usuario.id));
+    await db.insert(prestadores).values({ usuarioId: usuario.id }).onConflictDoNothing();
+  } catch (error) {
+    console.error('Erro ao virar prestador:', error);
+    return { erro: 'Não foi possível concluir a mudança. Tente novamente.' };
+  }
+
+  revalidatePath('/', 'layout');
+  return { erro: null, sucesso: true };
+}

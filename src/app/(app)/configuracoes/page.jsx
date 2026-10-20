@@ -10,6 +10,7 @@ import { Button } from "@/app/components/ui/button";
 import CampoEditavel from "./CampoEditavel";
 import CampoSenha from "./CampoSenha";
 import LinhaCampo from "./LinhaCampo";
+import BotaoVirarPrestador from "./BotaoVirarPrestador";
 
 export const dynamic = 'force-dynamic';
 
@@ -104,6 +105,18 @@ export default async function PaginaConfiguracoes() {
               valor={TIPO_LABEL[usuario.tipo] || usuario.tipo}
             />
           </div>
+
+          {usuario.tipo === 'cliente' && (
+            <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="max-w-sm">
+                <h2 className="text-h6 font-bold text-foreground tracking-tight">Quer oferecer serviços?</h2>
+                <p className="text-body-sm text-muted-foreground mt-1">
+                  Torne sua conta de prestador para cadastrar serviços e receber agendamentos.
+                </p>
+              </div>
+              <BotaoVirarPrestador />
+            </div>
+          )}
 
           {ehPrestador && (
             <div className="mt-10 pt-6 border-t border-border">

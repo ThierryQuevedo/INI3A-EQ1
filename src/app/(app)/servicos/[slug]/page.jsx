@@ -13,6 +13,7 @@ import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { estatisticasPorServico } from "@/lib/avaliacoes";
+import { getSession } from "@/app/actions/auth.actions";
 import { listarIdsFavoritos } from "@/app/actions/favoritos.actions";
 import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 import PageContainer from "@/app/components/ui/PageContainer";
@@ -83,6 +84,12 @@ export default async function DetalheServico({ params }) {
     }
   };
 
+  const usuarioLogado = await getSession();
+  const destinoAgendar = `/agendamentos/novo/?servico=${servico.id}`;
+  const hrefAgendar = usuarioLogado
+    ? destinoAgendar
+    : `/api/auth/entrar/?proximo=${encodeURIComponent(destinoAgendar)}`;
+
   return (
     <div className="min-h-screen">
 
@@ -150,8 +157,8 @@ export default async function DetalheServico({ params }) {
               variant="standalone"
             />
             <Button asChild variant="accent" size="lg" className="flex-1 md:flex-initial">
-              <Link href={`/agendamentos/novo?servico=${servico.id}`}>
-                <Calendar size={20} aria-hidden="true" /> Agendar horário
+              <Link href={hrefAgendar}>
+                <Calendar size={20} aria-hidden="true" /> Agendar serviço
               </Link>
             </Button>
           </div>
