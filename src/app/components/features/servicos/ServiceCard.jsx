@@ -129,7 +129,7 @@ export default function ServiceCard({ servico, interativo = true }) {
         <div className="px-4 pb-4">
           <Button asChild variant="accent" size="sm" className="w-full">
             <Link href={`/agendamentos/novo/?servico=${id}`}>
-              <Calendar size={16} aria-hidden="true" /> Agendar serviço
+              <Calendar size={16} aria-hidden="true" /> Agendar
             </Link>
           </Button>
         </div>

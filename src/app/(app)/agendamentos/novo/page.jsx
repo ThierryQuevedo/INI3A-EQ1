@@ -394,7 +394,7 @@ function AgendarPageInner() {
   }
 
   return (
-    <main className={`min-h-screen py-8 sm:py-10 ${diaSelecionado && horarioSelecionado ? 'pb-52 sm:pb-56' : ''}`}>
+    <main className={`min-h-screen py-8 sm:py-10 ${diaSelecionado && horarioSelecionado ? 'pb-80 md:pb-56' : ''}`}>
       <PageContainer size="sm">
 
         <div className="mb-6">
@@ -513,8 +513,8 @@ function AgendarPageInner() {
         )}
 
         {diaSelecionado && horarioSelecionado && (
-          <div className="fixed bottom-0 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border shadow-elevated">
-            <div className="max-w-2xl mx-auto p-3 sm:p-5 sm:p-6 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] sm:pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
+          <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom,0px))] md:bottom-0 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border shadow-elevated">
+            <div className="max-w-2xl mx-auto p-3 sm:p-5 sm:p-6 pb-3 md:pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               <h2
                 ref={refConfirmacaoHeading}
                 id="titulo-passo-3"
