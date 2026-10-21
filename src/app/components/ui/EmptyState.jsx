@@ -16,12 +16,12 @@ export default function EmptyState({ icon: Icon, title, description, actionLabel
         )}
       </div>
       {actionLabel && actionHref && (
-        <Button asChild className="mt-2">
+        <Button asChild variant="accent" className="mt-2">
           <Link href={actionHref}>{actionLabel}</Link>
         </Button>
       )}
       {actionLabel && !actionHref && onAction && (
-        <Button onClick={onAction} className="mt-2">
+        <Button onClick={onAction} variant="accent" className="mt-2">
           {actionLabel}
         </Button>
       )}

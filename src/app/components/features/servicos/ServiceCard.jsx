@@ -59,11 +59,11 @@ export default function ServiceCard({ servico, interativo = true }) {
 
         {nomeCategoria && (
           <span
-            className="absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-full truncate max-w-[80%] shadow-soft inline-flex items-center gap-1.5"
+            className="absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-full max-w-[80%] shadow-soft inline-flex items-center gap-1.5 min-w-0"
             title={nomeCategoria}
           >
-            <CategoryIcon nome={nomeCategoria} size={13} />
-            {nomeCategoria}
+            <CategoryIcon nome={nomeCategoria} size={13} className="shrink-0" />
+            <span className="truncate min-w-0">{nomeCategoria}</span>
           </span>
         )}
       </div>
@@ -77,17 +77,19 @@ export default function ServiceCard({ servico, interativo = true }) {
         </p>
 
         <div className="flex items-center gap-1.5 mt-2">
-          <EstrelasNota nota={avaliacaoMedia} tamanho={14} />
           {totalAvaliacoes > 0 ? (
-            <span className="text-body-sm text-muted-foreground font-medium">
-              <span className="sr-only-status">Avaliação: </span>
-              {avaliacaoMedia.toFixed(1)}
-              <span className="sr-only-status">
-                {` de 5, ${totalAvaliacoes} avaliaç${totalAvaliacoes === 1 ? "ão" : "ões"}`}
+            <>
+              <EstrelasNota nota={avaliacaoMedia} tamanho={14} />
+              <span className="text-body-sm text-muted-foreground font-medium">
+                <span className="sr-only-status">Avaliação: </span>
+                {avaliacaoMedia.toFixed(1)}
+                <span className="sr-only-status">
+                  {` de 5, ${totalAvaliacoes} avaliaç${totalAvaliacoes === 1 ? "ão" : "ões"}`}
+                </span>
               </span>
-            </span>
+            </>
           ) : (
-            <span className="text-body-sm text-muted-foreground font-medium">
+            <span className="inline-flex items-center bg-muted text-muted-foreground text-caption font-semibold px-2 py-0.5 rounded-full">
               <span className="sr-only-status">Sem avaliações ainda: </span>Novo
             </span>
           )}
@@ -117,7 +119,7 @@ export default function ServiceCard({ servico, interativo = true }) {
       )}
 
       <div className="mt-auto px-4 pb-4 pt-1 flex items-baseline justify-between gap-2">
-        <span className="text-body-lg font-bold text-primary whitespace-nowrap">
+        <span className="text-body-lg font-bold text-foreground whitespace-nowrap">
           {formatarPreco(preco)}
         </span>
         {duracaoEstimada != null && (
@@ -127,7 +129,7 @@ export default function ServiceCard({ servico, interativo = true }) {
 
       {interativo && (
         <div className="px-4 pb-4">
-          <Button asChild variant="accent" size="sm" className="w-full">
+          <Button asChild variant="outline" size="sm" className="w-full">
             <Link href={`/agendamentos/novo/?servico=${id}`}>
               <Calendar size={16} aria-hidden="true" /> Agendar
             </Link>

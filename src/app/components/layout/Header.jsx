@@ -9,7 +9,7 @@ import logotipo from '../../../public/images/Identidade visual marca ai/logotipo
 
 export default function Header({ usuario }) {
     return (
-        <header className="sticky top-0 z-50 w-full bg-card/95 backdrop-blur-sm border-b border-border h-16 shrink-0 shadow-soft">
+        <header className="sticky top-0 z-50 w-full bg-card border-b border-border h-16 shrink-0 shadow-soft">
             <div className="max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4">
 
                 <Link href="/" className="shrink-0 p-1 rounded-lg hover:opacity-90 transition-opacity">

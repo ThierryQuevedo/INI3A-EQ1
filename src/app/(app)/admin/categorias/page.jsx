@@ -42,7 +42,7 @@ return (
                         required
                         className="flex-1 h-11"
                     />
-                    <Button type="submit">Adicionar</Button>
+                    <Button type="submit" variant="accent">Adicionar</Button>
                 </Card>
             </form>
 

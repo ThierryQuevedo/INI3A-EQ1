@@ -9,7 +9,7 @@ import logotipo from "../../../public/images/Identidade visual marca ai/logotipo
 import Image from "next/image";
 import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from "../../components/Icons/GoogleIcons";
-import PageContainer from "@/app/components/ui/PageContainer";
+import AuthShowcase from "@/app/components/features/auth/AuthShowcase";
 import { Card } from "@/app/components/ui/card";
 import FormField from "@/app/components/ui/FormField";
 import { Input } from "@/app/components/ui/input";
@@ -67,12 +67,18 @@ function LoginForm() {
   };
 
   return (
-    <PageContainer size="sm" className="min-h-screen flex flex-col items-center justify-center py-16">
-      <Link href="/" className="w-56 mb-10">
-        <Image src={logotipo} alt="Marca Aí — página inicial" priority />
-      </Link>
+    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100vh-4rem)]">
+      <AuthShowcase
+        title="Encontre um profissional e agende na hora."
+        className="max-lg:hidden lg:flex"
+      />
 
-      <Card className="w-full shadow-elevated p-8 md:p-12">
+      <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+        <Link href="/" className="w-48 mb-8 lg:hidden">
+          <Image src={logotipo} alt="Marca Aí — página inicial" priority />
+        </Link>
+
+        <Card className="w-full max-w-md shadow-elevated p-8 md:p-10">
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Entrar na conta Marca Aí
         </h1>
@@ -147,8 +153,9 @@ function LoginForm() {
             Ainda não tem uma conta? Cadastre-se
           </Link>
         </div>
-      </Card>
-    </PageContainer>
+        </Card>
+      </div>
+    </div>
   );
 }
 

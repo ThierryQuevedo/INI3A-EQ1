@@ -11,7 +11,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import GoogleIcon from "../../components/Icons/GoogleIcons";
 import { formatarTelefone as mascararTelefone } from "@/lib/formatarTelefone";
 import { Button } from "@/app/components/ui/button";
-import PageContainer from "@/app/components/ui/PageContainer";
+import AuthShowcase from "@/app/components/features/auth/AuthShowcase";
 import { Card } from "@/app/components/ui/card";
 import FormField from "@/app/components/ui/FormField";
 import { Input } from "@/app/components/ui/input";
@@ -88,9 +88,15 @@ export default function CadastrarPage() {
   }
 
   return (
-    <PageContainer size="sm" className="min-h-screen flex flex-col items-center justify-center py-16">
-      <Link href="/" className="w-56 mb-10"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
-      <Card className="w-full shadow-elevated p-8 md:p-12">
+    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100vh-4rem)]">
+      <AuthShowcase
+        title="Cadastre seu horário livre ou encontre um profissional na hora."
+        className="max-lg:hidden lg:flex"
+      />
+
+      <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+        <Link href="/" className="w-48 mb-8 lg:hidden"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
+        <Card className="w-full max-w-md shadow-elevated p-8 md:p-10">
 
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Criar conta Marca Aí
@@ -227,7 +233,8 @@ export default function CadastrarPage() {
           </Link>
         </div>
 
-      </Card>
-    </PageContainer>
+        </Card>
+      </div>
+    </div>
   );
 }

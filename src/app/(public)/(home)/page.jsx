@@ -59,34 +59,55 @@ export default async function Home() {
   const agendamentoProximo = proximoAgendamento?.proximos?.[0] ?? null;
 
   return (
-    <PageContainer size="xl">
-      <section className="pt-10 pb-8">
-        <h1 className="text-h4 sm:text-h3 font-black tracking-tight text-foreground mb-2">
-          Encontre um profissional e agende na hora.
-        </h1>
-        <p className="text-muted-foreground text-body mb-6">
-          Veja os horários livres na agenda de quem você procura e marque sem sair do app.
-        </p>
+    <>
+      <section className="relative overflow-hidden border-b border-border">
+        <div
+          className="absolute inset-0 -z-10"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 15% -20%, color-mix(in srgb, var(--color-primary) 16%, transparent) 0%, transparent 60%), radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, transparent 50%)",
+          }}
+        />
+        <div
+          className="absolute inset-0 -z-10 opacity-[0.35]"
+          style={{
+            backgroundImage: "radial-gradient(color-mix(in srgb, var(--color-foreground) 14%, transparent) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+            maskImage: "linear-gradient(to bottom, black, transparent)",
+          }}
+        />
 
-        <Form action="/servicos/" className="flex items-center gap-2 bg-card border border-border rounded-full shadow-soft px-2 py-2 max-w-xl">
-          <Search size={18} className="text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
-          <label htmlFor="busca-home" className="sr-only">Buscar por serviço, prestador ou categoria</label>
-          <input
-            id="busca-home"
-            type="search"
-            name="q"
-            placeholder="Corte de cabelo, manicure, aula de inglês..."
-            className="flex-1 bg-transparent outline-none text-body placeholder:text-muted-foreground min-w-0"
-          />
-          <button
-            type="submit"
-            className="bg-accent hover:bg-accent-hover text-accent-foreground font-bold px-5 h-11 rounded-full transition-colors duration-200 cursor-pointer shrink-0"
-          >
-            Buscar
-          </button>
-        </Form>
+        <PageContainer size="xl">
+          <div className="pt-10 pb-10 sm:pb-14">
+            <h1 className="text-h4 sm:text-h3 font-black tracking-tight text-foreground mb-2">
+              Encontre um profissional e agende na hora.
+            </h1>
+            <p className="text-muted-foreground text-body mb-6">
+              Veja os horários livres na agenda de quem você procura e marque sem sair do app.
+            </p>
+
+            <Form action="/servicos/" className="flex items-center gap-2 bg-card border border-border rounded-full shadow-soft px-2 py-2 max-w-xl">
+              <Search size={18} className="text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
+              <label htmlFor="busca-home" className="sr-only">Buscar por serviço, prestador ou categoria</label>
+              <input
+                id="busca-home"
+                type="search"
+                name="q"
+                placeholder="Corte de cabelo, manicure, aula de inglês..."
+                className="flex-1 bg-transparent outline-none text-body placeholder:text-muted-foreground min-w-0"
+              />
+              <button
+                type="submit"
+                className="bg-accent hover:bg-accent-hover text-accent-foreground font-bold px-5 h-11 rounded-full transition-colors duration-200 cursor-pointer shrink-0"
+              >
+                Buscar
+              </button>
+            </Form>
+          </div>
+        </PageContainer>
       </section>
 
+      <PageContainer size="xl">
       {agendamentoProximo && (
         <section className="w-full pb-8">
           <Link
@@ -164,6 +185,7 @@ export default async function Home() {
         </div>
         <CatalogoGrid catalogo={catalogoComHorario} />
       </section>
-    </PageContainer>
+      </PageContainer>
+    </>
   );
 }

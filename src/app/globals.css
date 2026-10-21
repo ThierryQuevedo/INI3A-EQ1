@@ -134,15 +134,22 @@
   --text-h1--line-height: 1.05;
 
   /* Radius — generous, Apple-style rounding.
-     Disciplina de uso: rounded-full em elementos interativos
-     (botões, nav, tags); rounded-xl em inputs; rounded-2xl em
-     superfícies/cards. */
+     Disciplina de uso: rounded-full reservado a elementos
+     circulares/ação rápida (chips de categoria, avatar, botão
+     só-ícone); rounded-xl em botões de texto e inputs; rounded-2xl
+     em superfícies/cards. Pílula em tudo lê como genérico — só usa
+     onde o formato circular faz sentido de verdade. */
   --radius-sm: 0.5rem;
   --radius-md: 0.75rem;
   --radius-lg: 1rem;
   --radius-xl: 1.5rem;
   --radius-2xl: 2rem;
   --radius-full: 9999px;
+
+  /* Spacing — múltiplos de 8px. 2 (micro, ícone↔texto) · 4 (campo
+     interno) · 6 (padding de card pequeno) · 8 (padding de card/
+     componente) · 12 (padding de card grande) · 16/24 (entre
+     blocos dentro de uma seção) · 32 (entre seções de uma página). */
 
   /* Shadows — soft, low-opacity, large blur (Apple elevation).
      Disciplina de uso: shadow-soft em repouso; shadow-card só em
@@ -172,12 +179,15 @@
   --color-background: var(--color-tcc-azul-950);
   --color-foreground: var(--color-tcc-neutro-100);
 
-  --color-card: var(--color-tcc-azul-900);
+  /* azul-800 (não azul-900) de propósito: precisa de um degrau real
+     contra o fundo azul-950 para o card não "sumir" no fundo — azul-900
+     ficava perto demais em luminância. */
+  --color-card: var(--color-tcc-azul-800);
   --color-card-foreground: var(--color-tcc-neutro-100);
-  --color-surface: var(--color-tcc-azul-900);
+  --color-surface: var(--color-tcc-azul-800);
   --color-surface-foreground: var(--color-tcc-neutro-100);
 
-  --color-popover: var(--color-tcc-azul-900);
+  --color-popover: var(--color-tcc-azul-800);
   --color-popover-foreground: var(--color-tcc-neutro-100);
 
   --color-primary: var(--color-tcc-azul-400);

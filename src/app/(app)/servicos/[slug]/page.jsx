@@ -10,6 +10,7 @@ import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
 import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
 import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
+import { getCategoryIcon } from "@/app/components/features/servicos/CategoryIcon";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { estatisticasPorServico } from "@/lib/avaliacoes";
@@ -94,7 +95,7 @@ export default async function DetalheServico({ params }) {
     <div className="min-h-screen">
 
       <div className="relative h-52 sm:h-60 w-full bg-muted overflow-hidden">
-        <PlaceholderImage className="absolute inset-0" />
+        <PlaceholderImage className="absolute inset-0" icon={getCategoryIcon(servico.categoria)} label={servico.categoria || "Marca Aí"} />
         <div className="absolute top-6 left-6 z-20">
           <BotaoVoltar fallbackHref="/servicos" />
         </div>
@@ -109,7 +110,7 @@ export default async function DetalheServico({ params }) {
               {servico.urlImagem ? (
                 <Image src={servico.urlImagem} alt={servico.nome} fill className="object-cover" />
               ) : (
-                <PlaceholderImage className="absolute inset-0" />
+                <PlaceholderImage className="absolute inset-0" icon={getCategoryIcon(servico.categoria)} label={servico.categoria ? `Sem foto — ${servico.categoria}` : "Sem foto"} />
               )}
             </div>
 
@@ -140,10 +141,7 @@ export default async function DetalheServico({ params }) {
                     </span>
                   </>
                 ) : (
-                  <>
-                    <EstrelasNota nota={0} tamanho={14} />
-                    <span className="text-caption text-muted-foreground">Sem avaliações ainda</span>
-                  </>
+                  <span className="text-caption text-muted-foreground font-semibold">Serviço novo — sem avaliações ainda</span>
                 )}
               </div>
             </div>
