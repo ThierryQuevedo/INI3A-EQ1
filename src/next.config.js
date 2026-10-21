@@ -22,6 +22,12 @@ const nextConfig = {
       { protocol: 'https', hostname: 'images.unsplash.com', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'utfs.io', port: '', pathname: '/**' },
       { protocol: 'https', hostname: 'yexqwi4vi7.ufs.sh', port: '', pathname: '/**' },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
     ],
   },
   reactCompiler: true,
