@@ -221,10 +221,10 @@ export default function CadastrarPage() {
         </form>
 
         <Button asChild variant="outline" size="lg" className="w-full mt-4">
-          <Link href="/api/auth/google">
+          <a href="/26-marcaai/api/auth/google">
             <GoogleIcon size={20} />
             <span>Entrar com Google</span>
-          </Link>
+          </a>
         </Button>
 
         <div className="text-center mt-6">
