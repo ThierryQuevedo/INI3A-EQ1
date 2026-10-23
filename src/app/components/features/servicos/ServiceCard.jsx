@@ -11,11 +11,6 @@ import CategoryIcon, { getCategoryIcon } from "./CategoryIcon";
 import AvailabilityBadge from "./AvailabilityBadge";
 import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 
-/**
- * `interativo=false` renderiza o mesmo card sem o link clicável — usado no preview ao vivo de "Novo serviço".
- * O coração de favoritar só aparece quando `servico.favoritoInicial` vem definido (boolean) — páginas que não
- * buscam esse dado (home, preview) simplesmente não mostram o botão.
- */
 export default function ServiceCard({ servico, interativo = true }) {
   const {
     id,
