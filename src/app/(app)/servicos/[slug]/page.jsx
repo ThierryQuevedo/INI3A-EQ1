@@ -1,11 +1,11 @@
-import { Calendar, Phone, Mail, Award, Clock3 } from 'lucide-react';
+import { Calendar, Phone, Mail, Award, Clock3, Star, ChevronRight } from 'lucide-react';
 import Image from "next/image";
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { db } from '@/db';
 import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
 import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
@@ -13,11 +13,13 @@ import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
 import { getCategoryIcon } from "@/app/components/features/servicos/CategoryIcon";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
-import { estatisticasPorServico } from "@/lib/avaliacoes";
+import { estatisticasPorServico, avaliacoesPorServico } from "@/lib/avaliacoes";
 import { getSession } from "@/app/actions/auth.actions";
 import { listarIdsFavoritos } from "@/app/actions/favoritos.actions";
 import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 import PageContainer from "@/app/components/ui/PageContainer";
+
+const PREVIA_AVALIACOES = 3;
 
 export const dynamic = 'force-dynamic';
 
@@ -53,7 +55,8 @@ export default async function DetalheServico({ params }) {
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(prestadores, eq(servicos.prestadorId, prestadores.usuarioId))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(eq(servicos.slug, slug));
+    .where(eq(servicos.slug, slug))
+    .orderBy(asc(servicos.id));
 
   if (!resultadoBanco || resultadoBanco.length === 0) {
    return notFound();
@@ -63,6 +66,7 @@ export default async function DetalheServico({ params }) {
   const estatisticas = (await estatisticasPorServico([dadosDb.id])).get(dadosDb.id);
   const { servicos: idsServicosFavoritados } = await listarIdsFavoritos();
   const favoritoInicial = idsServicosFavoritados.includes(dadosDb.id);
+  const previaAvaliacoes = await avaliacoesPorServico(dadosDb.id, { limite: PREVIA_AVALIACOES });
 
   const servico = {
     id: dadosDb.id,
@@ -194,6 +198,49 @@ export default async function DetalheServico({ params }) {
                   <p className="text-h6 font-bold text-foreground">{formatarDuracao(servico.duracaoEstimada)}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="bg-card border border-border p-6 rounded-2xl shadow-soft">
+              <div className="flex items-center justify-between gap-2 border-b border-border pb-3 mb-4">
+                <h2 className="text-h6 font-bold text-foreground flex items-center gap-2">
+                  <Star size={20} className="text-primary" aria-hidden="true" /> Avaliações
+                </h2>
+                {servico.totalAvaliacoes > 0 && (
+                  <Link
+                    href={`/servicos/${slug}/avaliacoes`}
+                    className="text-body-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0"
+                  >
+                    Ver todas <ChevronRight size={16} aria-hidden="true" />
+                  </Link>
+                )}
+              </div>
+
+              {previaAvaliacoes.length === 0 ? (
+                <p className="text-muted-foreground">Este serviço ainda não recebeu avaliações.</p>
+              ) : (
+                <div className="space-y-4">
+                  {previaAvaliacoes.map((av) => (
+                    <div key={av.id} className="flex gap-4">
+                      <div className="relative size-11 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center">
+                        {av.clienteImagem ? (
+                          <Image src={av.clienteImagem} alt={av.clienteNome} fill className="object-cover" />
+                        ) : (
+                          <span className="text-body-sm font-bold text-muted-foreground">
+                            {av.clienteNome?.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <p className="font-bold text-body-sm text-foreground">{av.clienteNome}</p>
+                          <EstrelasNota nota={av.nota || 0} tamanho={13} />
+                        </div>
+                        {av.comentario && <p className="text-body-sm text-muted-foreground mt-1">{av.comentario}</p>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,4 +1,4 @@
-import { and, avg, count, eq, inArray, isNotNull } from 'drizzle-orm';
+import { and, avg, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { db } from '@/db';
 import { agendamentos, avaliacoes, servicos, usuarios } from '@/db/schema';
 
@@ -76,6 +76,32 @@ export async function estatisticasPorServico(servicoIds) {
   return new Map(
     linhas.map((l) => [l.servicoId, { media: Number(l.media) || 0, total: Number(l.total) || 0 }])
   );
+}
+
+export async function avaliacoesPorServico(servicoId, { limite } = {}) {
+  const id = Number(servicoId);
+  if (!Number.isInteger(id) || id <= 0) return [];
+
+  let consulta = db
+    .select({
+      id: avaliacoes.id,
+      nota: avaliacoes.notaParaPrestador,
+      comentario: avaliacoes.comentarioPrestador,
+      dataHora: agendamentos.dataHora,
+      clienteNome: usuarios.nome,
+      clienteImagem: usuarios.urlImagem,
+    })
+    .from(avaliacoes)
+    .innerJoin(agendamentos, eq(avaliacoes.agendamentoId, agendamentos.id))
+    .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
+    .where(and(eq(agendamentos.servicoId, id), isNotNull(avaliacoes.notaParaPrestador)))
+    .orderBy(desc(agendamentos.dataHora));
+
+  if (Number.isInteger(limite) && limite > 0) {
+    consulta = consulta.limit(limite);
+  }
+
+  return consulta;
 }
 
 export async function comEstatisticas(lista) {
