@@ -305,9 +305,9 @@ export default function DisponibilidadePage() {
     <PageContainer size="lg" className="py-8">
       <Skeleton className="h-9 w-64 mb-2" />
       <Skeleton className="h-4 w-80 mb-6" />
-      <Skeleton className="h-16 rounded-2xl mb-4" />
+      <Skeleton className="h-16 rounded-xl mb-4" />
       {Array.from({ length: 7 }).map((_, i) => (
-        <Skeleton key={i} className="h-16 rounded-2xl mb-3" />
+        <Skeleton key={i} className="h-16 rounded-xl mb-3" />
       ))}
     </PageContainer>
   );
@@ -342,7 +342,7 @@ export default function DisponibilidadePage() {
       <div className="mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors duration-fast cursor-pointer"
+          className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-lg text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
         >
           <ArrowLeft size={16} aria-hidden="true" />
           Voltar
@@ -354,7 +354,7 @@ export default function DisponibilidadePage() {
       </div>
 
       {erro && (
-        <div role="alert" className="mb-4 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm font-semibold rounded-xl px-4 py-3 shadow-soft">{erro}</div>
+        <div role="alert" className="mb-4 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm font-semibold rounded-lg px-4 py-3 shadow-soft">{erro}</div>
       )}
 
       {/* Seletor de serviço — cada serviço tem sua própria agenda */}
@@ -370,10 +370,10 @@ export default function DisponibilidadePage() {
                 key={s.id}
                 onClick={() => setServicoSelecionadoId(s.id)}
                 aria-pressed={ativo}
-                className={`px-4 h-10 rounded-full text-body-sm font-bold transition-all duration-fast border-2 cursor-pointer ${
+                className={`px-4 h-10 rounded-lg text-body-sm font-bold transition border-2 cursor-pointer ${
                   ativo
                     ? 'bg-primary border-primary text-primary-foreground shadow-soft'
-                    : 'bg-background border-transparent text-foreground hover:border-primary/30'
+                    : 'bg-muted border-transparent text-foreground hover:border-primary/30'
                 }`}
               >
                 {s.nome}
@@ -386,7 +386,7 @@ export default function DisponibilidadePage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-2xl" />
+            <Skeleton key={i} className="h-16 rounded-xl" />
           ))}
         </div>
       ) : (

@@ -29,7 +29,7 @@ export default function Header({ usuario }) {
                             {usuario.tipo === "prestador" && (
                                 <Link
                                     href="/dashboard"
-                                    className="max-md:hidden md:flex items-center gap-2 text-body-sm font-semibold bg-secondary hover:bg-secondary/70 text-secondary-foreground px-4 h-11 rounded-full transition-colors duration-200"
+                                    className="max-md:hidden md:flex items-center gap-2 text-body-sm font-semibold bg-secondary hover:bg-secondary/70 text-secondary-foreground px-4 h-11 rounded-lg transition-colors"
                                 >
                                     <LayoutDashboard size={16} aria-hidden="true" />
                                     Painel
@@ -49,12 +49,12 @@ export default function Header({ usuario }) {
                     ) : (
                         <div className="flex items-center gap-1 sm:gap-3">
                             <ThemeToggle className="max-sm:hidden" />
-                            <Link href="/login" className="text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 h-11 inline-flex items-center rounded-full">
+                            <Link href="/login" className="text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 h-11 inline-flex items-center rounded-lg">
                                 Entrar
                             </Link>
                             <Link
                                 href="/cadastro"
-                                className="text-body-sm font-bold bg-accent hover:bg-accent-hover text-accent-foreground px-4 h-11 inline-flex items-center rounded-full transition-all duration-200"
+                                className="text-body-sm font-bold bg-accent hover:bg-accent-hover text-accent-foreground px-4 h-11 inline-flex items-center rounded-lg transition"
                             >
                                 Criar Conta
                             </Link>

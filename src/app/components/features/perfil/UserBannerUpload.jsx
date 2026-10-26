@@ -172,7 +172,7 @@ export default function UserBannerUpload({
         <div
           role="status"
           aria-live="polite"
-          className={`absolute top-3 right-3 z-30 max-w-sm flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-elevated border text-body-sm transition-all duration-300 animate-in fade-in slide-in-from-top-2 ${
+          className={`absolute top-3 right-3 z-30 max-w-sm flex items-center gap-2.5 px-4 py-2.5 rounded-xl shadow-elevated border text-body-sm transition ${
             toast.tipo === "sucesso"
               ? "bg-card text-foreground border-success/30 shadow-success/10"
               : "bg-card text-foreground border-destructive/30 dark:border-destructive/40 shadow-destructive/10"
@@ -209,7 +209,7 @@ export default function UserBannerUpload({
           }
         }}
         aria-label="Capa do perfil. Clique ou arraste para alterar"
-        className={`w-full h-44 sm:h-52 md:h-60 rounded-3xl overflow-hidden relative group cursor-pointer border transition-all duration-200 select-none ${
+        className={`w-full h-44 sm:h-52 md:h-60 rounded-2xl overflow-hidden relative group cursor-pointer border transition select-none ${
           isDragging
             ? "border-primary ring-4 ring-primary/20 bg-primary/5 scale-[1.005]"
             : "border-border hover:border-primary/50 bg-muted/40"
@@ -220,13 +220,13 @@ export default function UserBannerUpload({
           <img
             src={imagemExibida}
             alt="Capa do perfil"
-            className={`w-full h-full object-cover transition-opacity duration-300 ${
+            className={`w-full h-full object-cover transition-opacity ${
               isUploading ? "opacity-60" : "opacity-100"
             }`}
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-card/80 to-muted/80">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-200">
+            <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
               <ImageIcon size={28} aria-hidden="true" />
             </div>
             <p className="font-medium text-foreground text-body-sm">
@@ -239,7 +239,7 @@ export default function UserBannerUpload({
         )}
 
         {isDragging && (
-          <div className="absolute inset-0 bg-primary/90 text-primary-foreground backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-20 transition-all">
+          <div className="absolute inset-0 bg-primary/90 text-primary-foreground backdrop-blur-sm flex flex-col items-center justify-center gap-2 z-20 transition">
             <UploadCloud size={40} className="animate-bounce" aria-hidden="true" />
             <p className="font-bold text-body-lg">Solte a foto aqui para definir a capa</p>
             <span className="text-caption opacity-90">PNG, JPG ou WEBP</span>
@@ -263,7 +263,7 @@ export default function UserBannerUpload({
               onClick={handleRemoverCapa}
               title="Remover capa"
               aria-label="Remover capa do perfil"
-              className="px-3 py-2 rounded-xl bg-black/60 hover:bg-destructive text-white hover:text-destructive-foreground backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer"
+              className="px-3 py-2 rounded-lg bg-black/60 hover:bg-destructive text-white hover:text-destructive-foreground backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition shadow-md active:scale-95 cursor-pointer"
             >
               <Trash2 size={15} aria-hidden="true" />
               <span className="max-sm:hidden sm:inline">Remover</span>
@@ -275,7 +275,7 @@ export default function UserBannerUpload({
             onClick={abrirSeletor}
             title="Alterar capa"
             aria-label="Alterar capa do perfil"
-            className="px-3.5 py-2 rounded-xl bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition-all shadow-md active:scale-95 cursor-pointer"
+            className="px-3.5 py-2 rounded-lg bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition shadow-md active:scale-95 cursor-pointer"
           >
             <Camera size={16} aria-hidden="true" />
             <span>{imagemExibida ? "Alterar capa" : "Adicionar capa"}</span>

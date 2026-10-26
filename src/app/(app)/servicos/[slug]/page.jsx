@@ -1,5 +1,4 @@
-import { Calendar, Phone, Mail, Award, Clock3, Star, ChevronRight } from 'lucide-react';
-import Image from "next/image";
+import { Calendar, Phone, Mail, Clock3, Star, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -9,8 +8,11 @@ import { asc, eq } from 'drizzle-orm';
 import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
 import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
-import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
-import { getCategoryIcon } from "@/app/components/features/servicos/CategoryIcon";
+import Avatar from "@/app/components/ui/Avatar";
+import { Badge } from "@/app/components/ui/badge";
+import { Card } from "@/app/components/ui/card";
+import FotoServico from "@/app/components/features/servicos/FotoServico";
+import CategoryIcon from "@/app/components/features/servicos/CategoryIcon";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { formatarDuracao } from "@/app/components/ui/DurationTag";
 import { estatisticasPorServico, avaliacoesPorServico } from "@/lib/avaliacoes";
@@ -95,193 +97,182 @@ export default async function DetalheServico({ params }) {
     ? destinoAgendar
     : `/api/auth/entrar/?proximo=${encodeURIComponent(destinoAgendar)}`;
 
+  const ehDono = usuarioLogado?.id === servico.prestadorId;
+
   return (
-    <div className="min-h-screen">
+    <PageContainer size="lg" className="py-6 sm:py-8">
+      <BotaoVoltar fallbackHref="/servicos" className="mb-4" />
 
-      <div className="relative h-52 sm:h-60 w-full bg-muted overflow-hidden">
-        <PlaceholderImage className="absolute inset-0" icon={getCategoryIcon(servico.categoria)} label={servico.categoria || "Marca Aí"} />
-        <div className="absolute top-6 left-6 z-20">
-          <BotaoVoltar fallbackHref="/servicos" />
+      {/* Cabeçalho: foto + identidade do serviço numa faixa só, sem card nem
+          banner placeholder — a informação principal fica na primeira dobra. */}
+      <header className="flex items-start gap-4 sm:gap-6">
+        <div className="w-28 sm:w-44 lg:w-52 shrink-0">
+          <FotoServico
+            servicoId={servico.id}
+            urlImagem={servico.urlImagem}
+            nome={servico.nome}
+            categoria={servico.categoria}
+            podeEditar={ehDono}
+          />
         </div>
-      </div>
 
-      <PageContainer size="lg" className="-mt-16 relative z-10 pb-20">
+        <div className="min-w-0 flex-1 pt-1">
+          {servico.categoria && (
+            <Badge variant="secundario" size="sm" className="mb-2">
+              <CategoryIcon nome={servico.categoria} size={13} />
+              {servico.categoria}
+            </Badge>
+          )}
+          <h1 className="text-h5 sm:text-h4 font-bold text-foreground break-words">{servico.nome}</h1>
+          <p className="text-body-sm text-muted-foreground mt-1">
+            por{' '}
+            <Link
+              href={`/prestador/${servico.prestadorSlug}`}
+              className="font-semibold text-foreground underline underline-offset-4 decoration-border hover:decoration-foreground"
+            >
+              {servico.prestador.nome}
+            </Link>
+          </p>
 
-        <div className="flex flex-col items-center text-center md:text-left md:items-end md:flex-row md:justify-between bg-card border border-border p-6 rounded-2xl shadow-elevated gap-6">
-          <div className="flex flex-col items-center md:flex-row gap-6">
-
-            <div className="relative size-28 sm:size-32 rounded-2xl overflow-hidden border-4 border-background shadow-md bg-muted shrink-0">
-              {servico.urlImagem ? (
-                <Image src={servico.urlImagem} alt={servico.nome} fill className="object-cover" />
-              ) : (
-                <PlaceholderImage className="absolute inset-0" icon={getCategoryIcon(servico.categoria)} label={servico.categoria ? `Sem foto — ${servico.categoria}` : "Sem foto"} />
-              )}
-            </div>
-
-            <div className="flex flex-col justify-center">
-              {servico.categoria && (
-                <span className="text-caption font-bold text-primary mb-1">{servico.categoria}</span>
-              )}
-              <h1 className="text-h4 font-extrabold tracking-tight text-foreground mb-2">
-                {servico.nome}
-              </h1>
-              <p className="text-muted-foreground font-medium mb-3">
-                Por:{' '}
-                <Link
-                  href={`/prestador/${servico.prestadorSlug}`}
-                  className="font-bold underline text-foreground hover:text-primary transition-colors"
+          <div className="flex items-center gap-2 mt-3 flex-wrap">
+            {servico.totalAvaliacoes > 0 ? (
+              <>
+                <span className="text-body-sm font-bold text-foreground">{servico.avaliacaoMedia.toFixed(1)}</span>
+                <EstrelasNota nota={servico.avaliacaoMedia} tamanho={14} />
+                <a
+                  href="#avaliacoes"
+                  className="text-body-sm text-muted-foreground hover:text-foreground underline-offset-4 hover:underline"
+                  aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, ${rotuloAvaliacoes(servico.totalAvaliacoes)}`}
                 >
-                  {servico.prestador.nome}
-                </Link>
-              </p>
-
-              <div className="bg-muted w-fit mx-auto md:mx-0 px-4 py-1.5 rounded-full flex items-center gap-2">
-                {servico.totalAvaliacoes > 0 ? (
-                  <>
-                    <span className="text-body-sm font-bold text-foreground">{servico.avaliacaoMedia.toFixed(1)}</span>
-                    <EstrelasNota nota={servico.avaliacaoMedia} tamanho={14} />
-                    <span className="text-caption text-muted-foreground" role="img" aria-label={`Avaliação ${servico.avaliacaoMedia.toFixed(1)} de 5, ${rotuloAvaliacoes(servico.totalAvaliacoes)}`}>
-                      ({rotuloAvaliacoes(servico.totalAvaliacoes)})
-                    </span>
-                  </>
-                ) : (
-                  <span className="text-caption text-muted-foreground font-semibold">Serviço novo — sem avaliações ainda</span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="w-full md:w-auto flex items-center gap-3">
-            <FavoritoButton
-              tipo="servico"
-              alvoId={servico.id}
-              favoritoInicial={favoritoInicial}
-              variant="standalone"
-            />
-            <Button asChild variant="accent" size="lg" className="flex-1 md:flex-initial">
-              <Link href={hrefAgendar}>
-                <Calendar size={20} aria-hidden="true" /> Agendar serviço
-              </Link>
-            </Button>
+                  ({rotuloAvaliacoes(servico.totalAvaliacoes)})
+                </a>
+              </>
+            ) : (
+              <Badge variant="neutro" size="sm">Novo · sem avaliações</Badge>
+            )}
           </div>
         </div>
+      </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
-
-          <div className="md:col-span-2 space-y-6">
-            {servico.descricao && (
-              <div className="bg-card border border-border p-8 rounded-2xl shadow-soft">
-                <h2 className="text-h6 font-bold text-foreground border-b border-border pb-3 mb-4 flex items-center gap-2">
-                  <Award size={20} className="text-primary" aria-hidden="true" /> Detalhes do serviço
-                </h2>
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{servico.descricao}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_20rem] gap-6 lg:gap-8 mt-8 items-start">
+        {/* Coluna lateral: no mobile sobe para logo após o cabeçalho, para o
+            "Agendar" ficar visível sem rolar; no desktop acompanha a rolagem. */}
+        <aside className="order-first lg:order-none lg:col-start-2 lg:row-start-1 lg:sticky lg:top-20 space-y-4">
+          <Card padding="sm" className="sm:p-5">
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <p className="text-caption text-muted-foreground">Valor</p>
+                <p className="text-h5 font-bold text-foreground leading-tight">{formatarPreco(servico.preco)}</p>
               </div>
+              <p className="inline-flex items-center gap-1.5 text-body-sm text-muted-foreground pb-0.5">
+                <Clock3 size={16} className="shrink-0" aria-hidden="true" />
+                {formatarDuracao(servico.duracaoEstimada)}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 mt-4">
+              <Button asChild variant="accent" size="lg" className="flex-1 px-4">
+                <Link href={hrefAgendar}>
+                  <Calendar aria-hidden="true" /> Agendar serviço
+                </Link>
+              </Button>
+              <FavoritoButton
+                tipo="servico"
+                alvoId={servico.id}
+                favoritoInicial={favoritoInicial}
+                variant="standalone"
+              />
+            </div>
+          </Card>
+
+          <Card padding="sm" className="sm:p-5">
+            <div className="flex items-center gap-3">
+              <Avatar nome={servico.prestador.nome} urlImagem={servico.prestador.urlImagem} />
+              <div className="min-w-0">
+                <p className="text-caption text-muted-foreground">Profissional</p>
+                <p className="text-body font-semibold text-foreground truncate">{servico.prestador.nome}</p>
+              </div>
+            </div>
+
+            {servico.prestador.biografia && (
+              <p className="text-body-sm text-muted-foreground leading-relaxed mt-3 line-clamp-4">{servico.prestador.biografia}</p>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-card border border-border p-5 rounded-2xl flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-xl text-primary">
-                  <span className="text-h6 font-bold leading-none">R$</span>
-                </div>
-                <div>
-                  <p className="text-caption text-muted-foreground font-medium">Valor do serviço</p>
-                  <p className="text-h6 font-bold text-foreground">{formatarPreco(servico.preco)}</p>
-                </div>
-              </div>
-
-              <div className="bg-card border border-border p-5 rounded-2xl flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-xl text-primary">
-                  <Clock3 size={24} aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="text-caption text-muted-foreground font-medium">Tempo estimado</p>
-                  <p className="text-h6 font-bold text-foreground">{formatarDuracao(servico.duracaoEstimada)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-card border border-border p-6 rounded-2xl shadow-soft">
-              <div className="flex items-center justify-between gap-2 border-b border-border pb-3 mb-4">
-                <h2 className="text-h6 font-bold text-foreground flex items-center gap-2">
-                  <Star size={20} className="text-primary" aria-hidden="true" /> Avaliações
-                </h2>
-                {servico.totalAvaliacoes > 0 && (
-                  <Link
-                    href={`/servicos/${slug}/avaliacoes`}
-                    className="text-body-sm font-bold text-primary hover:underline flex items-center gap-1 shrink-0"
-                  >
-                    Ver todas <ChevronRight size={16} aria-hidden="true" />
-                  </Link>
+            {(servico.prestador.telefone || servico.prestador.email) && (
+              <ul className="mt-3 space-y-1">
+                {servico.prestador.telefone && (
+                  <li>
+                    <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-2.5 h-9 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
+                      <Phone size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
+                      <span className="sr-only">Telefone: </span>
+                      <span className="truncate">{servico.prestador.telefone}</span>
+                    </a>
+                  </li>
                 )}
-              </div>
+                {servico.prestador.email && (
+                  <li>
+                    <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-2.5 h-9 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
+                      <Mail size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
+                      <span className="sr-only">E-mail: </span>
+                      <span className="truncate">{servico.prestador.email}</span>
+                    </a>
+                  </li>
+                )}
+              </ul>
+            )}
 
-              {previaAvaliacoes.length === 0 ? (
-                <p className="text-muted-foreground">Este serviço ainda não recebeu avaliações.</p>
-              ) : (
-                <div className="space-y-4">
-                  {previaAvaliacoes.map((av) => (
-                    <div key={av.id} className="flex gap-4">
-                      <div className="relative size-11 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center">
-                        {av.clienteImagem ? (
-                          <Image src={av.clienteImagem} alt={av.clienteNome} fill className="object-cover" />
-                        ) : (
-                          <span className="text-body-sm font-bold text-muted-foreground">
-                            {av.clienteNome?.charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <p className="font-bold text-body-sm text-foreground">{av.clienteNome}</p>
-                          <EstrelasNota nota={av.nota || 0} tamanho={13} />
-                        </div>
-                        {av.comentario && <p className="text-body-sm text-muted-foreground mt-1">{av.comentario}</p>}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+            <Button asChild variant="outline" size="sm" className="w-full mt-4">
+              <Link href={`/prestador/${servico.prestadorSlug}`}>Ver perfil e outros serviços</Link>
+            </Button>
+          </Card>
+        </aside>
 
-          <div className="space-y-6">
-            <div className="bg-card border border-border p-6 rounded-2xl shadow-soft">
-              <h2 className="text-body-lg font-bold text-foreground border-b border-border pb-3 mb-4">
-                Sobre o profissional
+        <div className="lg:col-start-1 lg:row-start-1 space-y-6 min-w-0">
+          <Card>
+            <h2 className="text-body-lg font-bold text-foreground mb-2">Sobre o serviço</h2>
+            {servico.descricao ? (
+              <p className="text-body text-muted-foreground leading-relaxed whitespace-pre-line">{servico.descricao}</p>
+            ) : (
+              <p className="text-body-sm text-muted-foreground">O profissional ainda não adicionou uma descrição.</p>
+            )}
+          </Card>
+
+          <Card id="avaliacoes" className="scroll-mt-20">
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <h2 className="text-body-lg font-bold text-foreground flex items-center gap-2">
+                <Star size={18} className="shrink-0 text-rating" aria-hidden="true" /> Avaliações
               </h2>
-              {servico.prestador.biografia && (
-                <p className="text-body-sm text-muted-foreground leading-relaxed mb-6">{servico.prestador.biografia}</p>
-              )}
-
-              <Button asChild variant="outline" className="w-full mb-6">
-                <Link href={`/prestador/${servico.prestadorSlug}`}>Ver perfil e outros serviços</Link>
-              </Button>
-
-              {(servico.prestador.telefone || servico.prestador.email) && (
-                <>
-                  <h3 className="text-caption font-bold text-muted-foreground mb-3">Canais de contato</h3>
-                  <div className="space-y-3">
-                    {servico.prestador.telefone && (
-                      <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-3 text-body-sm text-foreground hover:text-primary transition-colors p-3 rounded-xl bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                        <Phone size={16} className="text-primary shrink-0" aria-hidden="true" />
-                        <span>{servico.prestador.telefone}</span>
-                      </a>
-                    )}
-                    {servico.prestador.email && (
-                      <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-3 text-body-sm text-foreground hover:text-primary transition-colors p-3 rounded-xl bg-muted overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                        <Mail size={16} className="text-primary shrink-0" aria-hidden="true" />
-                        <span className="truncate">{servico.prestador.email}</span>
-                      </a>
-                    )}
-                  </div>
-                </>
+              {servico.totalAvaliacoes > PREVIA_AVALIACOES && (
+                <Link
+                  href={`/servicos/${slug}/avaliacoes`}
+                  className="text-body-sm font-semibold text-primary hover:underline underline-offset-4 inline-flex items-center gap-0.5 shrink-0"
+                >
+                  Ver todas <ChevronRight size={16} aria-hidden="true" />
+                </Link>
               )}
             </div>
-          </div>
 
+            {previaAvaliacoes.length === 0 ? (
+              <p className="text-body-sm text-muted-foreground">Este serviço ainda não recebeu avaliações.</p>
+            ) : (
+              <ul className="divide-y divide-border">
+                {previaAvaliacoes.map((av) => (
+                  <li key={av.id} className="flex gap-3 py-3 first:pt-0 last:pb-0">
+                    <Avatar nome={av.clienteNome} urlImagem={av.clienteImagem} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 flex-wrap">
+                        <p className="font-semibold text-body-sm text-foreground">{av.clienteNome}</p>
+                        <EstrelasNota nota={av.nota || 0} tamanho={13} />
+                      </div>
+                      {av.comentario && <p className="text-body-sm text-muted-foreground mt-0.5">{av.comentario}</p>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
         </div>
-
-      </PageContainer>
-    </div>
+      </div>
+    </PageContainer>
   );
 }

@@ -4,13 +4,13 @@ export function Card({ className, interactive = false, dashed = false, padding =
   return (
     <div
       className={cn(
-        "bg-card text-card-foreground rounded-2xl border",
+        "bg-card text-card-foreground rounded-xl border",
         dashed ? "border-dashed border-border" : "border-border",
         padding === "default" && "p-5 sm:p-6",
         padding === "sm" && "p-4",
         padding === "none" && "p-0",
         interactive
-          ? "shadow-soft transition-shadow duration-base ease-apple hover:shadow-card cursor-pointer"
+          ? "shadow-soft transition-shadow hover:shadow-card cursor-pointer"
           : "shadow-soft",
         className
       )}

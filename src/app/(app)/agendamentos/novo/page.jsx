@@ -59,8 +59,8 @@ function AgendarPageSkeleton() {
     <PageContainer size="sm" className="py-10">
       <Skeleton className="h-9 w-64 mb-2" />
       <Skeleton className="h-4 w-48 mb-8" />
-      <Skeleton className="h-80 rounded-2xl mb-4" />
-      <Skeleton className="h-40 rounded-2xl" />
+      <Skeleton className="h-80 rounded-xl mb-4" />
+      <Skeleton className="h-40 rounded-xl" />
     </PageContainer>
   );
 }
@@ -369,21 +369,21 @@ function AgendarPageInner() {
               href={gerarLinkGoogleCalendar(eventoCalendario)}
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-full border border-input text-body-sm font-semibold text-foreground hover:bg-muted transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg border border-input text-body-sm font-semibold text-foreground hover:bg-muted transition-colors"
             >
               <CalendarDays size={16} aria-hidden="true" /> Adicionar ao Google Calendar
             </a>
             <a
               href={gerarIcsDataUri(eventoCalendario)}
               download={`agendamento-${resumoConfirmado.nome.replace(/\s+/g, '-').toLowerCase()}.ics`}
-              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-full border border-input text-body-sm font-semibold text-foreground hover:bg-muted transition-colors"
+              className="w-full inline-flex items-center justify-center gap-2 h-11 rounded-lg border border-input text-body-sm font-semibold text-foreground hover:bg-muted transition-colors"
             >
               <CalendarDays size={16} aria-hidden="true" /> Baixar arquivo (.ics)
             </a>
             <button
               type="button"
               onClick={() => router.push('/agendamentos')}
-              className="w-full bg-primary text-primary-foreground rounded-full h-11 text-body-sm font-bold shadow-soft hover:bg-primary-hover transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer"
+              className="w-full bg-primary text-primary-foreground rounded-lg h-11 text-body-sm font-bold shadow-soft hover:bg-primary-hover transition active:scale-[0.98] cursor-pointer"
             >
               Ver meus agendamentos
             </button>
@@ -394,11 +394,11 @@ function AgendarPageInner() {
   }
 
   return (
-    <main className={`min-h-screen py-8 sm:py-10 ${diaSelecionado && horarioSelecionado ? 'pb-80 md:pb-56' : ''}`}>
+    <div className={`min-h-screen py-8 sm:py-10 ${diaSelecionado && horarioSelecionado ? 'pb-80 md:pb-56' : ''}`}>
       <PageContainer size="sm">
 
         <div className="mb-6">
-          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-full text-body text-primary font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
+          <button onClick={() => router.back()} className="flex items-center gap-2 h-11 -ml-2 px-3 rounded-lg text-body text-primary font-semibold mb-4 hover:bg-muted transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
             <ArrowLeft size={18} aria-hidden="true" />
             Voltar
           </button>
@@ -417,13 +417,13 @@ function AgendarPageInner() {
             ref={refErro}
             role="alert"
             tabIndex={-1}
-            className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body rounded-xl px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
+            className="mb-6 bg-destructive/10 border border-destructive/30 text-destructive text-body rounded-lg px-4 py-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-destructive"
           >
             {erro}
           </div>
         )}
 
-        <section className="bg-card rounded-2xl border border-border p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4" aria-labelledby="titulo-passo-1">
+        <section className="bg-card rounded-xl border border-border p-5 sm:p-7 shadow-soft mb-6 flex flex-col items-center gap-4" aria-labelledby="titulo-passo-1">
           <h2 id="titulo-passo-1" className="flex items-center gap-2 text-body-lg font-bold text-foreground self-start">
             <CalendarDays size={20} className="text-primary" aria-hidden="true" />
             1. Escolha o dia
@@ -439,7 +439,7 @@ function AgendarPageInner() {
         </section>
 
         {diaSelecionado && (
-          <section className="bg-card rounded-2xl border border-border p-5 sm:p-7 shadow-soft mb-6" aria-labelledby="titulo-passo-2">
+          <section className="bg-card rounded-xl border border-border p-5 sm:p-7 shadow-soft mb-6" aria-labelledby="titulo-passo-2">
             <h2
               ref={refHorarioHeading}
               id="titulo-passo-2"
@@ -493,7 +493,7 @@ function AgendarPageInner() {
                               tabIndex={selecionado || ehFocoInicial ? 0 : -1}
                               onClick={() => setHorarioSelecionado(slot)}
                               onKeyDown={(e) => handleSlotKeyDown(e, slot)}
-                              className={`rounded-xl h-12 text-body font-bold border-2 transition-all duration-200 ease-apple cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+                              className={`rounded-lg h-12 text-body font-bold border-2 transition cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
                                 ${selecionado
                                   ? 'border-accent bg-accent text-accent-foreground shadow-soft scale-[1.02]'
                                   : 'border-transparent bg-muted text-foreground hover:border-accent/40'}
@@ -565,7 +565,7 @@ function AgendarPageInner() {
               <button
                 onClick={confirmarAgendamento}
                 disabled={enviando}
-                className="w-full bg-primary text-primary-foreground rounded-full h-11 sm:h-13 text-body font-bold shadow-elevated hover:bg-primary-hover transition-all duration-200 ease-apple active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
+                className="w-full bg-primary text-primary-foreground rounded-lg h-11 sm:h-13 text-body font-bold shadow-soft hover:bg-primary-hover transition active:scale-[0.98] disabled:opacity-60 disabled:active:scale-100 cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-foreground"
               >
                 {enviando ? 'Confirmando...' : 'Confirmar agendamento'}
               </button>
@@ -573,6 +573,6 @@ function AgendarPageInner() {
           </div>
         )}
       </PageContainer>
-    </main>
+    </div>
   );
 }

@@ -53,7 +53,7 @@ export default async function AvaliarServicoPage({ params }) {
           <p className="text-body text-muted-foreground mb-6">{bloqueio.texto}</p>
           <Link
             href="/agendamentos"
-            className="inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary-hover text-body-sm font-bold px-6 h-11 rounded-full transition-colors duration-fast"
+            className="inline-flex items-center justify-center bg-primary text-primary-foreground hover:bg-primary-hover text-body-sm font-bold px-6 h-11 rounded-lg transition-colors"
           >
             Ver meus agendamentos
           </Link>
@@ -74,7 +74,7 @@ export default async function AvaliarServicoPage({ params }) {
     <LayoutAvaliacao>
       <Card padding="none" className="overflow-hidden">
         <div className="flex items-center gap-4 p-6 border-b border-border">
-          <div className="relative size-16 rounded-xl overflow-hidden bg-muted shrink-0">
+          <div className="relative size-16 rounded-lg overflow-hidden bg-muted shrink-0">
             {agendamento.servicoImagem ? (
               <Image src={agendamento.servicoImagem} alt="" fill className="object-cover" />
             ) : (

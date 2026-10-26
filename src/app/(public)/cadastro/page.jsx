@@ -96,7 +96,7 @@ export default function CadastrarPage() {
 
       <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
         <Link href="/" className="w-48 mb-8 lg:hidden"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
-        <Card className="w-full max-w-md shadow-elevated p-8 md:p-10">
+        <Card className="w-full max-w-md p-8 md:p-10">
 
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Criar conta Marca Aí
@@ -174,7 +174,7 @@ export default function CadastrarPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-fast cursor-pointer"
+                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 {showPassword ? (
                   <Eye className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
@@ -228,9 +228,12 @@ export default function CadastrarPage() {
         </Button>
 
         <div className="text-center mt-6">
-          <Link href="/login" className="text-body-sm text-primary hover:underline font-medium">
-            Já tem uma conta? Faça login
-          </Link>
+          <p className="text-body-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link href="/login" className="font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
+              Faça login
+            </Link>
+          </p>
         </div>
 
         </Card>

@@ -105,7 +105,7 @@ export default function NotificacoesDropdown() {
       {aberto && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-3 w-80 max-w-[90vw] bg-card rounded-2xl shadow-elevated border border-border overflow-hidden z-50"
+          className="absolute right-0 top-full mt-3 w-80 max-w-[90vw] bg-card rounded-xl shadow-elevated border border-border overflow-hidden z-50"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
             <h2 className="text-body-sm font-bold text-foreground">Notificações</h2>

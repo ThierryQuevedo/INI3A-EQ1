@@ -62,7 +62,7 @@ export default function Calendario({
           onClick={irParaMesAnterior}
           disabled={bloqueiaMesAnterior}
           aria-label="Mês anterior"
-          className="w-11 h-11 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors duration-fast cursor-pointer"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 disabled:opacity-20 disabled:cursor-not-allowed transition-colors cursor-pointer"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
@@ -75,7 +75,7 @@ export default function Calendario({
           type="button"
           onClick={irParaProximoMes}
           aria-label="Próximo mês"
-          className="w-11 h-11 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 transition-colors duration-fast cursor-pointer"
+          className="w-11 h-11 rounded-full flex items-center justify-center text-primary hover:bg-primary/10 transition-colors cursor-pointer"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </button>

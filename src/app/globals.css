@@ -1,5 +1,9 @@
 @import "tailwindcss";
-@import "@uploadthing/react/styles.css";
+/* NÃO importar "@uploadthing/react/styles.css" aqui: ele traz utilities do
+   Tailwind fora de @layer (.flex, .hidden, .flex-col, .rounded-lg...), que
+   vencem qualquer variante responsiva do projeto (md:flex-row, md:flex...).
+   Nenhum componente visual do UploadThing é usado — o upload passa por
+   /api/upload. Se um dia usar UploadDropzone, estilize via `appearance`. */
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -48,11 +52,18 @@
   --color-tcc-neutro-800: #1A1714;
   --color-tcc-neutro-900: #100E0C;
 
-  --color-success: #16A34A;
+  /* Tons de status escolhidos para passar WCAG AA (≥4.5:1) também como
+     TEXTO sobre o próprio tint do badge (fundo com 15% da cor) e sobre o fundo da
+     página — os tons anteriores (#16A34A, #DC2626...) ficavam entre 2.8
+     e 4.1:1. Os valores do tema escuro estão no bloco .dark. */
+  --color-success: #157034;
   --color-success-foreground: #FFFFFF;
-  --color-warning: #B45309;
+  --color-warning: #92400E;
   --color-warning-foreground: #FFFFFF;
-  --color-danger: #DC2626;
+  --color-danger: #B91C1C;
+  /* Estrelas de avaliação: gráfico (não texto), então o mínimo é 3:1 —
+     âmbar-600 dá ~3.2:1 no branco e continua com cara de "dourado". */
+  --color-rating: #D97706;
 
   /* ============================================================
      Semantic tokens (light values). Redefined for dark under
@@ -70,7 +81,9 @@
   --color-popover: #FFFFFF;
   --color-popover-foreground: var(--color-tcc-neutro-700);
 
-  --color-primary: var(--color-tcc-azul-500);
+  /* azul-600 (não 500): azul-500 dava só 4.47:1 sobre o fundo
+     #F5F6FA — abaixo do AA para textos/links em text-primary. */
+  --color-primary: var(--color-tcc-azul-600);
   --color-primary-foreground: #FFFFFF;
   --color-primary-hover: var(--color-tcc-azul-700);
 
@@ -86,11 +99,11 @@
   /* Token informativo neutro (badges "Hoje"/"Amanhã", tags de
      categoria) — separado de `accent` para que o laranja fique
      reservado a CTAs/ações de destaque, não a rótulos passivos. */
-  --color-info: var(--color-tcc-azul-400);
-  --color-info-foreground: var(--color-tcc-azul-950);
+  --color-info: var(--color-tcc-azul-600);
+  --color-info-foreground: #FFFFFF;
 
   --color-muted: #EBEDF5;
-  /* neutro-500 dá ~7:1 de contraste contra branco/cinza-claro — passa WCAG AA. */
+  /* neutro-500 dá ~5.6:1 contra branco e ~4.8:1 sobre bg-muted — passa WCAG AA. */
   --color-muted-foreground: var(--color-tcc-neutro-500);
 
   --color-destructive: var(--color-danger);
@@ -133,17 +146,19 @@
   --text-h1: 3.75rem;
   --text-h1--line-height: 1.05;
 
-  /* Radius — generous, Apple-style rounding.
-     Disciplina de uso: rounded-full reservado a elementos
-     circulares/ação rápida (chips de categoria, avatar, botão
-     só-ícone); rounded-xl em botões de texto e inputs; rounded-2xl
-     em superfícies/cards. Pílula em tudo lê como genérico — só usa
-     onde o formato circular faz sentido de verdade. */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
+  /* Radius — contido. Escala única para o produto inteiro:
+       rounded-sm  (6px)  → elementos minúsculos (checkbox, dia do calendário)
+       rounded-md  (8px)  → badges, chips, tags de status
+       rounded-lg  (12px) → botões de texto, inputs, selects, itens de lista
+       rounded-xl  (16px) → cards, diálogos, dropdowns, bottom sheet
+       rounded-2xl (20px) → superfícies grandes (hero, banner, imagem destaque)
+       rounded-full       → SÓ avatar, botão só-ícone, ponto de status e
+                            contador numérico. Nunca em botão com texto. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
   --radius-full: 9999px;
 
   /* Spacing — múltiplos de 8px. 2 (micro, ícone↔texto) · 4 (campo
@@ -160,7 +175,13 @@
   --shadow-elevated: 0 16px 40px rgba(16, 24, 40, 0.14), 0 4px 14px rgba(16, 24, 40, 0.08);
 
   /* Motion — um easing/duração por intenção, não um único valor
-     genérico para tudo. */
+     genérico para tudo. As utilities transition-* sem duration-*
+     explícito usam o padrão abaixo (200ms, ease-apple), então todo
+     hover/foco do produto anda na mesma velocidade. A troca de tema
+     NÃO anima (disableTransitionOnChange no ThemeProvider). */
+  --default-transition-duration: 200ms;
+  --default-transition-timing-function: cubic-bezier(0.28, 0.11, 0.32, 1);
+
   --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);     /* transições de estado */
   --ease-out-apple: cubic-bezier(0.16, 1, 0.3, 1);     /* entradas */
   --ease-in-apple: cubic-bezier(0.7, 0, 0.84, 0);      /* saídas */
@@ -179,15 +200,16 @@
   --color-background: var(--color-tcc-azul-950);
   --color-foreground: var(--color-tcc-neutro-100);
 
-  /* azul-800 (não azul-900) de propósito: precisa de um degrau real
-     contra o fundo azul-950 para o card não "sumir" no fundo — azul-900
-     ficava perto demais em luminância. */
-  --color-card: var(--color-tcc-azul-800);
+  /* Superfície pouco saturada, um degrau acima do fundo: o card
+     fica "dentro" da página em vez de parecer colado por cima (o
+     azul-800 saturado + borda clara criava um aro brilhante).
+     Contraste sobre ela: primary 5.2:1, muted-foreground 8.4:1. */
+  --color-card: #0E2648;
   --color-card-foreground: var(--color-tcc-neutro-100);
-  --color-surface: var(--color-tcc-azul-800);
+  --color-surface: #0E2648;
   --color-surface-foreground: var(--color-tcc-neutro-100);
 
-  --color-popover: var(--color-tcc-azul-800);
+  --color-popover: #12305A;
   --color-popover-foreground: var(--color-tcc-neutro-100);
 
   --color-primary: var(--color-tcc-azul-400);
@@ -212,9 +234,10 @@
 
   --color-success: #4ADE80;
   --color-warning: #FBBF24;
+  --color-rating: #FBBF24;
 
-  --color-border: rgba(220, 229, 254, 0.14);
-  --color-input: rgba(220, 229, 254, 0.14);
+  --color-border: rgba(220, 229, 254, 0.08);
+  --color-input: rgba(220, 229, 254, 0.12);
   --color-ring: var(--color-tcc-azul-300);
 
   --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.28);
@@ -239,7 +262,6 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-size: var(--text-body);
-    transition: background-color 0.2s var(--ease-apple), color 0.2s var(--ease-apple);
   }
 
   /* Tipografia como protagonista: títulos usam a fonte de display
@@ -258,7 +280,6 @@
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
-    border-radius: 0.375rem;
   }
 
   ::selection {

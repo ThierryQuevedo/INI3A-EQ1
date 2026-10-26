@@ -49,7 +49,7 @@ export default async function AvaliacoesServico({ params }) {
           <h1 className="text-h4 font-extrabold tracking-tight text-foreground mb-3">{servico.nome}</h1>
 
           {totalAvaliacoes > 0 ? (
-            <div className="bg-muted w-fit px-4 py-1.5 rounded-full flex items-center gap-2">
+            <div className="bg-muted w-fit px-4 py-1.5 rounded-md flex items-center gap-2">
               <span className="text-body-sm font-bold text-foreground">{avaliacaoMedia.toFixed(1)}</span>
               <EstrelasNota nota={avaliacaoMedia} tamanho={14} />
               <span className="text-caption text-muted-foreground">({rotuloAvaliacoes(totalAvaliacoes)})</span>
@@ -64,7 +64,7 @@ export default async function AvaliacoesServico({ params }) {
         ) : (
           <div className="space-y-4">
             {avaliacoes.map((av) => (
-              <div key={av.id} className="bg-card border border-border p-5 rounded-2xl flex gap-4">
+              <div key={av.id} className="bg-card border border-border p-5 rounded-xl flex gap-4">
                 <div className="relative size-11 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center">
                   {av.clienteImagem ? (
                     <Image src={av.clienteImagem} alt={av.clienteNome} fill className="object-cover" />

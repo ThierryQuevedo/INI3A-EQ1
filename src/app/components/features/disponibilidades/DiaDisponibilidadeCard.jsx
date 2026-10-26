@@ -4,7 +4,7 @@ import { Plus, Trash2, Loader2 } from "lucide-react";
 import Switch from "@/app/components/ui/Switch";
 
 const CAMPO_HORA_CLASSE =
-  "h-10 rounded-xl border border-input bg-card px-3 text-body-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed";
+  "h-10 rounded-lg border border-input bg-card px-3 text-body-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed";
 
 export default function DiaDisponibilidadeCard({
   dia,
@@ -21,7 +21,7 @@ export default function DiaDisponibilidadeCard({
 
   return (
     <div
-      className={`bg-card rounded-2xl border overflow-hidden transition-colors ${
+      className={`bg-card rounded-xl border overflow-hidden transition-colors ${
         ehHoje ? "border-primary/30" : "border-border"
       }`}
     >
@@ -35,7 +35,7 @@ export default function DiaDisponibilidadeCard({
           />
           <span className="font-semibold text-foreground text-body-sm truncate">{dia.nome}</span>
           {ehHoje && (
-            <span className="shrink-0 text-caption font-semibold text-primary bg-primary/10 rounded-full px-2 py-0.5">
+            <span className="shrink-0 text-caption font-semibold text-primary bg-primary/10 rounded-md px-2 py-0.5">
               Hoje
             </span>
           )}
@@ -77,7 +77,7 @@ export default function DiaDisponibilidadeCard({
                 disabled={processando}
                 aria-label={`Remover horário de ${r.horaInicio} às ${r.horaFim} em ${dia.nome}`}
                 title="Remover horário"
-                className="ml-auto h-10 w-10 flex items-center justify-center rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="ml-auto h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Trash2 size={16} aria-hidden="true" />
               </button>
@@ -98,7 +98,7 @@ export default function DiaDisponibilidadeCard({
             type="button"
             onClick={() => onAdicionarHorario(dia)}
             disabled={processando}
-            className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-primary hover:bg-primary/10 rounded-full px-3 py-1.5 -ml-3 transition-colors duration-fast cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 text-body-sm font-semibold text-primary hover:bg-primary/10 rounded-lg px-3 py-1.5 -ml-3 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Plus size={15} aria-hidden="true" />
             Adicionar horário

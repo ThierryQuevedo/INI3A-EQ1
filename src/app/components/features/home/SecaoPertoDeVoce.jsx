@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
-import ServiceCard from "@/app/components/features/servicos/ServiceCard";
+import CarrosselServicos from "./CarrosselServicos";
 import { haversineKm } from "@/lib/geo";
 
 /**
@@ -44,19 +44,12 @@ export default function SecaoPertoDeVoce({ catalogo }) {
   if (comDistancia.length === 0) return null;
 
   return (
-    <section className="max-w-6xl mx-auto px-6 py-10 border-t border-border">
-      <div className="flex items-center gap-2 mb-6">
-        <MapPin size={18} className="text-primary" aria-hidden="true" />
-        <div>
-          <h2 className="text-caption font-bold uppercase tracking-wide text-primary">Perto de você</h2>
-          <p className="text-h6 font-bold text-foreground mt-1">Profissionais na sua região</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-        {comDistancia.map((servico) => (
-          <ServiceCard key={servico.id} servico={servico} />
-        ))}
-      </div>
+    <section>
+      <h2 className="flex items-center gap-2 text-h6 font-bold text-foreground mb-4">
+        <MapPin size={18} className="shrink-0 text-primary" aria-hidden="true" />
+        Perto de você
+      </h2>
+      <CarrosselServicos servicos={comDistancia} rotulo="Serviços perto de você" />
     </section>
   );
 }

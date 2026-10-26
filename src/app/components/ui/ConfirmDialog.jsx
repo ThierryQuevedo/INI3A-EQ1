@@ -47,7 +47,7 @@ export default function ConfirmDialog({
           transition={{ duration: 0.18 }}
         >
           <motion.div
-            className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full border border-border"
+            className="bg-card rounded-xl p-6 shadow-elevated max-w-sm w-full border border-border"
             onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.96, y: 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}

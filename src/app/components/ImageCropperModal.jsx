@@ -150,7 +150,7 @@ export default function ImageCropperModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-card rounded-2xl shadow-elevated w-full max-w-sm p-5 flex flex-col items-center gap-4">
+      <div className="bg-card rounded-xl shadow-elevated w-full max-w-sm p-5 flex flex-col items-center gap-4">
         <div className="flex items-center justify-between w-full">
           <h3 className="font-display font-semibold text-lg">Ajustar imagem</h3>
           <button
@@ -164,7 +164,7 @@ export default function ImageCropperModal({
 
         <div
           className={`overflow-hidden touch-none cursor-grab active:cursor-grabbing border-2 border-border ${
-            shape === "circle" ? "rounded-full" : "rounded-xl"
+            shape === "circle" ? "rounded-full" : "rounded-lg"
           }`}
           style={{ width: VL, height: VA }}
           onPointerDown={handlePointerDown}

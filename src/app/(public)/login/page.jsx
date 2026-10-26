@@ -78,7 +78,7 @@ function LoginForm() {
           <Image src={logotipo} alt="Marca Aí — página inicial" priority />
         </Link>
 
-        <Card className="w-full max-w-md shadow-elevated p-8 md:p-10">
+        <Card className="w-full max-w-md p-8 md:p-10">
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Entrar na conta Marca Aí
         </h1>
@@ -125,7 +125,7 @@ function LoginForm() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-fast cursor-pointer"
+                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 {showPassword ? (
                   <Eye className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
@@ -149,9 +149,12 @@ function LoginForm() {
         </Button>
 
         <div className="text-center mt-6">
-          <Link href="/cadastro" className="text-body-sm text-primary hover:underline font-medium">
-            Ainda não tem uma conta? Cadastre-se
-          </Link>
+          <p className="text-body-sm text-muted-foreground">
+            Ainda não tem uma conta?{" "}
+            <Link href="/cadastro" className="font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
+              Cadastre-se
+            </Link>
+          </p>
         </div>
         </Card>
       </div>

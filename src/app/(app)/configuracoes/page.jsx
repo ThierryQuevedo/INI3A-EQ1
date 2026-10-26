@@ -42,7 +42,7 @@ export default async function PaginaConfiguracoes() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/45 to-surface" />
           </>
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/10 to-surface" />
+          <div className="absolute inset-0 bg-secondary" />
         )}
 
         <div className="relative z-100 flex flex-col items-center">
@@ -52,14 +52,30 @@ export default async function PaginaConfiguracoes() {
             {usuario.nome}
           </h1>
 
-          <span className="mt-2 px-3 h-7 inline-flex items-center bg-card/90 backdrop-blur-sm text-foreground text-caption font-semibold rounded-full shadow-sm">
+          <span className="mt-2 px-3 h-7 inline-flex items-center bg-card/90 backdrop-blur-sm text-foreground text-caption font-semibold rounded-md shadow-sm">
             {TIPO_LABEL[usuario.tipo] || "Usuário"}
           </span>
         </div>
       </section>
 
-      <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
-        <div className="bg-card rounded-2xl p-6 md:p-10 w-full max-w-2xl shadow-elevated flex flex-col border border-border">
+      <div className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
+        <div className="bg-card rounded-xl p-6 md:p-10 w-full max-w-2xl shadow-soft flex flex-col border border-border">
+
+          {usuario.tipo === 'cliente' && (
+            <section
+              id="virar-prestador"
+              aria-labelledby="titulo-virar-prestador"
+              className="scroll-mt-24 mb-8 rounded-lg bg-secondary text-secondary-foreground p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            >
+              <div className="max-w-sm">
+                <h2 id="titulo-virar-prestador" className="text-body-lg font-bold">Quer oferecer serviços?</h2>
+                <p className="text-body-sm mt-1 opacity-90">
+                  Transforme sua conta em prestador para cadastrar serviços e receber agendamentos.
+                </p>
+              </div>
+              <BotaoVirarPrestador />
+            </section>
+          )}
 
           <div className="mb-8">
             <h2 className="text-h6 font-bold text-foreground tracking-tight mb-3">Banner do perfil</h2>
@@ -106,18 +122,6 @@ export default async function PaginaConfiguracoes() {
             />
           </div>
 
-          {usuario.tipo === 'cliente' && (
-            <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="max-w-sm">
-                <h2 className="text-h6 font-bold text-foreground tracking-tight">Quer oferecer serviços?</h2>
-                <p className="text-body-sm text-muted-foreground mt-1">
-                  Torne sua conta de prestador para cadastrar serviços e receber agendamentos.
-                </p>
-              </div>
-              <BotaoVirarPrestador />
-            </div>
-          )}
-
           {ehPrestador && (
             <div className="mt-10 pt-6 border-t border-border">
               <div className="flex items-center justify-between mb-4">
@@ -157,7 +161,7 @@ export default async function PaginaConfiguracoes() {
           </div>
 
         </div>
-      </main>
+      </div>
     </div>
   );
 }

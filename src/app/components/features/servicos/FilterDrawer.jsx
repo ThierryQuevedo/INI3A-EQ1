@@ -32,10 +32,10 @@ function Pill({ ativo, children, ...props }) {
     <button
       type="button"
       className={cn(
-        "px-3.5 h-9 rounded-full text-body-sm font-medium border transition-colors cursor-pointer",
+        "px-3.5 h-9 rounded-md text-body-sm font-medium border transition-colors cursor-pointer",
         ativo
           ? "bg-primary text-primary-foreground border-primary"
-          : "bg-background text-foreground border-border hover:bg-muted"
+          : "bg-transparent text-foreground border-border hover:bg-muted"
       )}
       {...props}
     >
@@ -85,10 +85,10 @@ function CamposFiltro({
           onClick={() => (filtros.pertoDeMim ? onDesativarPertoDeMim() : onAtivarPertoDeMim())}
           disabled={localizando}
           className={cn(
-            "w-full flex items-center justify-center gap-2 h-11 rounded-full text-body-sm font-semibold border transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait",
+            "w-full flex items-center justify-center gap-2 h-11 rounded-lg text-body-sm font-semibold border transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-wait",
             filtros.pertoDeMim
               ? "bg-primary text-primary-foreground border-primary"
-              : "bg-background text-foreground border-border hover:bg-muted"
+              : "bg-transparent text-foreground border-border hover:bg-muted"
           )}
         >
           <MapPin size={16} aria-hidden="true" />
@@ -153,7 +153,7 @@ function CamposFiltro({
           id={idOrdenacao}
           value={filtros.ordenacao}
           onChange={(e) => onChange({ ...filtros, ordenacao: e.target.value })}
-          className="w-full h-11 bg-background border border-input rounded-xl px-3 text-foreground text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="w-full h-11 bg-background border border-input rounded-lg px-3 text-foreground text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           <option value="relevancia">Relevância</option>
           <option value="avaliacao">Melhor avaliados</option>
@@ -208,7 +208,9 @@ export default function FilterDrawer({
         </BottomSheet>
       </div>
 
-      <aside className="max-md:hidden md:block w-72 shrink-0 bg-card border border-border rounded-2xl p-5 h-fit">
+      {/* Sticky abaixo do header (h-16): acompanha a rolagem da lista em vez
+          de deixar uma coluna vazia; rola por dentro se não couber na tela. */}
+      <aside className="max-md:hidden md:block md:sticky md:top-20 md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto w-72 shrink-0 bg-card border border-border rounded-xl p-5 h-fit">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-body-lg text-foreground">Filtros</h2>
           {ativo && (

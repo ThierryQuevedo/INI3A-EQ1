@@ -8,20 +8,20 @@ export default function LoadingConfiguracoes() {
       <section className="bg-surface pt-16 pb-28 flex flex-col items-center justify-center gap-3 border-b border-border">
         <Skeleton className="size-24 rounded-full" />
         <Skeleton className="h-7 w-48" />
-        <Skeleton className="h-6 w-24 rounded-full" />
+        <Skeleton className="h-6 w-24 rounded-md" />
       </section>
 
-      <main className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
-        <div className="bg-card rounded-2xl p-6 md:p-10 w-full max-w-2xl shadow-elevated border border-border space-y-6">
+      <div className="flex-1 flex justify-center px-4 -mt-16 mb-16 z-10">
+        <div className="bg-card rounded-xl p-6 md:p-10 w-full max-w-2xl shadow-soft border border-border space-y-6">
           <Skeleton className="h-6 w-40 mb-2" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+          <Skeleton className="h-24 w-full rounded-xl" />
 
           <Skeleton className="h-6 w-32 mt-6 mb-2" />
           {Array.from({ length: 4 }).map((_, indice) => (
-            <Skeleton key={indice} className="h-14 w-full rounded-xl" />
+            <Skeleton key={indice} className="h-14 w-full rounded-lg" />
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

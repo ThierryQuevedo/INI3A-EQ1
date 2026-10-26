@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { CalendarClock, Plus, DollarSign, Star, Users, CalendarX2 } from "lucide-react";
+import { CalendarClock, Plus, DollarSign, Star, Users, CalendarX2, ChevronRight, ExternalLink } from "lucide-react";
 import { requireSession } from "@/app/actions/auth.actions";
 import BotaoAcaoAgendamento from "@/app/components/features/agendamentos/BotaoAcaoAgendamento";
 import DashboardCliente from "@/app/components/features/dashboard/DashboardCliente";
+import Estatistica from "@/app/components/features/dashboard/Estatistica";
 import { Button } from "@/app/components/ui/button";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import PageContainer, { PageHeader } from "@/app/components/ui/PageContainer";
 import { Card } from "@/app/components/ui/card";
-import EmptyState from "@/app/components/ui/EmptyState";
-import { rotuloStatus, statusBadgeClass } from "@/lib/statusAgendamento";
+import { Badge } from "@/app/components/ui/badge";
+import { rotuloStatus } from "@/lib/statusAgendamento";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios } from "@/db/schema";
 import { eq, and, gte, lt } from "drizzle-orm";
@@ -16,6 +17,95 @@ import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
 import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
 
 export const dynamic = 'force-dynamic';
+
+const LIMITE_PROXIMOS = 8;
+
+function formatarHora(data) {
+  const d = new Date(data);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatarData(data) {
+  return new Date(data).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+}
+
+/** Uma linha por agendamento: hora | cliente e serviço | status + ações. */
+function LinhaAgendamento({ ag, mostrarData }) {
+  const podeConfirmar = ag.status === 'pendente';
+  const podeConcluir = ag.status === 'confirmado';
+  const podeCancelar = ag.status !== 'cancelado' && ag.status !== 'concluido';
+
+  return (
+    <li className="flex flex-col gap-2 px-4 py-3 @2xl:flex-row @2xl:items-center @2xl:gap-4">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="w-[5.5rem] shrink-0">
+          <p className="text-body font-bold text-foreground tabular-nums leading-tight">{formatarHora(ag.dataHora)}</p>
+          {mostrarData && <p className="text-caption text-muted-foreground leading-tight">{formatarData(ag.dataHora)}</p>}
+        </div>
+        <div className="min-w-0">
+          <p className="text-body-sm font-semibold text-foreground truncate">{ag.clienteNome}</p>
+          <p className="text-caption text-muted-foreground truncate">
+            {ag.servicoNome} · {ag.duracaoEstimada} min
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-1.5 flex-wrap @2xl:flex-nowrap @2xl:justify-end @md:pl-[6.25rem] @2xl:pl-0">
+        <Badge status={ag.status} size="sm" className="mr-1">
+          {/* rótulo curto: na linha compacta "Aguardando confirmação" empurra as ações */}
+          {ag.status === 'pendente' ? 'Pendente' : rotuloStatus(ag.status)}
+        </Badge>
+        {podeConfirmar && (
+          <BotaoAcaoAgendamento
+            agendamentoId={ag.id}
+            novoStatus="confirmado"
+            label="Confirmar"
+            titulo="Confirmar agendamento?"
+            descricao={`Deseja confirmar o agendamento de ${ag.clienteNome} para ${ag.servicoNome}?`}
+          />
+        )}
+        {podeConcluir && (
+          <BotaoAcaoAgendamento
+            agendamentoId={ag.id}
+            novoStatus="concluido"
+            label="Concluir"
+            titulo="Concluir agendamento?"
+            descricao={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
+          />
+        )}
+        {podeCancelar && (
+          <BotaoAcaoAgendamento
+            agendamentoId={ag.id}
+            novoStatus="cancelado"
+            label="Cancelar"
+            titulo="Cancelar agendamento?"
+            descricao={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
+            variant="destructive"
+            aparencia="perigo"
+          />
+        )}
+      </div>
+    </li>
+  );
+}
+
+function ListaAgendamentos({ itens, mostrarData, IconeVazio, textoVazio }) {
+  if (itens.length === 0) {
+    return (
+      <Card padding="sm" className="flex items-center gap-3 text-muted-foreground shadow-none">
+        <IconeVazio size={18} className="shrink-0" aria-hidden="true" />
+        <p className="text-body-sm">{textoVazio}</p>
+      </Card>
+    );
+  }
+  return (
+    <Card padding="none" className="@container">
+      <ul className="divide-y divide-border">
+        {itens.map((ag) => <LinhaAgendamento key={ag.id} ag={ag} mostrarData={mostrarData} />)}
+      </ul>
+    </Card>
+  );
+}
 
 export default async function Dashboard() {
   const usuario = await requireSession();
@@ -82,159 +172,85 @@ export default async function Dashboard() {
 
   const faturamentoTotal = faturamento.reduce((acc, curr) => acc + Number(curr.preco || 0), 0);
 
-  function formatarHora(data) {
-    const d = new Date(data);
-    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  }
-
-  function formatarData(data) {
-    return new Date(data).toLocaleDateString('pt-BR', {
-      weekday: 'short', day: 'numeric', month: 'short'
-    });
-  }
-
-  function CardAgendamento({ ag }) {
-    const podeConfirmar = ag.status === 'pendente';
-    const podeConcluir  = ag.status === 'confirmado';
-    const podeCancelar  = ag.status !== 'cancelado' && ag.status !== 'concluido';
-
-    return (
-      <Card padding="sm" className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex gap-6 items-center flex-1">
-          <div className="text-center min-w-20">
-            <span className="text-primary font-bold text-body block">{formatarHora(ag.dataHora)}</span>
-            <span className="text-muted-foreground text-caption">{formatarData(ag.dataHora)}</span>
-          </div>
-          <div>
-            <p className="font-bold text-foreground">{ag.clienteNome}</p>
-            <p className="text-body-sm text-muted-foreground">{ag.servicoNome} • {ag.duracaoEstimada} min</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`${statusBadgeClass(ag.status)} px-3 h-8 inline-flex items-center rounded-full text-caption font-bold`}>
-            {rotuloStatus(ag.status)}
-          </span>
-
-          {podeConfirmar && (
-            <BotaoAcaoAgendamento
-              agendamentoId={ag.id}
-              novoStatus="confirmado"
-              label="Confirmar"
-              titulo="Confirmar agendamento?"
-              descricao={`Deseja confirmar o agendamento de ${ag.clienteNome} para ${ag.servicoNome}?`}
-              className="bg-success hover:bg-success/90 text-success-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
-            />
-          )}
-
-          {podeConcluir && (
-            <BotaoAcaoAgendamento
-              agendamentoId={ag.id}
-              novoStatus="concluido"
-              label="Concluir"
-              titulo="Concluir agendamento?"
-              descricao={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
-              className="bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
-            />
-          )}
-
-          {podeCancelar && (
-            <BotaoAcaoAgendamento
-              agendamentoId={ag.id}
-              novoStatus="cancelado"
-              label="Cancelar"
-              titulo="Cancelar agendamento?"
-              descricao={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
-              variant="destructive"
-              className="bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
-            />
-          )}
-        </div>
-      </Card>
-    );
-  }
+  const proximosVisiveis = agendamentosFuturos.slice(0, LIMITE_PROXIMOS);
+  const primeiroNome = nome?.split(' ')[0] ?? '';
 
   return (
     <PageContainer size="2xl" className="py-6 sm:py-8">
       <PageHeader
         eyebrow="Painel do prestador"
-        title={nome}
+        title={`Olá, ${primeiroNome}`}
+        className="mb-6"
         actions={
           <>
-            <Button asChild variant="secondary">
-              <Link href={`/prestador/${usuario.slug || usuario.id}`}>Ver perfil público</Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link href="/disponibilidades">
-                <CalendarClock size={16} aria-hidden="true" /> Disponibilidade
+            <Button asChild variant="ghost" size="sm">
+              <Link href={`/prestador/${usuario.slug || usuario.id}`}>
+                <ExternalLink aria-hidden="true" /> Perfil público
               </Link>
             </Button>
-            <Button asChild variant="accent">
+            <Button asChild variant="outline" size="sm">
+              <Link href="/disponibilidades">
+                <CalendarClock aria-hidden="true" /> Disponibilidade
+              </Link>
+            </Button>
+            <Button asChild variant="accent" size="sm">
               <Link href="/servicos/novo">
-                <Plus size={16} aria-hidden="true" /> Novo serviço
+                <Plus aria-hidden="true" /> Novo serviço
               </Link>
             </Button>
           </>
         }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
-        <Card padding="default">
-          <CalendarClock size={20} className="text-primary mb-2" aria-hidden="true" />
-          <h3 className="text-h5 font-bold text-foreground">{agendamentosHoje.length}</h3>
-          <p className="text-muted-foreground text-caption">Agendamentos hoje</p>
-        </Card>
-        <Card padding="default">
-          <DollarSign size={20} className="text-primary mb-2" aria-hidden="true" />
-          <h3 className="text-h5 font-bold text-foreground">{formatarPreco(faturamentoTotal)}</h3>
-          <p className="text-muted-foreground text-caption">Faturamento do mês</p>
-        </Card>
-        <Card padding="default">
-          <Star size={20} className="text-primary mb-2" aria-hidden="true" />
-          <h3 className="text-h5 font-bold text-foreground">
-            {perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}
-          </h3>
-          <p className="text-muted-foreground text-caption">{perfilPrestador?.totalAvaliacoes ?? 0} avaliações</p>
-        </Card>
-        <Card padding="default">
-          <Users size={20} className="text-primary mb-2" aria-hidden="true" />
-          <h3 className="text-h5 font-bold text-foreground">{perfilPrestador?.totalClientesAtendidos ?? 0}</h3>
-          <p className="text-muted-foreground text-caption">Clientes atendidos</p>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+        <Estatistica Icon={CalendarClock} valor={agendamentosHoje.length} rotulo="Agendamentos hoje" />
+        <Estatistica Icon={DollarSign} valor={formatarPreco(faturamentoTotal)} rotulo="Faturamento do mês" />
+        <Estatistica
+          Icon={Star}
+          valor={perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}
+          rotulo={`${perfilPrestador?.totalAvaliacoes ?? 0} avaliações`}
+        />
+        <Estatistica Icon={Users} valor={perfilPrestador?.totalClientesAtendidos ?? 0} rotulo="Clientes atendidos" />
       </div>
 
-      <section className="mb-10">
-        <h2 className="text-h6 font-bold mb-4 text-foreground">Agenda de hoje</h2>
-        <div className="space-y-3">
-          {agendamentosHoje.length === 0 ? (
-            <Card dashed padding="default" className="shadow-none">
-              <EmptyState icon={CalendarClock} title="Nenhum agendamento para hoje" />
-            </Card>
-          ) : (
-            agendamentosHoje.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
-          )}
-        </div>
-      </section>
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 xl:gap-6 items-start">
+        <section aria-labelledby="titulo-hoje">
+          <div className="flex items-center justify-between gap-3 mb-3 min-h-8">
+            <h2 id="titulo-hoje" className="text-body-lg font-bold text-foreground">Agenda de hoje</h2>
+            {agendamentosHoje.length > 0 && <Badge variant="secundario" size="sm">{agendamentosHoje.length}</Badge>}
+          </div>
+          <ListaAgendamentos
+            itens={agendamentosHoje}
+            IconeVazio={CalendarClock}
+            textoVazio="Nenhum agendamento para hoje."
+          />
+        </section>
 
-      <section>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-h6 font-bold text-foreground">Próximos agendamentos</h2>
-          {agendamentosFuturos.length > 0 && (
-            <span className="bg-secondary text-secondary-foreground text-caption font-bold px-3 h-7 inline-flex items-center rounded-full">
-              {agendamentosFuturos.length} agendamento{agendamentosFuturos.length !== 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-        <div className="space-y-3">
-          {agendamentosFuturos.length === 0 ? (
-            <Card dashed padding="default" className="shadow-none">
-              <EmptyState icon={CalendarX2} title="Nenhum agendamento futuro" />
-            </Card>
-          ) : (
-            agendamentosFuturos.map((ag) => <CardAgendamento key={ag.id} ag={ag} />)
-          )}
-        </div>
-      </section>
+        <section aria-labelledby="titulo-proximos">
+          <div className="flex items-center justify-between gap-3 mb-3 min-h-8">
+            <h2 id="titulo-proximos" className="text-body-lg font-bold text-foreground">
+              Próximos agendamentos
+              {agendamentosFuturos.length > 0 && (
+                <span className="text-muted-foreground font-medium"> ({agendamentosFuturos.length})</span>
+              )}
+            </h2>
+            {agendamentosFuturos.length > LIMITE_PROXIMOS && (
+              <Link
+                href="/agendamentos"
+                className="inline-flex items-center gap-0.5 shrink-0 text-body-sm font-semibold text-primary hover:underline underline-offset-4"
+              >
+                Ver todos <ChevronRight size={16} aria-hidden="true" />
+              </Link>
+            )}
+          </div>
+          <ListaAgendamentos
+            itens={proximosVisiveis}
+            mostrarData
+            IconeVazio={CalendarX2}
+            textoVazio="Nenhum agendamento futuro."
+          />
+        </section>
+      </div>
     </PageContainer>
   );
 }

@@ -35,7 +35,7 @@ export default function BottomSheet({ open, onClose, title, children }) {
             role="dialog"
             aria-modal="true"
             aria-label={title}
-            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-2xl shadow-elevated max-h-[85vh] flex flex-col"
+            className="fixed bottom-0 left-0 right-0 z-50 bg-card rounded-t-xl shadow-elevated max-h-[85vh] flex flex-col"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}

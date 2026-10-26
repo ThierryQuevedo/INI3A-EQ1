@@ -74,7 +74,7 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100dvh-8rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-4rem)]">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
         <Link
           href="/mensagens"

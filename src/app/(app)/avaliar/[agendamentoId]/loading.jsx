@@ -3,13 +3,13 @@ import Skeleton from "@/app/components/ui/Skeleton";
 
 export default function LoadingAvaliar() {
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <ProgressBar />
       <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 font-sans">
-        <Skeleton className="h-10 w-24 rounded-full mb-6" />
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+        <Skeleton className="h-10 w-24 rounded-lg mb-6" />
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="flex items-center gap-4 p-6 border-b border-border">
-            <Skeleton className="size-16 rounded-xl shrink-0" />
+            <Skeleton className="size-16 rounded-lg shrink-0" />
             <div className="space-y-2 flex-1">
               <Skeleton className="h-6 w-48" />
               <Skeleton className="h-4 w-32" />

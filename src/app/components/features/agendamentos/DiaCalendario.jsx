@@ -9,14 +9,14 @@ export default function DiaCalendario({
 }) {
   const desabilitado = passado || !disponivel || Number(vagas) <= 0;
 
-  let classes = "relative w-full aspect-square rounded-2xl flex flex-col items-center justify-center text-body-lg sm:text-h6 font-bold transition-all duration-200 ease-apple ";
+  let classes = "relative w-full aspect-square rounded-lg flex flex-col items-center justify-center text-body-lg sm:text-h6 font-bold transition ";
 
   if (selecionado) {
     classes += "bg-primary text-primary-foreground shadow-card scale-105";
   } else if (desabilitado) {
     classes += "text-muted-foreground/50 cursor-not-allowed";
   } else {
-    classes += "bg-background text-foreground hover:bg-primary/10 hover:text-primary cursor-pointer";
+    classes += "bg-muted text-foreground hover:bg-primary/10 hover:text-primary cursor-pointer";
   }
 
   if (hoje && !selecionado) {

@@ -10,14 +10,14 @@ const ITENS_CLIENTE = [
   { href: "/", label: "Início", Icon: Home },
   { href: "/servicos", label: "Buscar", Icon: Search },
   { href: "/agendamentos", label: "Agenda", Icon: CalendarDays },
-  { href: "/mensagens", label: "Mensagens", Icon: MessageCircle },
+  { href: "/mensagens", label: "Chat", Icon: MessageCircle },
 ];
 
 const ITENS_PRESTADOR = [
   { href: "/dashboard", label: "Painel", Icon: LayoutDashboard },
   { href: "/disponibilidades", label: "Agenda", Icon: CalendarClock },
   { href: "/servicos/novo", label: "Serviços", Icon: Briefcase },
-  { href: "/mensagens", label: "Mensagens", Icon: MessageCircle },
+  { href: "/mensagens", label: "Chat", Icon: MessageCircle },
 ];
 
 /** Navegação principal no mobile (<md). Substitui o menu hambúrguer. */
@@ -44,15 +44,15 @@ export default function BottomNav({ usuario }) {
                 href={href}
                 aria-current={ativo ? "page" : undefined}
                 className={cn(
-                  "flex h-full flex-col items-center justify-center gap-1 text-caption font-medium transition-colors",
+                  "flex h-full min-w-0 flex-col items-center justify-center gap-1 px-1 text-caption font-medium transition-colors",
                   ativo ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <span className="relative">
-                  <Icon size={22} strokeWidth={ativo ? 2.25 : 2} aria-hidden="true" />
-                  {label === "Mensagens" && <BadgeNaoLidas />}
+                <span className="relative flex size-6 items-center justify-center">
+                  <Icon size={22} strokeWidth={ativo ? 2.25 : 2} className="shrink-0" aria-hidden="true" />
+                  {href === "/mensagens" && <BadgeNaoLidas />}
                 </span>
-                {label}
+                <span className="block max-w-full truncate leading-none">{label}</span>
               </Link>
             </li>
           );

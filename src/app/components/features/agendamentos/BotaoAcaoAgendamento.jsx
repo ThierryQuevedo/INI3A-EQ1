@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ConfirmDialog from "@/app/components/ui/ConfirmDialog";
+import { Button } from "@/app/components/ui/button";
 import { atualizarStatusAgendamento } from "@/app/actions/agendamentos.actions";
 import { useToast } from "@/app/components/ui/ToastProvider";
 
@@ -10,7 +11,15 @@ import { useToast } from "@/app/components/ui/ToastProvider";
  * Botão único para confirmar/concluir/cancelar um agendamento — substitui
  * BotaoStatusConfirm e BotaoCancelarAgendamento (3 padrões de confirmação
  * diferentes que coexistiam no app).
+ *
+ * `aparencia` escolhe o estilo pelo primitivo Button: "principal" para a ação
+ * esperada (confirmar/concluir), "perigo" para cancelar (discreto, sem fundo).
  */
+const APARENCIAS = {
+  principal: { variant: "default" },
+  perigo: { variant: "ghost-destructive" },
+};
+
 export default function BotaoAcaoAgendamento({
   agendamentoId,
   novoStatus,
@@ -18,6 +27,7 @@ export default function BotaoAcaoAgendamento({
   titulo,
   descricao,
   variant = "default",
+  aparencia = "principal",
   className,
 }) {
   const [aberto, setAberto] = useState(false);
@@ -32,9 +42,15 @@ export default function BotaoAcaoAgendamento({
 
   return (
     <>
-      <button type="button" onClick={() => setAberto(true)} className={className}>
+      <Button
+        type="button"
+        size="compacto"
+        variant={APARENCIAS[aparencia]?.variant}
+        onClick={() => setAberto(true)}
+        className={className}
+      >
         {label}
-      </button>
+      </Button>
       <ConfirmDialog
         open={aberto}
         onOpenChange={setAberto}

@@ -19,7 +19,7 @@ function ModalSenha({ label, icon, onClose }) {
 
   return (
     <div role="dialog" aria-modal="true" aria-label={`Editar ${label}`} className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
-      <div className="bg-card rounded-2xl p-6 shadow-elevated max-w-sm w-full">
+      <div className="bg-card rounded-xl p-6 shadow-elevated max-w-sm w-full">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             {icon}
@@ -47,7 +47,7 @@ function ModalSenha({ label, icon, onClose }) {
               placeholder="Senha atual"
               required
               autoFocus
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              className="w-full h-12 bg-background border border-input rounded-lg px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition"
             />
           </div>
           <div>
@@ -59,7 +59,7 @@ function ModalSenha({ label, icon, onClose }) {
               placeholder="Nova senha"
               required
               minLength={6}
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              className="w-full h-12 bg-background border border-input rounded-lg px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition"
             />
           </div>
           <div>
@@ -71,7 +71,7 @@ function ModalSenha({ label, icon, onClose }) {
               placeholder="Confirmar nova senha"
               required
               minLength={6}
-              className="w-full h-12 bg-background border border-input rounded-xl px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition-all duration-200"
+              className="w-full h-12 bg-background border border-input rounded-lg px-4 text-foreground text-body outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent transition"
             />
           </div>
 
@@ -84,14 +84,14 @@ function ModalSenha({ label, icon, onClose }) {
               type="button"
               onClick={onClose}
               disabled={isPending}
-              className="flex-1 rounded-full h-11 text-body-sm font-bold text-foreground bg-muted hover:bg-muted/70 transition-colors disabled:opacity-60 cursor-pointer"
+              className="flex-1 rounded-lg h-11 text-body-sm font-bold text-foreground bg-muted hover:bg-muted/70 transition-colors disabled:opacity-60 cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 rounded-full h-11 text-body-sm font-bold text-accent-foreground bg-accent hover:bg-accent-hover transition-colors disabled:opacity-60 cursor-pointer"
+              className="flex-1 rounded-lg h-11 text-body-sm font-bold text-accent-foreground bg-accent hover:bg-accent-hover transition-colors disabled:opacity-60 cursor-pointer"
             >
               {isPending ? "Salvando..." : "Salvar"}
             </button>

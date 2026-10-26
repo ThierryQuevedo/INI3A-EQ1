@@ -8,7 +8,7 @@ import Combobox from '@/app/components/ui/Combobox';
 import PageContainer from '@/app/components/ui/PageContainer';
 
 const CAMPO_CLASSE =
-  'w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground text-body-sm placeholder:text-muted-foreground shadow-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all';
+  'w-full px-4 py-3 rounded-lg bg-card border border-border text-foreground text-body-sm placeholder:text-muted-foreground shadow-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition';
 
 export default function NovoServicoForm({ categorias = [], action, nomePrestador }) {
   const router = useRouter();
@@ -66,7 +66,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
           <button
             type="button"
             onClick={() => router.back()}
-            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors duration-fast cursor-pointer"
+            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-lg text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
           >
             <ArrowLeft size={16} aria-hidden="true" />
             Voltar
@@ -79,7 +79,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
 
-          <form action={action} onSubmit={aoSubmeter} className="bg-card rounded-2xl shadow-soft border border-border p-6 md:p-8 space-y-5">
+          <form action={action} onSubmit={aoSubmeter} className="bg-card rounded-xl shadow-soft border border-border p-6 md:p-8 space-y-5">
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="nome" className="text-body-sm font-medium text-foreground">
@@ -218,7 +218,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
             <button
               type="submit"
-              className="w-full mt-3 h-13 bg-accent hover:bg-accent-hover text-accent-foreground font-display font-bold text-body-lg rounded-full shadow-soft transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer text-center"
+              className="w-full mt-3 h-13 bg-accent hover:bg-accent-hover text-accent-foreground font-display font-bold text-body-lg rounded-lg shadow-soft transition active:scale-[0.98] cursor-pointer text-center"
             >
               Cadastrar serviço
             </button>
@@ -229,7 +229,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
             <p className="text-caption font-semibold text-muted-foreground uppercase tracking-wide mb-3 text-center lg:text-left">
               Pré-visualização
             </p>
-            <div className="bg-muted/40 border border-border rounded-2xl p-5 flex justify-center">
+            <div className="bg-muted/40 border border-border rounded-xl p-5 flex justify-center">
               <div className="w-full max-w-[240px]">
                 <ServiceCard servico={servicoPreview} interativo={false} />
               </div>

@@ -178,7 +178,7 @@ export default function ServiceImageUpload({
       {erroValidacao && (
         <div
           role="alert"
-          className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-body-sm flex items-start gap-3 transition-all animate-in fade-in"
+          className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-body-sm flex items-start gap-3 transition"
         >
           <AlertCircle size={18} className="shrink-0 mt-0.5" aria-hidden="true" />
           <div className="flex-1">
@@ -213,14 +213,14 @@ export default function ServiceImageUpload({
             }
           }}
           aria-label="Arraste uma foto do serviço ou clique para selecionar"
-          className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3 select-none ${
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3 select-none ${
             isDragging
               ? "border-primary bg-primary/10 ring-4 ring-primary/20 scale-[1.01]"
               : "border-border hover:border-primary/60 bg-muted/20 hover:bg-muted/40"
           }`}
         >
           <div
-            className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-transform duration-200 ${
+            className={`w-16 h-16 rounded-xl flex items-center justify-center transition-transform ${
               isDragging ? "scale-110 bg-primary text-primary-foreground" : "bg-primary/10 text-primary"
             }`}
           >
@@ -236,21 +236,21 @@ export default function ServiceImageUpload({
             </p>
           </div>
 
-          <span className="mt-1 px-4 py-2 rounded-xl bg-card border border-border text-foreground text-caption font-semibold shadow-soft hover:bg-muted transition-colors">
+          <span className="mt-1 px-4 py-2 rounded-lg bg-card border border-border text-foreground text-caption font-semibold shadow-soft hover:bg-muted transition-colors">
             Selecionar arquivo
           </span>
         </div>
       ) : (
         /* CARD DE PRÉ-VISUALIZAÇÃO COMPLETO */
-        <div className="rounded-2xl border border-border bg-card p-4 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-4 transition-all">
+        <div className="rounded-xl border border-border bg-card p-4 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-4 transition">
           <div className="flex items-center gap-4 w-full sm:w-auto">
             {/* Thumbnail com suporte a loading */}
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden border border-border bg-muted shrink-0 relative">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-border bg-muted shrink-0 relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagemAtual}
                 alt="Prévia do serviço"
-                className={`w-full h-full object-cover transition-opacity duration-200 ${
+                className={`w-full h-full object-cover transition-opacity ${
                   isUploading ? "opacity-40" : "opacity-100"
                 }`}
               />
@@ -297,7 +297,7 @@ export default function ServiceImageUpload({
               disabled={isUploading}
               title="Trocar foto"
               aria-label="Trocar foto do serviço"
-              className="px-3.5 py-2 rounded-xl bg-muted/60 hover:bg-muted text-foreground border border-border text-caption font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 rounded-lg bg-muted/60 hover:bg-muted text-foreground border border-border text-caption font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={14} aria-hidden="true" />
               <span>Trocar</span>
@@ -309,7 +309,7 @@ export default function ServiceImageUpload({
               disabled={isUploading}
               title="Remover foto"
               aria-label="Remover foto do serviço"
-              className="p-2 rounded-xl bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
+              className="p-2 rounded-lg bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
             >
               <Trash2 size={16} aria-hidden="true" />
             </button>

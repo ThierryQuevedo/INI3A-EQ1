@@ -1,13 +1,13 @@
 import Link from "next/link";
 import Form from "next/form";
-import { Search, CalendarDays, Clock, Star } from "lucide-react";
+import { Search, CalendarDays, Clock, Star, ArrowRight, ChevronRight } from "lucide-react";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios, categorias, prestadores } from "@/db/schema";
-import CatalogoGrid from "@/app/components/features/servicos/CatalogoGrid";
-import CategoryPill from "@/app/components/features/servicos/CategoryPill";
-import ServiceCard from "@/app/components/features/servicos/ServiceCard";
+import CategoryIcon from "@/app/components/features/servicos/CategoryIcon";
+import CarrosselServicos from "@/app/components/features/home/CarrosselServicos";
 import SecaoPertoDeVoce from "@/app/components/features/home/SecaoPertoDeVoce";
+import { Button } from "@/app/components/ui/button";
 import { comEstatisticas } from "@/lib/avaliacoes";
 import { getSession } from "@/app/actions/auth.actions";
 import { listarCategorias } from "@/app/actions/servicos.actions";
@@ -17,6 +17,26 @@ import { ehHoje } from "@/lib/disponibilidade";
 import PageContainer from "@/app/components/ui/PageContainer";
 
 export const dynamic = "force-dynamic";
+
+function CabecalhoSecao({ Icon, titulo, href, rotuloLink = "Ver todos" }) {
+  return (
+    <div className="flex items-center justify-between gap-4 mb-4">
+      <h2 className="flex items-center gap-2 text-h6 font-bold text-foreground">
+        <Icon size={18} className="shrink-0 text-primary" aria-hidden="true" />
+        {titulo}
+      </h2>
+      {href && (
+        <Link
+          href={href}
+          className="inline-flex items-center gap-0.5 shrink-0 text-body-sm font-semibold text-primary hover:underline underline-offset-4"
+        >
+          {rotuloLink}
+          <ChevronRight size={16} aria-hidden="true" />
+        </Link>
+      )}
+    </div>
+  );
+}
 
 export default async function Home() {
   const usuario = await getSession();
@@ -59,133 +79,105 @@ export default async function Home() {
   const agendamentoProximo = proximoAgendamento?.proximos?.[0] ?? null;
 
   return (
-    <>
-      <section className="relative overflow-hidden border-b border-border">
-        <div
-          className="absolute inset-0 -z-10"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 15% -20%, color-mix(in srgb, var(--color-primary) 16%, transparent) 0%, transparent 60%), radial-gradient(circle at 95% 0%, color-mix(in srgb, var(--color-accent) 14%, transparent) 0%, transparent 50%)",
-          }}
-        />
-        <div
-          className="absolute inset-0 -z-10 opacity-[0.35]"
-          style={{
-            backgroundImage: "radial-gradient(color-mix(in srgb, var(--color-foreground) 14%, transparent) 1px, transparent 1px)",
-            backgroundSize: "22px 22px",
-            maskImage: "linear-gradient(to bottom, black, transparent)",
-          }}
-        />
+    <PageContainer size="xl" className="pt-6 sm:pt-8 pb-12 space-y-10">
+      {/* Topo compacto: título curto + busca enxuta, para os serviços
+          aparecerem já na primeira dobra (a busca completa vive em /servicos). */}
+      <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h1 className="text-h5 sm:text-h4 font-bold text-foreground">Encontre um profissional e agende na hora.</h1>
+          <p className="text-body-sm text-muted-foreground mt-1">
+            Veja horários livres e marque sem sair do app.
+          </p>
+        </div>
 
-        <PageContainer size="xl">
-          <div className="pt-10 pb-10 sm:pb-14">
-            <h1 className="text-h4 sm:text-h3 font-black tracking-tight text-foreground mb-2">
-              Encontre um profissional e agende na hora.
-            </h1>
-            <p className="text-muted-foreground text-body mb-6">
-              Veja os horários livres na agenda de quem você procura e marque sem sair do app.
-            </p>
-
-            <Form action="/servicos/" className="flex items-center gap-2 bg-card border border-border rounded-full shadow-soft px-2 py-2 max-w-xl">
-              <Search size={18} className="text-muted-foreground ml-2 shrink-0" aria-hidden="true" />
-              <label htmlFor="busca-home" className="sr-only">Buscar por serviço, prestador ou categoria</label>
-              <input
-                id="busca-home"
-                type="search"
-                name="q"
-                placeholder="Corte de cabelo, manicure, aula de inglês..."
-                className="flex-1 bg-transparent outline-none text-body placeholder:text-muted-foreground min-w-0"
-              />
-              <button
-                type="submit"
-                className="bg-accent hover:bg-accent-hover text-accent-foreground font-bold px-5 h-11 rounded-full transition-colors duration-200 cursor-pointer shrink-0"
-              >
-                Buscar
-              </button>
-            </Form>
-          </div>
-        </PageContainer>
+        <Form action="/servicos/" className="relative w-full md:max-w-sm shrink-0">
+          <Search
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+            aria-hidden="true"
+          />
+          <label htmlFor="busca-home" className="sr-only">Buscar por serviço, prestador ou categoria</label>
+          <input
+            id="busca-home"
+            type="search"
+            name="q"
+            placeholder="Buscar serviço ou profissional"
+            className="w-full h-11 rounded-lg border border-input bg-card pl-10 pr-4 text-body-sm text-foreground placeholder:text-muted-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent"
+          />
+        </Form>
       </section>
 
-      <PageContainer size="xl">
       {agendamentoProximo && (
-        <section className="w-full pb-8">
-          <Link
-            href="/agendamentos"
-            className="flex items-center gap-4 bg-secondary text-secondary-foreground rounded-2xl p-4 sm:p-5 hover:bg-secondary/80 transition-colors"
-          >
-            <div className="h-11 w-11 rounded-full bg-card/60 flex items-center justify-center shrink-0">
-              <CalendarDays size={20} aria-hidden="true" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-caption font-bold uppercase tracking-wide opacity-80">Seu próximo agendamento</p>
-              <p className="text-body font-semibold truncate">
-                {agendamentoProximo.servicoNome} com {agendamentoProximo.prestadorNome} ·{" "}
-                {new Date(agendamentoProximo.dataHora).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })}{" "}
-                às{" "}
-                {new Date(agendamentoProximo.dataHora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-              </p>
-            </div>
-          </Link>
-        </section>
+        <Link
+          href="/agendamentos"
+          className="flex items-center gap-3 bg-secondary text-secondary-foreground rounded-xl p-3 sm:p-4 hover:bg-secondary/80 transition-colors"
+        >
+          <span className="size-10 rounded-full bg-card/60 inline-flex items-center justify-center shrink-0">
+            <CalendarDays size={18} aria-hidden="true" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-caption font-semibold opacity-80">Seu próximo agendamento</span>
+            <span className="block text-body-sm font-semibold truncate">
+              {agendamentoProximo.servicoNome} com {agendamentoProximo.prestadorNome} ·{" "}
+              {new Date(agendamentoProximo.dataHora).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })} às{" "}
+              {new Date(agendamentoProximo.dataHora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          </span>
+          <ChevronRight size={18} className="shrink-0 opacity-70" aria-hidden="true" />
+        </Link>
       )}
 
       {listaCategorias.length > 0 && (
-        <section className="w-full py-8 border-t border-border">
-          <div className="mb-5">
-            <h2 className="text-h6 font-bold text-foreground">O que você está procurando hoje?</h2>
-          </div>
-          <nav
-            className="flex flex-nowrap gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pb-1"
-            aria-label="Categorias de serviço"
-          >
+        <nav aria-label="Categorias de serviço">
+          <ul className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0 pb-1">
             {listaCategorias.map((categoria) => (
-              <CategoryPill key={categoria.id} id={categoria.id} nome={categoria.nome} />
+              <li key={categoria.id} className="shrink-0">
+                <Link
+                  href={`/servicos?categoria=${categoria.id}`}
+                  className="group flex w-24 sm:w-28 flex-col items-center gap-2 rounded-lg p-2 text-center hover:bg-muted transition-colors"
+                >
+                  <span className="size-12 inline-flex items-center justify-center rounded-xl bg-secondary text-secondary-foreground">
+                    <CategoryIcon nome={categoria.nome} size={22} className="shrink-0" />
+                  </span>
+                  <span className="text-caption font-medium text-foreground leading-tight line-clamp-2">{categoria.nome}</span>
+                </Link>
+              </li>
             ))}
-          </nav>
+          </ul>
+        </nav>
+      )}
+
+      {comHorarioHoje.length > 0 && (
+        <section>
+          <CabecalhoSecao Icon={Clock} titulo="Com horário hoje" href="/servicos?hoje=1" />
+          <CarrosselServicos servicos={comHorarioHoje} rotulo="Serviços com horário hoje" />
         </section>
       )}
 
       <SecaoPertoDeVoce catalogo={catalogoComHorario} />
 
-      {comHorarioHoje.length > 0 && (
-        <section className="w-full py-10 border-t border-border">
-          <div className="flex items-center gap-2 mb-6">
-            <Clock size={18} className="text-primary" aria-hidden="true" />
-            <h2 className="text-h6 font-bold text-foreground">Com horário hoje</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-            {comHorarioHoje.map((servico) => (
-              <ServiceCard key={servico.id} servico={servico} />
-            ))}
-          </div>
-        </section>
-      )}
-
       {maisBemAvaliados.length > 0 && (
-        <section className="w-full py-10 border-t border-border">
-          <div className="flex items-center gap-2 mb-6">
-            <Star size={18} className="text-primary" aria-hidden="true" />
-            <h2 className="text-h6 font-bold text-foreground">Mais bem avaliados</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-            {maisBemAvaliados.map((servico) => (
-              <ServiceCard key={servico.id} servico={servico} />
-            ))}
-          </div>
+        <section>
+          <CabecalhoSecao Icon={Star} titulo="Mais bem avaliados" />
+          <CarrosselServicos servicos={maisBemAvaliados} rotulo="Serviços mais bem avaliados" />
         </section>
       )}
 
-      <section className="w-full py-10 border-t border-border">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-h6 font-bold text-foreground">Catálogo completo</h2>
-          <Link href="/servicos" className="text-body-sm font-medium text-primary hover:underline shrink-0">
-            Ver tudo
-          </Link>
+      {/* O catálogo completo não fica na home: um CTA leva à página de catálogo. */}
+      <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-primary text-primary-foreground p-6 sm:p-8">
+        <div>
+          <h2 className="text-h5 font-bold">Não achou o que procurava?</h2>
+          <p className="text-body-sm opacity-90 mt-1">
+            Explore todos os serviços, com filtros de categoria, preço, avaliação e horário.
+          </p>
         </div>
-        <CatalogoGrid catalogo={catalogoComHorario} />
+        <Button asChild variant="accent" size="lg" className="shrink-0">
+          <Link href="/servicos">
+            Ver catálogo completo
+            <ArrowRight aria-hidden="true" />
+          </Link>
+        </Button>
       </section>
-      </PageContainer>
-    </>
+    </PageContainer>
   );
 }

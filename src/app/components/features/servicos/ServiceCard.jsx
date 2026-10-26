@@ -30,7 +30,7 @@ export default function ServiceCard({ servico, interativo = true }) {
   const mostrarFavorito = interativo && favoritoInicial !== undefined;
 
   const hrefDetalhe = `/servicos/${slug || id}`;
-  const classeConteudo = "flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card rounded-t-2xl";
+  const classeConteudo = "flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card rounded-t-xl";
 
   const conteudo = (
     <>
@@ -38,7 +38,7 @@ export default function ServiceCard({ servico, interativo = true }) {
         {mostrarFavorito && <FavoritoButton tipo="servico" alvoId={id} favoritoInicial={favoritoInicial} />}
         {urlImagem ? (
           <Image
-            className="object-cover transition-transform duration-300 ease-apple group-hover:scale-105"
+            className="object-cover transition-transform group-hover:scale-105"
             src={urlImagem}
             alt={`Foto de ${nomeProfissional || "profissional"}`}
             fill
@@ -54,7 +54,7 @@ export default function ServiceCard({ servico, interativo = true }) {
 
         {nomeCategoria && (
           <span
-            className="absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-full max-w-[80%] shadow-soft inline-flex items-center gap-1.5 min-w-0"
+            className="absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-md max-w-[80%] shadow-soft inline-flex items-center gap-1.5 min-w-0"
             title={nomeCategoria}
           >
             <CategoryIcon nome={nomeCategoria} size={13} className="shrink-0" />
@@ -84,7 +84,7 @@ export default function ServiceCard({ servico, interativo = true }) {
               </span>
             </>
           ) : (
-            <span className="inline-flex items-center bg-muted text-muted-foreground text-caption font-semibold px-2 py-0.5 rounded-full">
+            <span className="inline-flex items-center bg-muted text-muted-foreground text-caption font-semibold px-2 py-0.5 rounded-md">
               <span className="sr-only-status">Sem avaliações ainda: </span>Novo
             </span>
           )}
@@ -105,7 +105,7 @@ export default function ServiceCard({ servico, interativo = true }) {
   return (
     <article
       aria-label={`${nomeServico || "Serviço"}, por ${nomeProfissional || "Profissional"}`}
-      className="group w-full bg-card rounded-2xl shadow-soft hover:shadow-card border border-border transition-all duration-base ease-apple hover:-translate-y-1 flex flex-col h-full overflow-hidden"
+      className="group relative w-full bg-card rounded-xl shadow-soft hover:shadow-card border border-border transition hover:-translate-y-1 flex flex-col h-full overflow-hidden"
     >
       {interativo ? (
         <Link href={hrefDetalhe} className={classeConteudo}>{conteudo}</Link>

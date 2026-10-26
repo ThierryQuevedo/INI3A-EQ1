@@ -44,7 +44,7 @@ export default function ThemeToggle({ className, variant = "icon", onNavigate })
       onClick={alternarTema}
       aria-label={temaEscuro ? "Mudar para modo claro" : "Mudar para modo escuro"}
       className={cn(
-        "h-11 w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted transition-colors duration-fast ease-apple cursor-pointer",
+        "h-11 w-11 rounded-full flex items-center justify-center text-foreground hover:bg-muted transition-colors cursor-pointer",
         className
       )}
     >

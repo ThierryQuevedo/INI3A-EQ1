@@ -12,7 +12,7 @@ export default function ConversaListItem({ conversa }) {
   return (
     <Link
       href={`/mensagens/${agendamentoId}`}
-      className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:bg-muted transition-colors duration-fast"
+      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:bg-muted transition-colors"
     >
       <Avatar nome={outroUsuario.nome} urlImagem={outroUsuario.urlImagem} size="lg" />
 

@@ -44,8 +44,9 @@ function CardAgendamento({ item, usuarioLogado }) {
 
   return (
     <Card padding="default" interactive>
-      <div className="flex items-center gap-5">
-        <div className={`w-16 h-16 shrink-0 flex items-center justify-center rounded-xl ${destaque ? 'bg-info/15' : 'bg-secondary'}`}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
+        <div className="flex items-center gap-4 min-w-0 flex-1">
+        <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/15' : 'bg-secondary'}`}>
           <p className={`text-body-sm font-bold ${destaque ? 'text-info' : 'text-primary'}`}>
             {formatarHora(item.dataHora)}
           </p>
@@ -53,8 +54,8 @@ function CardAgendamento({ item, usuarioLogado }) {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-body-lg font-bold text-foreground truncate">{item.servicoNome}</h3>
-            <span className={`px-2 h-5 inline-flex items-center rounded-full text-[10px] font-bold uppercase shrink-0 ${destaque ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
+            <h3 className="text-body-lg font-bold text-foreground min-w-0 break-words">{item.servicoNome}</h3>
+            <span className={`px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 ${destaque ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
               {dataTag}
             </span>
           </div>
@@ -69,8 +70,10 @@ function CardAgendamento({ item, usuarioLogado }) {
           )}
         </div>
 
-        <div className="flex flex-col items-end gap-2 shrink-0">
-          <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-full text-caption font-semibold ${statusBadgeClass(item.status)}`}>
+        </div>
+
+        <div className="flex items-center justify-between gap-2 sm:flex-col sm:items-end shrink-0">
+          <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-md text-caption font-semibold ${statusBadgeClass(item.status)}`}>
             <Icon size={13} aria-hidden="true" />
             {rotuloStatus(item.status)}
           </span>
@@ -81,7 +84,6 @@ function CardAgendamento({ item, usuarioLogado }) {
               label="Concluir"
               titulo="Concluir agendamento?"
               descricao="Confirma que o serviço foi realizado?"
-              className="inline-flex items-center gap-1.5 bg-primary hover:bg-primary-hover text-primary-foreground text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
             />
           )}
           {STATUS_CANCELAVEL.includes(item.status) && (
@@ -92,7 +94,7 @@ function CardAgendamento({ item, usuarioLogado }) {
               titulo="Cancelar agendamento?"
               descricao="Essa ação não pode ser desfeita."
               variant="destructive"
-              className="inline-flex items-center gap-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive text-caption font-bold px-4 h-9 rounded-full transition-colors duration-fast cursor-pointer"
+              aparencia="perigo"
             />
           )}
         </div>
@@ -110,7 +112,7 @@ function CardAgendamento({ item, usuarioLogado }) {
           />
           <Link
             href={`/avaliar/${item.id}`}
-            className="mt-3 inline-flex items-center gap-1.5 h-11 px-4 rounded-full border border-border bg-card hover:bg-muted text-body-sm font-semibold text-foreground transition-colors duration-fast"
+            className="mt-3 inline-flex items-center gap-1.5 h-11 px-4 rounded-lg border border-border bg-card hover:bg-muted text-body-sm font-semibold text-foreground transition-colors"
           >
             <Star size={15} aria-hidden="true" />
             {item.avaliacaoNota ? 'Ver avaliação' : 'Abrir página de avaliação'}
@@ -125,7 +127,7 @@ function CardAgendamento({ item, usuarioLogado }) {
 function CardResumo({ label, valor, Icon, cor }) {
   return (
     <Card padding="sm" className="flex items-center gap-3">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${cor}`}>
+      <div className={`max-sm:hidden w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${cor}`}>
         <Icon size={18} aria-hidden="true" />
       </div>
       <div>

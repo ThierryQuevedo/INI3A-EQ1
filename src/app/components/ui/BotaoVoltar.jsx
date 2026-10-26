@@ -2,8 +2,16 @@
 
 import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
-export default function BotaoVoltar({ fallbackHref = '/servicos', className = '' }) {
+const VARIANTES = {
+  // dentro do fluxo da página: discreto, sem cara de card
+  padrao: 'h-10 px-3 -ml-3 text-muted-foreground hover:text-foreground hover:bg-muted',
+  // sobre banner/imagem: precisa de fundo próprio para manter contraste
+  sobreposto: 'h-10 px-3.5 text-foreground bg-card/95 hover:bg-card border border-border shadow-soft',
+};
+
+export default function BotaoVoltar({ fallbackHref = '/servicos', variant = 'padrao', className = '' }) {
   const router = useRouter();
 
   function handleClick() {
@@ -18,10 +26,11 @@ export default function BotaoVoltar({ fallbackHref = '/servicos', className = ''
 
   return (
     <button
+      type="button"
       onClick={handleClick}
-      className={`inline-flex items-center gap-2 h-11 text-body-sm font-semibold text-foreground bg-card hover:bg-muted px-4 rounded-full border border-border shadow-soft transition-colors duration-200 ease-apple cursor-pointer ${className}`}
+      className={cn('inline-flex items-center gap-2 rounded-lg text-body-sm font-semibold transition-colors cursor-pointer', VARIANTES[variant], className)}
     >
-      <ArrowLeft size={16} />
+      <ArrowLeft size={16} className="shrink-0" aria-hidden="true" />
       Voltar
     </button>
   );

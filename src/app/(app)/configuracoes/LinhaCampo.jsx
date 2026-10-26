@@ -21,7 +21,7 @@ export default function LinhaCampo({ icon, label, valor, vazio = false, onEditar
           type="button"
           onClick={onEditar}
           aria-label={`Editar ${label}`}
-          className="h-11 w-11 shrink-0 bg-muted hover:bg-accent hover:text-accent-foreground rounded-full text-muted-foreground transition-all duration-200 flex items-center justify-center cursor-pointer"
+          className="h-11 w-11 shrink-0 bg-muted hover:bg-accent hover:text-accent-foreground rounded-full text-muted-foreground transition flex items-center justify-center cursor-pointer"
         >
           <Pencil size={16} aria-hidden="true" />
         </button>

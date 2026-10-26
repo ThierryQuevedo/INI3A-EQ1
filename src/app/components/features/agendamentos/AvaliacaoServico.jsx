@@ -24,7 +24,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
               <Star
                 key={n}
                 size={16}
-                className={n <= nota ? "fill-warning stroke-warning" : "stroke-muted-foreground"}
+                className={n <= nota ? "fill-rating stroke-rating" : "stroke-muted-foreground"}
               />
             ))}
           </div>
@@ -36,7 +36,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
         {naPagina && (
           <Link
             href="/agendamentos"
-            className="mt-6 inline-flex items-center justify-center bg-primary text-primary-foreground hover:opacity-90 text-body-sm font-bold px-6 h-11 rounded-full transition-opacity duration-200"
+            className="mt-6 inline-flex items-center justify-center bg-primary text-primary-foreground hover:opacity-90 text-body-sm font-bold px-6 h-11 rounded-lg transition-opacity"
           >
             Ver meus agendamentos
           </Link>
@@ -84,7 +84,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
           >
             <Star
               size={naPagina ? 32 : 26}
-              className={notaExibida >= n ? "fill-warning stroke-warning" : "stroke-muted-foreground"}
+              className={notaExibida >= n ? "fill-rating stroke-rating" : "stroke-muted-foreground"}
             />
           </button>
         ))}
@@ -106,7 +106,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
         type="button"
         onClick={enviarAvaliacao}
         disabled={pending}
-        className="mt-2 bg-accent hover:bg-accent-hover disabled:opacity-60 disabled:cursor-not-allowed text-accent-foreground text-caption font-bold px-4 h-11 rounded-full transition-colors duration-200 cursor-pointer"
+        className="mt-2 bg-accent hover:bg-accent-hover disabled:opacity-60 disabled:cursor-not-allowed text-accent-foreground text-caption font-bold px-4 h-11 rounded-lg transition-colors cursor-pointer"
       >
         {pending ? "Enviando..." : "Enviar avaliação"}
       </button>
