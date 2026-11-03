@@ -3,7 +3,7 @@ import Skeleton from "@/app/components/ui/Skeleton";
 
 export default function InfoPageSkeleton() {
   return (
-    <div className="min-h-screen bg-background font-sans antialiased">
+    <div className="font-sans antialiased">
       <ProgressBar />
       <div className="max-w-3xl mx-auto px-6 py-16">
         <Skeleton className="h-4 w-28 mb-3" />

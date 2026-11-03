@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, servicos } from '@/db/schema';
 import { getSession } from './auth.actions';
@@ -79,13 +79,22 @@ export async function salvarImagemServico(servicoId, urlImagem) {
 
     const valorFinal = urlImagem && urlImagem.trim() !== '' ? urlImagem.trim() : null;
 
-    await db
+    // Só o prestador dono do serviço pode trocar a foto (servicos.prestadorId
+    // é o id do usuário — ver schema).
+    const atualizados = await db
       .update(servicos)
       .set({ urlImagem: valorFinal })
-      .where(eq(servicos.id, Number(servicoId)));
+      .where(and(eq(servicos.id, Number(servicoId)), eq(servicos.prestadorId, usuario.id)))
+      .returning({ slug: servicos.slug });
+
+    if (atualizados.length === 0) {
+      return { sucesso: false, erro: 'Você não tem permissão para alterar este serviço.' };
+    }
 
     revalidatePath('/servicos');
+    revalidatePath(`/servicos/${atualizados[0].slug}`);
     revalidatePath('/dashboard');
+    revalidatePath('/', 'layout');
 
     return { sucesso: true, url: valorFinal };
   } catch (error) {

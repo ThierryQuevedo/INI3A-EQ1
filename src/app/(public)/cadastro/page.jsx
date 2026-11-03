@@ -88,7 +88,7 @@ export default function CadastrarPage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100vh-4rem)]">
+    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100dvh-4rem)]">
       <AuthShowcase
         title="Cadastre seu horário livre ou encontre um profissional na hora."
         className="max-lg:hidden lg:flex"
@@ -96,7 +96,7 @@ export default function CadastrarPage() {
 
       <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
         <Link href="/" className="w-48 mb-8 lg:hidden"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
-        <Card className="w-full max-w-md shadow-elevated p-8 md:p-10">
+        <Card className="w-full max-w-md p-8 md:p-10">
 
         <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
           Criar conta Marca Aí
@@ -117,6 +117,8 @@ export default function CadastrarPage() {
               id="nome"
               type="text"
               name="nome"
+              autoComplete="name"
+              autoCapitalize="words"
               value={campos.nome}
               onChange={handleChange}
               aria-invalid={!!erros.nome}
@@ -129,6 +131,9 @@ export default function CadastrarPage() {
               id="email"
               type="email"
               name="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
               value={campos.email}
               onChange={handleChange}
               aria-invalid={!!erros.email}
@@ -139,13 +144,16 @@ export default function CadastrarPage() {
           <FormField id="cel" label="Telefone" error={erros.cel}>
             <Input
               id="cel"
-              type="text"
+              type="tel"
               name="cel"
-              inputMode="numeric"
+              autoComplete="tel-national"
+              inputMode="tel"
               value={campos.cel}
               onChange={handleChange}
               onKeyDown={(e) => {
-                const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter"];
+                // Vários teclados Android mandam "Unidentified"/"Process" no keydown:
+                // deixar passar — mascararTelefone() já limpa o que não é número.
+                const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter", "Unidentified", "Process"];
                 if (permitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
                 if (!/^[0-9]$/.test(e.key)) {
                   e.preventDefault();
@@ -163,6 +171,7 @@ export default function CadastrarPage() {
                 id="senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
+                autoComplete="new-password"
                 value={campos.senha}
                 onChange={handleChange}
                 aria-invalid={!!erros.senha}
@@ -174,7 +183,7 @@ export default function CadastrarPage() {
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
-                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors duration-fast cursor-pointer"
+                className="absolute right-2 top-2 -translate-y-1/2 h-9 w-9 flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
               >
                 {showPassword ? (
                   <Eye className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
@@ -215,7 +224,7 @@ export default function CadastrarPage() {
             </div>
           </div>
 
-          <Button type="submit" variant="accent" size="lg" className="w-full mt-2" disabled={isPending}>
+          <Button type="submit" size="lg" className="w-full mt-2" disabled={isPending}>
             {isPending ? "Cadastrando..." : "Cadastrar"}
           </Button>
         </form>
@@ -228,9 +237,12 @@ export default function CadastrarPage() {
         </Button>
 
         <div className="text-center mt-6">
-          <Link href="/login" className="text-body-sm text-primary hover:underline font-medium">
-            Já tem uma conta? Faça login
-          </Link>
+          <p className="text-body-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link href="/login" className="font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
+              Faça login
+            </Link>
+          </p>
         </div>
 
         </Card>

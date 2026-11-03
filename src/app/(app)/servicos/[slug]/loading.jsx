@@ -4,34 +4,30 @@ import PageContainer from "@/app/components/ui/PageContainer";
 
 export default function LoadingDetalheServico() {
   return (
-    <div className="min-h-screen">
+    <PageContainer size="lg" className="py-6 sm:py-8">
       <ProgressBar />
-      <div className="relative h-52 sm:h-60 w-full bg-muted" />
+      <Skeleton className="h-10 w-24 mb-4" />
 
-      <PageContainer size="lg" className="-mt-16 relative z-10 pb-20">
-        <div className="flex flex-col items-center md:flex-row md:justify-between bg-card border border-border p-6 rounded-2xl gap-6 shadow-elevated">
-          <div className="flex flex-col items-center md:flex-row gap-6 w-full">
-            <Skeleton className="size-28 sm:size-32 rounded-2xl shrink-0" />
-            <div className="flex flex-col gap-2 flex-1 items-center md:items-start">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-7 w-56" />
-              <Skeleton className="h-4 w-40" />
-            </div>
-          </div>
-          <Skeleton className="h-14 w-full md:w-56 rounded-full shrink-0" />
+      <div className="flex items-start gap-4 sm:gap-6">
+        <Skeleton className="w-28 sm:w-44 lg:w-52 aspect-square rounded-2xl shrink-0" />
+        <div className="flex-1 space-y-3 pt-1">
+          <Skeleton className="h-6 w-32" />
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-4 w-48" />
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-10">
-          <div className="md:col-span-2 space-y-6">
-            <Skeleton className="h-40 rounded-2xl" />
-            <div className="grid grid-cols-2 gap-4">
-              <Skeleton className="h-20 rounded-2xl" />
-              <Skeleton className="h-20 rounded-2xl" />
-            </div>
-          </div>
-          <Skeleton className="h-64 rounded-2xl" />
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_20rem] gap-6 lg:gap-8 mt-8 items-start">
+        <div className="order-first lg:order-none lg:col-start-2 lg:row-start-1 space-y-4">
+          <Skeleton className="h-36 rounded-xl" />
+          <Skeleton className="h-52 rounded-xl" />
         </div>
-      </PageContainer>
-    </div>
+        <div className="lg:col-start-1 lg:row-start-1 space-y-6">
+          <Skeleton className="h-32 rounded-xl" />
+          <Skeleton className="h-56 rounded-xl" />
+        </div>
+      </div>
+    </PageContainer>
   );
 }

@@ -74,18 +74,18 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)]">
+    <div className="flex flex-col h-[calc(100dvh-8rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-4rem)]">
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
         <Link
           href="/mensagens"
-          className="md:hidden h-9 w-9 flex items-center justify-center rounded-full hover:bg-muted shrink-0 -ml-1"
+          className="md:hidden relative area-toque h-9 w-9 flex items-center justify-center rounded-full hover:bg-muted shrink-0 -ml-1"
           aria-label="Voltar para conversas"
         >
           <ChevronLeft size={20} aria-hidden="true" />
         </Link>
         <Avatar nome={outroUsuario.nome} urlImagem={outroUsuario.urlImagem} />
         <div className="min-w-0">
-          <h2 className="text-body font-bold text-foreground truncate">{outroUsuario.nome}</h2>
+          <h1 className="text-body font-bold text-foreground truncate">{outroUsuario.nome}</h1>
           <p className="text-caption text-muted-foreground truncate">{servicoNome}</p>
         </div>
       </div>

@@ -3,7 +3,7 @@ import Skeleton from "@/app/components/ui/Skeleton";
 
 export default function LoadingAgendamentos() {
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <ProgressBar />
       <div className="max-w-5xl mx-auto p-6 sm:p-8 font-sans">
         <div className="border-b border-border pb-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -11,12 +11,12 @@ export default function LoadingAgendamentos() {
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-4 w-56" />
           </div>
-          <Skeleton className="h-11 w-48 rounded-full" />
+          <Skeleton className="h-11 w-48 rounded-lg" />
         </div>
 
         <div className="grid gap-4">
           {Array.from({ length: 4 }).map((_, indice) => (
-            <Skeleton key={indice} className="h-28 rounded-2xl" />
+            <Skeleton key={indice} className="h-28 rounded-xl" />
           ))}
         </div>
       </div>

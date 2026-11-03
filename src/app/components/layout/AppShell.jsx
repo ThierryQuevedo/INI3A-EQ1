@@ -8,9 +8,9 @@ export default async function AppShell({ children }) {
   const usuario = await getSession();
 
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground">
+    <div className="flex flex-col min-h-screen bg-background text-foreground pb-[calc(4rem+env(safe-area-inset-bottom,0px))] md:pb-0">
       <Header usuario={usuario} />
-      <main id="main-content" className="flex-1 pb-20 md:pb-0">
+      <main id="main-content" className="flex-1">
         <PageTransition>{children}</PageTransition>
       </main>
       <Footer />

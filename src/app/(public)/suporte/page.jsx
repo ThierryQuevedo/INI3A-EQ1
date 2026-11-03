@@ -42,7 +42,7 @@ export default function SuportePage() {
 
       <div className="space-y-3 mb-10">
         {PERGUNTAS.map((item) => (
-          <details key={item.pergunta} className="group bg-card border border-border rounded-2xl p-5 shadow-soft">
+          <details key={item.pergunta} className="group bg-card border border-border rounded-xl p-5 shadow-soft">
             <summary className="font-bold text-foreground cursor-pointer list-none flex items-center justify-between gap-3">
               {item.pergunta}
               <span className="text-muted-foreground text-body-lg group-open:rotate-45 transition-transform shrink-0" aria-hidden="true">+</span>

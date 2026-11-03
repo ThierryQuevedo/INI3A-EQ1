@@ -180,7 +180,7 @@ export default function ProfileAvatar({
             }
           }}
           aria-label="Foto de perfil. Clique ou arraste para alterar"
-          className={`${tamanho} rounded-full overflow-hidden border-4 border-background bg-card shadow-elevated flex items-center justify-center relative transition-all duration-200 cursor-pointer select-none ${
+          className={`${tamanho} rounded-full overflow-hidden border-4 border-background bg-card shadow-soft flex items-center justify-center relative transition cursor-pointer select-none ${
             isDragging
               ? "ring-4 ring-primary ring-offset-2 ring-offset-background scale-105"
               : "group-hover:border-primary/40 focus-visible:ring-4 focus-visible:ring-primary/30"
@@ -190,7 +190,7 @@ export default function ProfileAvatar({
             <img
               src={imagemExibida}
               alt={usuario?.nome ? `Foto de ${usuario.nome}` : "Foto de perfil"}
-              className={`w-full h-full object-cover transition-opacity duration-200 ${
+              className={`w-full h-full object-cover transition-opacity ${
                 isUploading ? "opacity-40" : "opacity-100"
               }`}
             />
@@ -201,9 +201,9 @@ export default function ProfileAvatar({
           )}
 
           {!isUploading && (
-            <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white gap-1 z-10">
+            <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 z-10">
               <Camera size={24} className="stroke-[2.2]" aria-hidden="true" />
-              <span className="text-[11px] font-semibold tracking-wide uppercase">
+              <span className="text-caption font-semibold">
                 Alterar
               </span>
             </div>
@@ -212,7 +212,7 @@ export default function ProfileAvatar({
           {isDragging && (
             <div className="absolute inset-0 bg-primary/90 text-primary-foreground backdrop-blur-sm flex flex-col items-center justify-center gap-1 z-20">
               <Camera size={26} className="animate-bounce" aria-hidden="true" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+              <span className="text-caption font-bold">
                 Solte aqui
               </span>
             </div>
@@ -221,7 +221,7 @@ export default function ProfileAvatar({
           {isUploading && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 z-20 text-white">
               <Loader2 size={30} className="animate-spin text-white" aria-hidden="true" />
-              <span className="text-[11px] font-semibold">Salvando foto...</span>
+              <span className="text-caption font-semibold">Salvando foto...</span>
             </div>
           )}
         </div>
@@ -232,7 +232,7 @@ export default function ProfileAvatar({
             onClick={handleRemoverFoto}
             title="Remover foto de perfil"
             aria-label="Remover foto de perfil"
-            className="absolute -bottom-1 -right-1 z-20 w-8 h-8 rounded-full bg-card hover:bg-destructive hover:text-destructive-foreground text-muted-foreground border border-border shadow-soft flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute area-toque -bottom-1 -right-1 z-20 w-8 h-8 rounded-full bg-card hover:bg-destructive hover:text-destructive-foreground text-muted-foreground border border-border shadow-soft flex items-center justify-center transition-colors cursor-pointer"
           >
             <Trash2 size={14} aria-hidden="true" />
           </button>
@@ -243,7 +243,7 @@ export default function ProfileAvatar({
         <div
           role="status"
           aria-live="polite"
-          className={`mt-3 flex items-center gap-2 px-3 py-1.5 rounded-full text-caption font-medium border shadow-soft transition-all duration-200 animate-in fade-in slide-in-from-top-1 ${
+          className={`mt-3 flex items-center gap-2 px-3 py-1.5 rounded-lg text-caption font-medium border shadow-soft transition ${
             toast.tipo === "sucesso"
               ? "bg-success/10 text-success border-success/30"
               : "bg-destructive/10 text-destructive border-destructive/30"

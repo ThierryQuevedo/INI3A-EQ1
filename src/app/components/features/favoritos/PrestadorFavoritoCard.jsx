@@ -7,13 +7,13 @@ export default function PrestadorFavoritoCard({ prestador }) {
   const { id, slug, nome, urlImagem, enderecoTexto, avaliacaoMedia = 0, totalAvaliacoes = 0 } = prestador;
 
   return (
-    <article className="group relative bg-card rounded-2xl shadow-soft hover:shadow-card border border-border transition-all duration-base ease-apple hover:-translate-y-1 overflow-hidden">
+    <article className="group relative bg-card rounded-xl shadow-soft hover:shadow-card border border-border transition hover:-translate-y-1 overflow-hidden">
       <FavoritoButton tipo="prestador" alvoId={id} favoritoInicial={true} />
       <Link
         href={`/prestador/${slug || id}`}
-        className="flex gap-4 p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card rounded-2xl"
+        className="flex gap-4 p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card rounded-xl"
       >
-        <div className="relative size-16 shrink-0 rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+        <div className="relative size-16 shrink-0 rounded-lg overflow-hidden bg-muted flex items-center justify-center">
           {urlImagem ? (
             <Image src={urlImagem} alt="" fill className="object-cover" sizes="64px" />
           ) : (

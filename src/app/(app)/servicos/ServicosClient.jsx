@@ -21,6 +21,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
     const [filtros, setFiltros] = useState(() => ({
         ...FILTROS_PADRAO,
         categoriaId: searchParams.get('categoria') || '',
+        comHorarioHoje: searchParams.get('hoje') === '1',
     }));
     const [posicao, setPosicao] = useState(null);
     const [statusLocalizacao, setStatusLocalizacao] = useState('idle'); // idle | buscando | pronta | erro
@@ -153,7 +154,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                                 }
                             />
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                                 {servicosFiltrados.map((servico) => (
                                     <ServiceCard key={servico.id} servico={servico} />
                                 ))}

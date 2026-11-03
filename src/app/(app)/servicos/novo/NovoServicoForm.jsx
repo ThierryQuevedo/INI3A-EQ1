@@ -1,25 +1,37 @@
 "use client";
-import React, { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { startTransition, useActionState, useEffect, useMemo, useState } from 'react';
+import { AlertCircle, Loader2 } from 'lucide-react';
 import ServiceImageUpload from '@/app/components/features/servicos/ServiceImageUpload';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import Combobox from '@/app/components/ui/Combobox';
-import PageContainer from '@/app/components/ui/PageContainer';
+import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
+import BotaoVoltar from '@/app/components/ui/BotaoVoltar';
+import FormField from '@/app/components/ui/FormField';
+import { Input } from '@/app/components/ui/input';
+import { Button } from '@/app/components/ui/button';
 
-const CAMPO_CLASSE =
-  'w-full px-4 py-3 rounded-xl bg-card border border-border text-foreground text-body-sm placeholder:text-muted-foreground shadow-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all';
+// Mesmo contorno, foco e estado de erro do <Input>, para o campo de várias linhas.
+const CLASSE_TEXTAREA =
+  'w-full min-h-28 bg-background border border-input rounded-lg px-4 py-3 text-body text-foreground placeholder:text-muted-foreground outline-none transition resize-y focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent';
+
+const ESTADO_INICIAL = { erro: null, campo: null };
 
 export default function NovoServicoForm({ categorias = [], action, nomePrestador }) {
-  const router = useRouter();
+  const [estado, formAction, enviando] = useActionState(action, ESTADO_INICIAL);
 
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
   const [novaCategoria, setNovaCategoria] = useState('');
-  const [erroCategoria, setErroCategoria] = useState(false);
+  const [erroCategoriaLocal, setErroCategoriaLocal] = useState(false);
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [duracao, setDuracao] = useState('');
+  const [descricao, setDescricao] = useState('');
   const [urlImagem, setUrlImagem] = useState('');
+
+  // Erro vindo do servidor: leva o foco ao campo em questão.
+  useEffect(() => {
+    if (estado?.campo) document.getElementById(estado.campo)?.focus();
+  }, [estado]);
 
   const nomeCategoriaPreview = useMemo(() => {
     if (categoriaSelecionada === 'outro') return novaCategoria.trim();
@@ -36,16 +48,31 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
     urlImagem,
   };
 
-  function escolherCategoria(valor) {
-    setCategoriaSelecionada(valor);
-    setErroCategoria(false);
+  function erroDoCampo(campo) {
+    return estado?.campo === campo ? estado.erro : null;
   }
 
+  const erroCategoria = erroCategoriaLocal ? 'Selecione uma categoria para continuar.' : erroDoCampo('categoriaId');
+  // Erro do servidor sem campo (falha ao salvar) aparece junto do botão.
+  const erroGeral = estado?.erro && !estado?.campo ? estado.erro : null;
+
+  function escolherCategoria(valor) {
+    setCategoriaSelecionada(valor);
+    setErroCategoriaLocal(false);
+  }
+
+  // Envio manual: quando o React executa a `action` do <form>, ele reseta o
+  // formulário a cada envio e os campos controlados voltam a mostrar o valor
+  // anterior enquanto o estado guarda o novo.
   function aoSubmeter(e) {
+    e.preventDefault();
     if (!categoriaSelecionada) {
-      e.preventDefault();
-      setErroCategoria(true);
+      setErroCategoriaLocal(true);
+      document.getElementById('categoriaId')?.focus();
+      return;
     }
+    const dados = new FormData(e.currentTarget);
+    startTransition(() => formAction(dados));
   }
 
   function aoMudarPreco(e) {
@@ -59,188 +86,195 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
     setPreco(e.target.value);
   }
 
+  function propsErro(campo) {
+    const erro = erroDoCampo(campo);
+    return erro ? { 'aria-invalid': true, 'aria-describedby': `${campo}-erro` } : {};
+  }
+
   return (
     <PageContainer size="lg" className="py-8">
+      <BotaoVoltar fallbackHref="/dashboard" className="h-toque mb-3" />
+      <PageHeader
+        title="Novo serviço"
+        description="Preencha as informações abaixo. O card de pré-visualização mostra como ele vai aparecer para os clientes."
+        className="mb-6"
+      />
 
-        <div className="mb-6">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-full text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors duration-fast cursor-pointer"
-          >
-            <ArrowLeft size={16} aria-hidden="true" />
-            Voltar
-          </button>
-          <h1 className="text-h4 font-extrabold text-foreground tracking-tight">Novo serviço</h1>
-          <p className="text-body-sm text-muted-foreground mt-1">
-            Preencha as informações abaixo. O card à direita mostra como ele vai aparecer para os clientes.
-          </p>
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
+        <form
+          // `action` fica para o envio antes da hidratação (POST progressivo,
+          // nada na URL). Hidratado, o preventDefault do onSubmit faz o React
+          // não executá-la — e, com isso, não resetar o formulário.
+          action={formAction}
+          onSubmit={aoSubmeter}
+          aria-busy={enviando}
+          className="bg-card rounded-xl shadow-soft border border-border p-6 md:p-8 space-y-6"
+        >
+          <FormField id="nome" label="Nome do serviço" required error={erroDoCampo('nome')}>
+            <Input
+              id="nome"
+              name="nome"
+              placeholder="Ex: Consultoria de Software"
+              value={nome}
+              onChange={(e) => setNome(e.target.value)}
+              maxLength={120}
+              autoComplete="off"
+              required
+              {...propsErro('nome')}
+            />
+          </FormField>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
+          <FormField id="categoriaId" label="Categoria" required error={erroCategoria}>
+            <input type="hidden" name="categoriaId" value={categoriaSelecionada} />
+            <Combobox
+              id="categoriaId"
+              aria-label="Categoria"
+              aria-invalid={!!erroCategoria}
+              aria-describedby={erroCategoria ? 'categoriaId-erro' : undefined}
+              value={categoriaSelecionada}
+              onChange={escolherCategoria}
+              placeholder="Selecione uma categoria"
+              className="[&>button]:h-12 [&>button]:text-body"
+              options={[
+                ...categorias.map((cat) => ({ value: String(cat.id), label: cat.nome })),
+                { value: 'outro', label: 'Outro (especificar)' },
+              ]}
+            />
+          </FormField>
 
-          <form action={action} onSubmit={aoSubmeter} className="bg-card rounded-2xl shadow-soft border border-border p-6 md:p-8 space-y-5">
-
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="nome" className="text-body-sm font-medium text-foreground">
-                Nome do serviço <span className="text-destructive" aria-hidden="true">*</span>
-              </label>
-              <input
-                type="text"
-                id="nome"
-                name="nome"
-                placeholder="Ex: Consultoria de Software"
-                value={nome}
-                onChange={(e) => setNome(e.target.value)}
-                className={CAMPO_CLASSE}
+          {categoriaSelecionada === 'outro' && (
+            <FormField
+              id="novaCategoria"
+              label="Qual é a nova categoria?"
+              required
+              error={erroDoCampo('novaCategoria')}
+            >
+              <Input
+                id="novaCategoria"
+                name="novaCategoria"
+                placeholder="Digite o nome da categoria"
+                value={novaCategoria}
+                onChange={(e) => setNovaCategoria(e.target.value)}
+                maxLength={60}
                 required
+                {...propsErro('novaCategoria')}
               />
-            </div>
+            </FormField>
+          )}
 
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="categoriaId" className="text-body-sm font-medium text-foreground">
-                Categoria <span className="text-destructive" aria-hidden="true">*</span>
-              </label>
-              <input type="hidden" name="categoriaId" value={categoriaSelecionada} />
-              <Combobox
-                id="categoriaId"
-                aria-label="Categoria"
-                value={categoriaSelecionada}
-                onChange={escolherCategoria}
-                placeholder="Selecione uma categoria"
-                className="[&>button]:h-12"
-                options={[
-                  ...categorias.map((cat) => ({ value: String(cat.id), label: cat.nome })),
-                  { value: 'outro', label: 'Outro (especificar)' },
-                ]}
-              />
-              {erroCategoria && (
-                <p role="alert" className="text-caption font-medium text-destructive">Selecione uma categoria para continuar.</p>
-              )}
-            </div>
-
-            {categoriaSelecionada === 'outro' && (
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="novaCategoria" className="text-body-sm font-medium text-foreground">
-                  Qual é a nova categoria? <span className="text-destructive" aria-hidden="true">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="novaCategoria"
-                  name="novaCategoria"
-                  placeholder="Digite o nome da categoria"
-                  value={novaCategoria}
-                  onChange={(e) => setNovaCategoria(e.target.value)}
-                  className={CAMPO_CLASSE}
-                  required={categoriaSelecionada === 'outro'}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-4">
+            <FormField id="preco" label="Preço" required error={erroDoCampo('preco')}>
+              <div className="relative">
+                <span
+                  className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground text-body pointer-events-none"
+                  aria-hidden="true"
+                >
+                  R$
+                </span>
+                <Input
+                  type="number"
+                  id="preco"
+                  name="preco"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0.01"
+                  max="999999.99"
+                  placeholder="0,00"
+                  value={preco}
+                  onKeyDown={(e) => {
+                    if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+                  }}
+                  onChange={aoMudarPreco}
+                  className="pl-11 tabular-nums"
+                  required
+                  {...propsErro('preco')}
                 />
               </div>
-            )}
+            </FormField>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="preco" className="text-body-sm font-medium text-foreground">
-                  Preço (R$) <span className="text-destructive" aria-hidden="true">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-4 text-muted-foreground text-body-sm pointer-events-none">
-                    R$
-                  </span>
-                  <input
-                    type="number"
-                    id="preco"
-                    name="preco"
-                    step="0.01"
-                    min="0"
-                    max="999999.99"
-                    maxLength={9}
-                    placeholder="0,00"
-                    value={preco}
-                    onKeyDown={(e) => {
-                      if (['e', 'E', '+', '-'].includes(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    onChange={aoMudarPreco}
-                    className={`${CAMPO_CLASSE} pl-10`}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor="duracaoEstimada" className="text-body-sm font-medium text-foreground">
-                  Duração estimada <span className="text-destructive" aria-hidden="true">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    id="duracaoEstimada"
-                    name="duracaoEstimada"
-                    min="1"
-                    placeholder="Ex: 60"
-                    value={duracao}
-                    onChange={(e) => setDuracao(e.target.value)}
-                    className={`${CAMPO_CLASSE} pr-16`}
-                    required
-                  />
-                  <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground text-caption pointer-events-none">
-                    minutos
-                  </span>
-                </div>
-              </div>
-
-            </div>
-
-            <ServiceImageUpload
-              name="urlImagem"
-              label="Foto de apresentação do serviço"
-              maxSizeMB={5}
-              onChange={(url) => setUrlImagem(url || '')}
-            />
-
-            <div className="flex flex-col gap-1.5">
-              <div className="flex justify-between items-center">
-                <label htmlFor="descricao" className="text-body-sm font-medium text-foreground">
-                  Descrição
-                </label>
-                <span className="text-caption text-muted-foreground">Opcional</span>
-              </div>
-              <textarea
-                id="descricao"
-                name="descricao"
-                rows="4"
-                placeholder="Descreva detalhadamente o escopo..."
-                className={`${CAMPO_CLASSE} resize-none`}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full mt-3 h-13 bg-accent hover:bg-accent-hover text-accent-foreground font-display font-bold text-body-lg rounded-full shadow-soft transition-all duration-200 ease-apple active:scale-[0.98] cursor-pointer text-center"
+            <FormField
+              id="duracaoEstimada"
+              label="Duração estimada"
+              required
+              error={erroDoCampo('duracaoEstimada')}
             >
-              Cadastrar serviço
-            </button>
-
-          </form>
-
-          <div className="lg:sticky lg:top-8">
-            <p className="text-caption font-semibold text-muted-foreground uppercase tracking-wide mb-3 text-center lg:text-left">
-              Pré-visualização
-            </p>
-            <div className="bg-muted/40 border border-border rounded-2xl p-5 flex justify-center">
-              <div className="w-full max-w-[240px]">
-                <ServiceCard servico={servicoPreview} interativo={false} />
+              <div className="relative">
+                <Input
+                  type="number"
+                  id="duracaoEstimada"
+                  name="duracaoEstimada"
+                  inputMode="numeric"
+                  min="1"
+                  max="1440"
+                  step="1"
+                  placeholder="Ex: 60"
+                  value={duracao}
+                  onChange={(e) => setDuracao(e.target.value)}
+                  className="pr-24 tabular-nums"
+                  required
+                  {...propsErro('duracaoEstimada')}
+                />
+                <span
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-muted-foreground text-body-sm pointer-events-none"
+                  aria-hidden="true"
+                >
+                  minutos
+                </span>
               </div>
-            </div>
-            <p className="text-caption text-muted-foreground mt-3 text-center lg:text-left">
-              É assim que os clientes vão ver seu serviço na busca.
-            </p>
+            </FormField>
           </div>
 
-        </div>
+          <ServiceImageUpload
+            name="urlImagem"
+            label="Foto de apresentação do serviço"
+            maxSizeMB={5}
+            onChange={(url) => setUrlImagem(url || '')}
+          />
 
+          <FormField id="descricao" label="Descrição" hint="Opcional.">
+            <textarea
+              id="descricao"
+              name="descricao"
+              rows={4}
+              maxLength={2000}
+              placeholder="Descreva detalhadamente o escopo..."
+              aria-describedby="descricao-dica"
+              value={descricao}
+              onChange={(e) => setDescricao(e.target.value)}
+              className={CLASSE_TEXTAREA}
+            />
+          </FormField>
+
+          {erroGeral && (
+            <div
+              role="alert"
+              className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-body-sm text-foreground"
+            >
+              <AlertCircle size={18} className="mt-0.5 shrink-0 text-destructive" aria-hidden="true" />
+              <p>{erroGeral}</p>
+            </div>
+          )}
+
+          <Button type="submit" size="lg" className="w-full" disabled={enviando}>
+            {enviando && <Loader2 className="animate-spin" aria-hidden="true" />}
+            {enviando ? 'Cadastrando…' : 'Cadastrar serviço'}
+          </Button>
+        </form>
+
+        <section aria-labelledby="titulo-previa" className="lg:sticky lg:top-8">
+          <h2 id="titulo-previa" className="font-sans text-body-sm font-semibold text-muted-foreground tracking-normal mb-3 text-center lg:text-left">
+            Pré-visualização
+          </h2>
+          <div className="bg-muted/40 border border-border rounded-xl p-5 flex justify-center">
+            <div className="w-full max-w-[240px]">
+              <ServiceCard servico={servicoPreview} interativo={false} />
+            </div>
+          </div>
+          <p className="text-caption text-muted-foreground mt-3 text-center lg:text-left">
+            É assim que os clientes vão ver seu serviço na busca.
+          </p>
+        </section>
+      </div>
     </PageContainer>
   );
 }

@@ -9,7 +9,17 @@ import { Card } from '@/app/components/ui/card';
 
 export default async function page() {
     await requireAdmin();
-    const listaUsuarios = await db.select().from(usuarios);
+    // Só as colunas da tabela: select() trazia hash de senha e as fotos em base64 de todos.
+    const listaUsuarios = await db
+        .select({
+            id: usuarios.id,
+            nome: usuarios.nome,
+            email: usuarios.email,
+            telefone: usuarios.telefone,
+            tipo: usuarios.tipo,
+            criadoEm: usuarios.criadoEm,
+        })
+        .from(usuarios);
 
     async function deleteUser(formData) {
         'use server';

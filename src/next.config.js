@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
+import { CAMINHO_BASE } from './lib/caminhoBase.js';
 
 // Fixa a raiz do Turbopack nesta pasta: o servidor de produção tem um
 // package-lock.json residual um nível acima (fora do repo), o que faz o
@@ -7,7 +8,7 @@ import { dirname } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
-  basePath: '/26-marcaai',
+  basePath: CAMINHO_BASE,
   trailingSlash: true,
   turbopack: {
     root: __dirname,

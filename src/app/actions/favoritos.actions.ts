@@ -6,6 +6,7 @@ import { db } from '@/db';
 import { favoritos, servicos, usuarios, categorias, prestadores, avaliacoes, agendamentos } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { comEstatisticas } from '@/lib/avaliacoes';
+import { imagemPublica } from '@/lib/imagemPublica';
 
 /** ids favoritados do usuário logado — usado para marcar o coração preenchido nos cards. */
 export async function listarIdsFavoritos() {
@@ -92,7 +93,7 @@ export async function listarFavoritos() {
       slug: servicos.slug,
       nomeServico: servicos.nome,
       preco: servicos.preco,
-      urlImagem: servicos.urlImagem,
+      urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       duracaoEstimada: servicos.duracaoEstimada,
       categoriaId: servicos.categoriaId,
       nomeCategoria: categorias.nome,
@@ -112,7 +113,7 @@ export async function listarFavoritos() {
       id: usuarios.id,
       slug: usuarios.slug,
       nome: usuarios.nome,
-      urlImagem: usuarios.urlImagem,
+      urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       biografia: prestadores.biografia,
       enderecoTexto: prestadores.enderecoTexto,
     })

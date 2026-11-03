@@ -32,7 +32,7 @@ export default function BadgeNaoLidas({ className }) {
     <span
       aria-hidden="true"
       className={cn(
-        "absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center",
+        "absolute -top-1.5 -right-2 h-5 min-w-5 px-1 rounded-full bg-contador text-contador-foreground text-caption leading-none ring-2 ring-card font-bold flex items-center justify-center",
         className
       )}
     >

@@ -43,7 +43,7 @@ export default function SobrePage() {
       <PageContainer size="md" className="py-12">
         <div className="grid sm:grid-cols-3 gap-4 mb-12">
           {PILARES.map(({ icon: Icon, titulo, texto }) => (
-            <div key={titulo} className="bg-card border border-border rounded-2xl p-5 shadow-soft">
+            <div key={titulo} className="bg-card border border-border rounded-xl p-5 shadow-soft">
               <div className="size-9 rounded-full bg-primary/10 flex items-center justify-center mb-3">
                 <Icon size={17} className="text-primary" aria-hidden="true" />
               </div>

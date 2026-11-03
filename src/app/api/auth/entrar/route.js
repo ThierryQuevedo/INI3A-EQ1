@@ -23,7 +23,8 @@ export async function GET(request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 600,
+      // A-08: 1 hora para concluir login OU cadastro sem perder o pedido.
+      maxAge: 3600,
       path: '/',
     });
   }

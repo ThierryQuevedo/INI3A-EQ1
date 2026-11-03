@@ -1,234 +1,332 @@
 @import "tailwindcss";
-@import "@uploadthing/react/styles.css";
+/* NÃO importar "@uploadthing/react/styles.css" aqui: ele traz utilities do
+   Tailwind fora de @layer (.flex, .hidden, .flex-col, .rounded-lg...), que
+   vencem qualquer variante responsiva do projeto (md:flex-row, md:flex...).
+   Nenhum componente visual do UploadThing é usado — o upload passa por
+   /api/upload. Se um dia usar UploadDropzone, estilize via `appearance`. */
 
 @custom-variant dark (&:where(.dark, .dark *));
-
 @theme {
-  /* ============================================================
-     Brand palette — do not use these tcc-* raw values directly in
-     markup. Prefer the semantic tokens below (bg-primary, text-
-     muted-foreground, etc.) so light/dark both stay correct.
+  /* ------------------------------------------------------------
+     1. PRIMITIVOS. Não usar em markup: só alimentam a camada 2.
+     O prefixo tcc- foi mantido para o diff ficar pequeno
+     (hoje nenhum .jsx usa tcc-* direto).
+     ------------------------------------------------------------ */
 
-     Escala numérica 50→950 (mesmos matizes de marca de sempre,
-     só com mais pontos intermediários para dar hierarquia real).
-     ============================================================ */
-  --color-tcc-azul-50: #EFF4FE;
-  --color-tcc-azul-100: #DCE5FE;
-  --color-tcc-azul-200: #BBD0FD;
-  --color-tcc-azul-300: #A1BDFD;
-  --color-tcc-azul-400: #5696FC;
-  --color-tcc-azul-500: #1471D5;
-  --color-tcc-azul-600: #0E5CB3;
-  --color-tcc-azul-700: #0B4F98;
-  --color-tcc-azul-800: #083A70;
-  --color-tcc-azul-900: #042F5F;
-  --color-tcc-azul-950: #01112A;
+  /* Azul: matiz 254–262, croma afunilando nas pontas. */
+  --color-tcc-azul-50:  oklch(97.0% 0.014 262.0);    /* #F0F5FF */
+  --color-tcc-azul-100: oklch(93.5% 0.031 262.0);    /* #DEEAFF */
+  --color-tcc-azul-200: oklch(87.5% 0.061 262.0);    /* #C0D7FF */
+  --color-tcc-azul-300: oklch(79.0% 0.106 262.0);    /* #95BBFF */
+  --color-tcc-azul-400: oklch(67.88% 0.1651 259.34); /* #5696FC âncora */
+  --color-tcc-azul-500: oklch(55.47% 0.1736 255.16); /* #1471D5 âncora */
+  --color-tcc-azul-600: oklch(48.26% 0.1550 255.82); /* #0E5CB3 âncora */
+  --color-tcc-azul-700: oklch(42.5% 0.135 254.2);    /* #024D95 */
+  --color-tcc-azul-800: oklch(36.0% 0.115 254.2);    /* #003C77 */
+  --color-tcc-azul-900: oklch(29.5% 0.095 254.2);    /* #002C5A */
+  --color-tcc-azul-950: oklch(21.5% 0.070 254.2);    /* #001938 */
 
-  --color-tcc-laranja-50: #FFF4EE;
-  --color-tcc-laranja-100: #FFEDE6;
-  --color-tcc-laranja-200: #FECCB4;
-  --color-tcc-laranja-300: #FDB27E;
-  --color-tcc-laranja-400: #FD953A;
-  --color-tcc-laranja-500: #EB7D1C;
-  --color-tcc-laranja-600: #CC7313;
-  --color-tcc-laranja-700: #98540B;
-  --color-tcc-laranja-800: #673705;
-  --color-tcc-laranja-900: #3A1D01;
+  /* Laranja: matiz da âncora (57), aquecendo para 44 nos escuros
+     para virar "queimado" em vez de marrom-oliva. Agora tem 950. */
+  --color-tcc-laranja-50:  oklch(97.5% 0.016 63.4);    /* #FFF5EC */
+  --color-tcc-laranja-100: oklch(94.5% 0.036 63.4);    /* #FFE8D5 */
+  --color-tcc-laranja-200: oklch(89.5% 0.072 63.4);    /* #FFD3AB */
+  --color-tcc-laranja-300: oklch(83.0% 0.120 63.4);    /* #FEB671 */
+  --color-tcc-laranja-400: oklch(76.50% 0.1602 57.43); /* #FD953A âncora */
+  --color-tcc-laranja-500: oklch(70.0% 0.160 54.4);    /* #E87F27 */
+  --color-tcc-laranja-600: oklch(62.0% 0.150 52.4);    /* #CA6718 */
+  --color-tcc-laranja-700: oklch(53.0% 0.130 50.4);    /* #A55114 */
+  --color-tcc-laranja-800: oklch(44.0% 0.105 48.4);    /* #7F3D14 */
+  --color-tcc-laranja-900: oklch(35.0% 0.080 46.4);    /* #5B2B11 */
+  --color-tcc-laranja-950: oklch(26.0% 0.060 44.4);    /* #3B1909 */
 
-  /* Neutro — de cinza frio para monocromático quente (editorial),
-     mantendo os degraus 100-700 já usados pelo código existente. */
-  --color-tcc-neutro-50: #FAF9F7;
-  --color-tcc-neutro-100: #F0EEEA;
-  --color-tcc-neutro-200: #E1DDD6;
-  --color-tcc-neutro-300: #C7C1B6;
-  --color-tcc-neutro-400: #9C9488;
-  --color-tcc-neutro-500: #6E6760;
-  --color-tcc-neutro-600: #4A453F;
-  --color-tcc-neutro-700: #2B2724;
-  --color-tcc-neutro-800: #1A1714;
-  --color-tcc-neutro-900: #100E0C;
+  /* Neutro FRIO único (cinza-ardósia no matiz do azul-500), no lugar
+     do neutro quente. Fundo, borda, texto e superfícies escuras saem
+     todos daqui. O 400 é o degrau mais claro que ainda dá 3:1 sobre
+     branco e sobre o 50 (borda de campo, WCAG 1.4.11). */
+  --color-tcc-neutro-50:  oklch(97.5% 0.004 255.2); /* #F5F7F9 */
+  --color-tcc-neutro-100: oklch(94.8% 0.007 255.2); /* #EBEEF3 */
+  --color-tcc-neutro-200: oklch(91.2% 0.011 255.2); /* #DDE2E9 */
+  --color-tcc-neutro-300: oklch(84.5% 0.015 255.2); /* #C6CDD6 */
+  --color-tcc-neutro-400: oklch(64.0% 0.020 255.2); /* #848D98 */
+  --color-tcc-neutro-500: oklch(55.5% 0.024 255.2); /* #6A7481 */
+  --color-tcc-neutro-600: oklch(47.0% 0.026 255.2); /* #515C6A */
+  --color-tcc-neutro-700: oklch(38.5% 0.028 255.2); /* #3A4553 */
+  --color-tcc-neutro-800: oklch(30.0% 0.030 255.2); /* #242F3D */
+  --color-tcc-neutro-900: oklch(23.5% 0.032 255.2); /* #141F2D */
+  --color-tcc-neutro-950: oklch(18.0% 0.034 255.2); /* #071220 */
 
-  --color-success: #16A34A;
+  /* Status: valores atuais mantidos (já passam AA no claro). */
+  --color-success: #157034;
   --color-success-foreground: #FFFFFF;
-  --color-warning: #B45309;
+  --color-warning: #92400E;
   --color-warning-foreground: #FFFFFF;
-  --color-danger: #DC2626;
+  --color-danger: #B91C1C;
+  --color-rating: #D97706; /* gráfico: 3.19:1 sobre card */
 
-  /* ============================================================
-     Semantic tokens (light values). Redefined for dark under
-     `.dark` below. These map 1:1 to Tailwind utilities:
-     bg-background, text-foreground, bg-card, border-border, etc.
-     ============================================================ */
-  --color-background: #F5F6FA;
-  --color-foreground: var(--color-tcc-neutro-700);
+  /* ------------------------------------------------------------
+     2. SEMÂNTICOS (claro). Redefinidos no .dark.
+     ------------------------------------------------------------ */
+  --color-background: var(--color-tcc-neutro-50);        /* era #F5F6FA */
+  --color-foreground: var(--color-tcc-neutro-900);       /* 15.48:1 */
 
   --color-card: #FFFFFF;
-  --color-card-foreground: var(--color-tcc-neutro-700);
+  --color-card-foreground: var(--color-tcc-neutro-900);
   --color-surface: #FFFFFF;
-  --color-surface-foreground: var(--color-tcc-neutro-700);
-
+  --color-surface-foreground: var(--color-tcc-neutro-900);
   --color-popover: #FFFFFF;
-  --color-popover-foreground: var(--color-tcc-neutro-700);
+  --color-popover-foreground: var(--color-tcc-neutro-900);
 
-  --color-primary: var(--color-tcc-azul-500);
+  --color-primary: var(--color-tcc-azul-600);            /* 6.56:1 com branco */
   --color-primary-foreground: #FFFFFF;
-  --color-primary-hover: var(--color-tcc-azul-700);
+  --color-primary-hover: var(--color-tcc-azul-700);      /* 8.41:1 */
 
   --color-secondary: var(--color-tcc-azul-100);
-  --color-secondary-foreground: var(--color-tcc-azul-900);
+  --color-secondary-foreground: var(--color-tcc-azul-900); /* 11.49:1 */
 
+  /* Laranja: reservado ao ato de marcar (ver camada 3: --color-cta). */
   --color-accent: var(--color-tcc-laranja-400);
-  /* Texto escuro sobre o laranja da marca: branco só dá 2.2:1 de
-     contraste (falha WCAG AA 4.5:1); esta cor dá 9.5:1+. */
-  --color-accent-foreground: var(--color-tcc-laranja-900);
-  --color-accent-hover: var(--color-tcc-laranja-600);
+  --color-accent-foreground: var(--color-tcc-laranja-950); /* 7.18:1 */
+  /* Hover CLAREIA (300). O 600 atual dava 4.45:1 com o texto, abaixo do AA. */
+  --color-accent-hover: var(--color-tcc-laranja-300);      /* 9.14:1 */
 
-  /* Token informativo neutro (badges "Hoje"/"Amanhã", tags de
-     categoria) — separado de `accent` para que o laranja fique
-     reservado a CTAs/ações de destaque, não a rótulos passivos. */
-  --color-info: var(--color-tcc-azul-400);
-  --color-info-foreground: var(--color-tcc-azul-950);
+  --color-info: var(--color-tcc-azul-600);
+  --color-info-foreground: #FFFFFF;
 
-  --color-muted: #EBEDF5;
-  /* neutro-500 dá ~7:1 de contraste contra branco/cinza-claro — passa WCAG AA. */
-  --color-muted-foreground: var(--color-tcc-neutro-500);
+  --color-muted: var(--color-tcc-neutro-100);
+  --color-muted-foreground: var(--color-tcc-neutro-600); /* 5.85:1 no muted, 6.33:1 no fundo */
 
   --color-destructive: var(--color-danger);
   --color-destructive-foreground: #FFFFFF;
 
-  --color-border: #E2E5EF;
-  --color-input: #E2E5EF;
-  --color-ring: var(--color-tcc-azul-400);
+  /* border = divisória decorativa (sem mínimo). input = contorno de
+     campo, que precisa de 3:1 (WCAG 1.4.11). Hoje os dois são #E2E5EF (1.26:1). */
+  --color-border: var(--color-tcc-neutro-200);
+  --color-input: var(--color-tcc-neutro-400);            /* 3.36:1 card, 3.13:1 fundo */
+  /* Anel de foco: azul-500 (4.49:1). O azul-400 atual dava 2.71:1, abaixo de 3:1. */
+  --color-ring: var(--color-tcc-azul-500);
 
-  /* ============================================================
-     Fonts — Inter (corpo) + Urbanist (títulos, aplicada automati-
-     camente via @layer base abaixo). System (SF-style) stack é o
-     fallback, mantendo a sensação nativa em qualquer OS.
-     ============================================================ */
-  --font-inter: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --font-urbanist: var(--font-urbanist), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
-  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --font-display: var(--font-urbanist), -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  /* ------------------------------------------------------------
+     3. COMPONENTE: nomes por papel, para a regra D1 ficar no token.
+     ------------------------------------------------------------ */
+  /* Ato de marcar: o ÚNICO uso de laranja preenchido. */
+  --color-cta: var(--color-accent);
+  --color-cta-foreground: var(--color-accent-foreground);
+  --color-cta-hover: var(--color-accent-hover);
+  /* Calendário e horários: estados só por preenchimento (Cal.com), sem laranja. */
+  --color-slot: var(--color-muted);
+  --color-slot-foreground: var(--color-foreground);
+  --color-slot-selecionado: var(--color-primary);
+  --color-slot-selecionado-foreground: var(--color-primary-foreground);
+  --color-indicador-hoje: var(--color-primary);
+  /* Selos de status e contadores (não lidas): azul, nunca laranja. */
+  --color-contador: var(--color-primary);
+  --color-contador-foreground: var(--color-primary-foreground);
 
-  /* Type scale — 14px is the accessibility floor for real copy;
-     nothing in the product should render smaller than that. */
-  --text-caption: 0.875rem;   /* 14px */
-  --text-caption--line-height: 1.4;
-  --text-body-sm: 0.9375rem;  /* 15px */
+  /* ------------------------------------------------------------
+     Fontes. --font-inter / --font-satoshi vêm do next/font como
+     variáveis em <html> (src/app/layout.js); NÃO redeclarar aqui.
+     Títulos: só Satoshi 700 (woff2 oficial da Fontshare em
+     src/app/fonts/, sem subset nem conversão — licença ITF FFL v2.0).
+     Corpo: Inter. Dois arquivos no total (~72 KB, menos que antes).
+     ------------------------------------------------------------ */
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: var(--font-satoshi), system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Preço, hora e contagem: usar a utility tabular-nums (algarismos de
+     largura fixa), não um ajuste global da fonte. */
+
+  /* ------------------------------------------------------------
+     Tipografia. Corpo FIXO (16px; piso 14px). Títulos fluidos com
+     clamp() estilo Utopia entre 360px e 1280px de viewport.
+     Razão máx/mín ≤ 1.65, bem abaixo de 2.5, então o zoom de 200%
+     (WCAG 1.4.4) continua funcionando: a parte em rem escala.
+     ------------------------------------------------------------ */
+  --text-caption: 0.875rem;              /* 14px: piso, só metadado */
+  --text-caption--line-height: 1.45;
+  --text-body-sm: 0.9375rem;             /* 15px */
   --text-body-sm--line-height: 1.5;
-  --text-body: 1rem;          /* 16px */
+  --text-body: 1rem;                     /* 16px: corpo */
   --text-body--line-height: 1.6;
-  --text-body-lg: 1.125rem;   /* 18px */
+  --text-body-lg: 1.125rem;              /* 18px: corpo de leitura longa */
   --text-body-lg--line-height: 1.6;
-  --text-h6: 1.25rem;
+
+  --text-h6: clamp(1.125rem, 1.0761rem + 0.2174vw, 1.25rem);  /* 18→20 */
   --text-h6--line-height: 1.35;
-  --text-h5: 1.5rem;
+  --text-h6--font-weight: 600;
+  --text-h5: clamp(1.25rem, 1.1522rem + 0.4348vw, 1.5rem);    /* 20→24 */
   --text-h5--line-height: 1.3;
-  --text-h4: 1.875rem;
+  --text-h5--font-weight: 700;
+  --text-h5--letter-spacing: -0.01em;
+  --text-h4: clamp(1.375rem, 1.1793rem + 0.8696vw, 1.875rem); /* 22→30 */
   --text-h4--line-height: 1.25;
-  --text-h3: 2.25rem;
+  --text-h4--font-weight: 700;
+  --text-h4--letter-spacing: -0.015em;
+  --text-h3: clamp(1.625rem, 1.3804rem + 1.0870vw, 2.25rem);  /* 26→36 */
   --text-h3--line-height: 1.2;
-  --text-h2: 3rem;
-  --text-h2--line-height: 1.1;
-  --text-h1: 3.75rem;
-  --text-h1--line-height: 1.05;
+  --text-h3--font-weight: 700;
+  --text-h3--letter-spacing: -0.02em;
+  --text-h2: clamp(1.875rem, 1.4348rem + 1.9565vw, 3rem);     /* 30→48 */
+  --text-h2--line-height: 1.12;
+  --text-h2--font-weight: 700;
+  --text-h2--letter-spacing: -0.02em;
+  --text-h1: clamp(2.125rem, 1.5870rem + 2.3913vw, 3.5rem);   /* 34→56 */
+  --text-h1--line-height: 1.08;
+  --text-h1--font-weight: 700;
+  --text-h1--letter-spacing: -0.022em;
 
-  /* Radius — generous, Apple-style rounding.
-     Disciplina de uso: rounded-full reservado a elementos
-     circulares/ação rápida (chips de categoria, avatar, botão
-     só-ícone); rounded-xl em botões de texto e inputs; rounded-2xl
-     em superfícies/cards. Pílula em tudo lê como genérico — só usa
-     onde o formato circular faz sentido de verdade. */
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-2xl: 2rem;
-  --radius-full: 9999px;
+  /* Medida de leitura (Butterick: 45–90 caracteres por linha). */
+  --container-leitura: 40rem;
 
-  /* Spacing — múltiplos de 8px. 2 (micro, ícone↔texto) · 4 (campo
-     interno) · 6 (padding de card pequeno) · 8 (padding de card/
-     componente) · 12 (padding de card grande) · 16/24 (entre
-     blocos dentro de uma seção) · 32 (entre seções de uma página). */
+  /* ------------------------------------------------------------
+     Espaçamento: base 4px do Tailwind 4 (--spacing: 0.25rem,
+     padrão, não redeclarado). Use degraus de 8px (2, 4, 6, 8, 12, 16)
+     e o 1 (4px) só para micro-ajuste. Nomes semânticos:
+     ------------------------------------------------------------ */
+  --spacing-toque: 2.75rem;            /* 44px: alvo mínimo (Apple HIG) → h-toque, min-w-toque */
+  --spacing-toque-confortavel: 3rem;   /* 48px: alvo do Material 3, para ações principais */
+  --spacing-margem: clamp(1rem, 0.6087rem + 1.7391vw, 2rem);  /* margem lateral 16→32 → px-margem */
+  --spacing-secao: clamp(2rem, 1.2174rem + 3.4783vw, 4rem);   /* entre seções 32→64 → py-secao */
 
-  /* Shadows — soft, low-opacity, large blur (Apple elevation).
-     Disciplina de uso: shadow-soft em repouso; shadow-card só em
-     hover de elementos clicáveis; shadow-elevated reservada para
-     camadas flutuantes de verdade (modal, sheet, dropdown, toast). */
-  --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
-  --shadow-card: 0 2px 8px rgba(16, 24, 40, 0.05), 0 10px 28px rgba(16, 24, 40, 0.07);
-  --shadow-elevated: 0 16px 40px rgba(16, 24, 40, 0.14), 0 4px 14px rgba(16, 24, 40, 0.08);
+  /* ------------------------------------------------------------
+     Raio: mesma escala de hoje + aliases por papel.
+     ------------------------------------------------------------ */
+  --radius-sm: 0.375rem;   /* 6px: checkbox, dia do calendário */
+  --radius-md: 0.5rem;     /* 8px: badge, chip */
+  --radius-lg: 0.75rem;    /* 12px: botão, input, item de lista */
+  --radius-xl: 1rem;       /* 16px: card, diálogo, sheet */
+  --radius-2xl: 1.25rem;   /* 20px: hero, banner */
+  --radius-full: 9999px;   /* avatar, botão só-ícone, ponto, contador */
+  --radius-controle: var(--radius-lg);    /* rounded-controle */
+  --radius-superficie: var(--radius-xl);  /* rounded-superficie */
 
-  /* Motion — um easing/duração por intenção, não um único valor
-     genérico para tudo. */
-  --ease-apple: cubic-bezier(0.28, 0.11, 0.32, 1);     /* transições de estado */
-  --ease-out-apple: cubic-bezier(0.16, 1, 0.3, 1);     /* entradas */
-  --ease-in-apple: cubic-bezier(0.7, 0, 0.84, 0);      /* saídas */
+  /* ------------------------------------------------------------
+     Sombra: tingida com o neutro frio (matiz 255), não com cinza
+     genérico. Disciplina igual à atual: soft em repouso, card só em
+     hover de clicável, elevated só para camada flutuante.
+     ------------------------------------------------------------ */
+  --shadow-soft: 0 1px 2px oklch(18% 0.034 255 / 0.05), 0 1px 3px oklch(18% 0.034 255 / 0.06);
+  --shadow-card: 0 2px 8px oklch(18% 0.034 255 / 0.06), 0 10px 28px oklch(18% 0.034 255 / 0.08);
+  --shadow-elevated: 0 16px 40px oklch(18% 0.034 255 / 0.16), 0 4px 14px oklch(18% 0.034 255 / 0.08);
 
-  --duration-fast: 150ms;  /* hover, press, toggle */
-  --duration-base: 220ms;  /* dropdown, toast, transição de página */
-  --duration-slow: 320ms;  /* modal, bottom sheet */
+  /* ------------------------------------------------------------
+     Motion: 3 durações e 1 curva base (medidas no Resend e no Linear
+     pelo curador 2). O Tailwind 4 NÃO tem namespace --duration-*:
+     usar duration-(--duration-fast) ou as @utility abaixo. Saída =
+     cerca de 75% da entrada. Para framer-motion, espelhar em
+     src/lib/motion.js (segundos).
+     ------------------------------------------------------------ */
+  --default-transition-duration: 150ms;
+  --default-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --ease-padrao: cubic-bezier(0.4, 0, 0.2, 1);   /* mudança de estado (= ease-in-out do Tailwind) */
+  --ease-entrada: cubic-bezier(0, 0, 0.2, 1);    /* algo aparece (opacidade, dropdown, toast) */
+  --ease-saida: cubic-bezier(0.4, 0, 1, 1);      /* algo sai */
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);  /* bottom sheet, desaceleração longa */
+  /* compatibilidade: Switch.jsx:26 e globals.css usam --ease-apple */
+  --ease-apple: var(--ease-padrao);
+
+  --duration-fast: 150ms;   /* cor, hover, press, toggle */
+  --duration-base: 220ms;   /* entrada pequena: dropdown, toast, troca de painel */
+  --duration-slow: 380ms;   /* bottom sheet, modal (teto ~400ms) */
 }
 
-/* ================================================================
-   Dark theme — toggled by next-themes adding `.dark` to <html>.
-   Same semantic token names, inverted surfaces, brand hues nudged
-   lighter so contrast stays WCAG AA against dark backgrounds.
-   ================================================================ */
+/* Utilities nomeadas para as durações (opcional: equivalem a
+   duration-(--duration-fast) etc.). */
+@utility duracao-rapida { transition-duration: var(--duration-fast); }
+@utility duracao-base   { transition-duration: var(--duration-base); }
+@utility duracao-lenta  { transition-duration: var(--duration-slow); }
+
+/* Área de toque invisível de no mínimo 44×44 (WCAG 2.5.5 / regra do
+   h-toque), centrada no controle, sem mudar o desenho. Para ícones e
+   switches cuja geometria visual é fixa. O elemento precisa estar
+   posicionado (relative/absolute) e não pode ter overflow-hidden. */
+@utility area-toque {
+  &::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: max(100%, 2.75rem);
+    height: max(100%, 2.75rem);
+    transform: translate(-50%, -50%);
+  }
+}
+
+/* ====================================================================
+   Tema escuro: mesmos nomes. Superfícies sobem por elevação TONAL
+   (Material 3): fundo 950 → card 900 → popover 800, todas do neutro
+   frio, sem rgba translúcido (cor opaca = contraste previsível).
+   ==================================================================== */
 .dark {
-  --color-background: var(--color-tcc-azul-950);
-  --color-foreground: var(--color-tcc-neutro-100);
+  --color-background: var(--color-tcc-neutro-950);       /* #071220, perto do azul-950 atual */
+  --color-foreground: var(--color-tcc-neutro-50);        /* 17.52:1 */
 
-  /* azul-800 (não azul-900) de propósito: precisa de um degrau real
-     contra o fundo azul-950 para o card não "sumir" no fundo — azul-900
-     ficava perto demais em luminância. */
-  --color-card: var(--color-tcc-azul-800);
-  --color-card-foreground: var(--color-tcc-neutro-100);
-  --color-surface: var(--color-tcc-azul-800);
-  --color-surface-foreground: var(--color-tcc-neutro-100);
+  --color-card: var(--color-tcc-neutro-900);
+  --color-card-foreground: var(--color-tcc-neutro-50);   /* 15.48:1 */
+  --color-surface: var(--color-tcc-neutro-900);
+  --color-surface-foreground: var(--color-tcc-neutro-50);
+  --color-popover: var(--color-tcc-neutro-800);
+  --color-popover-foreground: var(--color-tcc-neutro-50); /* 12.62:1 */
 
-  --color-popover: var(--color-tcc-azul-800);
-  --color-popover-foreground: var(--color-tcc-neutro-100);
+  --color-primary: var(--color-tcc-azul-400);            /* âncora */
+  --color-primary-foreground: var(--color-tcc-azul-950); /* 5.99:1 */
+  --color-primary-hover: var(--color-tcc-azul-300);      /* 9.05:1 */
 
-  --color-primary: var(--color-tcc-azul-400);
-  --color-primary-foreground: var(--color-tcc-azul-950);
-  --color-primary-hover: var(--color-tcc-azul-300);
-
-  --color-secondary: rgba(161, 189, 253, 0.14);
-  --color-secondary-foreground: var(--color-tcc-azul-100);
+  --color-secondary: var(--color-tcc-azul-900);
+  --color-secondary-foreground: var(--color-tcc-azul-100); /* 11.49:1 */
 
   --color-accent: var(--color-tcc-laranja-400);
-  --color-accent-foreground: var(--color-tcc-azul-950);
-  --color-accent-hover: var(--color-tcc-laranja-200);
+  --color-accent-foreground: var(--color-tcc-laranja-950); /* 7.18:1, igual ao claro */
+  --color-accent-hover: var(--color-tcc-laranja-300);      /* 9.14:1 */
 
   --color-info: var(--color-tcc-azul-300);
-  --color-info-foreground: var(--color-tcc-azul-950);
+  --color-info-foreground: var(--color-tcc-azul-950);      /* 9.05:1 */
 
-  --color-muted: rgba(220, 229, 254, 0.08);
-  --color-muted-foreground: var(--color-tcc-neutro-300);
+  --color-muted: var(--color-tcc-neutro-800);
+  --color-muted-foreground: var(--color-tcc-neutro-300);   /* 8.46:1 no muted, 10.37:1 no card */
 
   --color-destructive: #F87171;
-  --color-destructive-foreground: var(--color-tcc-azul-950);
+  --color-destructive-foreground: var(--color-tcc-neutro-950); /* 6.80:1 */
+  --color-danger: #F87171;
 
+  /* Faltavam no .dark: herdavam #FFFFFF do claro (1.74:1 e 1.67:1). */
   --color-success: #4ADE80;
+  --color-success-foreground: var(--color-tcc-neutro-950);     /* 10.79:1 */
   --color-warning: #FBBF24;
+  --color-warning-foreground: var(--color-tcc-neutro-950);     /* 11.27:1 */
+  --color-rating: #FBBF24;
 
-  --color-border: rgba(220, 229, 254, 0.14);
-  --color-input: rgba(220, 229, 254, 0.14);
-  --color-ring: var(--color-tcc-azul-300);
+  --color-border: var(--color-tcc-neutro-800);
+  --color-input: var(--color-tcc-neutro-500);              /* 3.50:1 card, 3.97:1 fundo */
+  --color-ring: var(--color-tcc-azul-300);                 /* 8.57:1 */
 
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.24), 0 1px 3px rgba(0, 0, 0, 0.28);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.28), 0 10px 28px rgba(0, 0, 0, 0.32);
-  --shadow-elevated: 0 16px 40px rgba(0, 0, 0, 0.44), 0 4px 14px rgba(0, 0, 0, 0.32);
+  --shadow-soft: 0 1px 2px oklch(0% 0 0 / 0.28), 0 1px 3px oklch(0% 0 0 / 0.30);
+  --shadow-card: 0 2px 8px oklch(0% 0 0 / 0.30), 0 10px 28px oklch(0% 0 0 / 0.34);
+  /* No escuro a sombra quase some; um filete claro no topo marca a borda da camada. */
+  --shadow-elevated: inset 0 1px 0 oklch(100% 0 0 / 0.06), 0 16px 40px oklch(0% 0 0 / 0.46), 0 4px 14px oklch(0% 0 0 / 0.32);
 
   color-scheme: dark;
 }
+
 
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
     color-scheme: light;
+    /* A-12 / D-08 (mobile-native §2): sem o flash cinza/azul do navegador
+       no toque. Cada controle tem o próprio :active (button.jsx já faz
+       active:scale-[0.97] em 150ms). Sem inflar fonte no paisagem. */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    /* WCAG 2.4.11: o header é sticky (h-16); o foco por teclado nunca
+       para atrás dele. O rodapé de revisão define o lado de baixo. */
+    scroll-padding-top: 4.5rem;
+  }
+
+  /* mobile-native §5: sem atraso de duplo toque em controles. */
+  button, a, summary, [role="button"], label:has(> input[type="radio"]) {
+    touch-action: manipulation;
   }
 
   html.dark {
@@ -239,11 +337,10 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-size: var(--text-body);
-    transition: background-color 0.2s var(--ease-apple), color 0.2s var(--ease-apple);
   }
 
   /* Tipografia como protagonista: títulos usam a fonte de display
-     (Urbanist) e tracking mais justo automaticamente, sem depender
+     (Satoshi) e tracking mais justo automaticamente, sem depender
      de cada página lembrar de aplicar font-display manualmente. */
   h1, h2, h3 {
     font-family: var(--font-display);
@@ -258,12 +355,15 @@
   :focus-visible {
     outline: 2px solid var(--color-ring);
     outline-offset: 2px;
-    border-radius: 0.375rem;
   }
 
+  /* Claro: azul-950 sobre azul-200 = 12.04:1; escuro: sobre azul-300 = 9.05:1. */
   ::selection {
-    background-color: var(--color-tcc-azul-300);
+    background-color: var(--color-tcc-azul-200);
     color: var(--color-tcc-azul-950);
+  }
+  .dark ::selection {
+    background-color: var(--color-tcc-azul-300);
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -333,5 +433,176 @@
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+  }
+}
+
+/* ====================================================================
+   Onda 2 — componentes do fluxo de agendamento. Motion só em CSS
+   (sem framer nesta rota). O bloco prefers-reduced-motion do @layer
+   base zera durações; onde o estado final importa, há regra própria.
+   ==================================================================== */
+@layer components {
+  /* Faixa horizontal (dias): rolagem VISÍVEL de propósito (F-02/G-06:
+     esconder a barra é o ponto mais arriscado para quem tem pouca
+     familiaridade digital). */
+  .faixa-rolagem {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-input) transparent;
+  }
+  .faixa-rolagem > * {
+    scroll-snap-align: start;
+  }
+
+  /* D-06: conteúdo que troca no mesmo lugar (horários ao mudar de dia). */
+  @keyframes entrada-suave {
+    from { opacity: 0; transform: translateY(0.25rem); }
+  }
+  .entrada-suave {
+    animation: entrada-suave var(--duration-base) var(--ease-entrada) both;
+  }
+
+  /* Troca de página (PageTransition): só entrada, em CSS — a navegação não
+     espera animação de saída e o framer-motion sai do bundle comum. */
+  @keyframes entrada-pagina {
+    from { opacity: 0; transform: translateY(0.5rem); }
+  }
+  .entrada-pagina {
+    animation: entrada-pagina var(--duration-base) var(--ease-entrada) both;
+  }
+
+  /* D-05 ajustado pelo G: ícone da tela final aparece sem bounce. */
+  @keyframes surgir {
+    from { opacity: 0; transform: scale(0.96); }
+  }
+  .surgir {
+    animation: surgir var(--duration-base) var(--ease-entrada) both;
+  }
+
+  /* A-07 / D-03 / G-03: rodapé de revisão. No celular fica preso à
+     borda de baixo e entra deslizando (@starting-style: sem suporte, só
+     aparece — fallback correto). Do md para cima é painel lateral
+     (classes do componente). --altura-barra é medida em JS. */
+  @media (width < 48rem) {
+    .barra-revisao {
+      position: fixed;
+      inset-inline: 0;
+      bottom: 0;
+      z-index: 30;
+      transform: none;
+      transition: transform var(--duration-slow) var(--ease-sheet);
+    }
+    @starting-style {
+      .barra-revisao { transform: translateY(100%); }
+    }
+    /* Foco nunca atrás da barra (WCAG 2.4.11) e o fim da página
+       (inclusive o rodapé do site) sempre rola para cima dela. */
+    html:has(.barra-revisao:not(.barra-revisao--estatica)) {
+      scroll-padding-bottom: calc(var(--altura-barra, 9rem) + 0.75rem);
+    }
+    body:has(.barra-revisao:not(.barra-revisao--estatica)) {
+      padding-bottom: var(--altura-barra, 9rem);
+    }
+    /* Tela baixa ou fonte do sistema muito grande: a barra cobriria a
+       grade. Vira o fim da página (G-03). */
+    .barra-revisao.barra-revisao--estatica {
+      position: static;
+      transition: none;
+    }
+  }
+  @media (width < 48rem) and (height < 34rem) {
+    .barra-revisao { position: static; transition: none; }
+    html:has(.barra-revisao) { scroll-padding-bottom: 0; }
+    body:has(.barra-revisao) { padding-bottom: 0; }
+  }
+
+  /* C-06: os tracinhos do relógio da logo como carregamento. Loop
+     lento enquanto carrega, sempre com texto ao lado; parado no modo
+     de movimento reduzido. */
+  .relogio-carregando {
+    position: relative;
+    width: 3.5rem;
+    height: 3.5rem;
+    flex-shrink: 0;
+  }
+  .relogio-carregando > span {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 0.1875rem;
+    height: 0.75rem;
+    margin-left: -0.09375rem;
+    border-radius: 9999px;
+    background: var(--color-primary);
+    transform-origin: 50% 1.75rem;
+    transform: rotate(calc(var(--i) * 30deg));
+    opacity: 0.2;
+    animation: tique-relogio 2.4s linear infinite;
+    animation-delay: calc(var(--i) * 0.2s - 2.4s);
+  }
+  @keyframes tique-relogio {
+    0%, 100% { opacity: 0.2; }
+    8% { opacity: 1; }
+    40% { opacity: 0.2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .relogio-carregando > span {
+      animation: none !important;
+      opacity: 0.55;
+    }
+  }
+
+  /* G-01: diálogo nativo (<dialog> + showModal) no lugar do framer. */
+  .dialogo {
+    margin: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    width: calc(100% - 2rem);
+    max-width: 24rem;
+    overflow: visible;
+    opacity: 0;
+    transform: scale(0.96) translateY(0.5rem);
+    transition:
+      opacity var(--duration-fast) var(--ease-saida),
+      transform var(--duration-fast) var(--ease-saida),
+      overlay var(--duration-fast) allow-discrete,
+      display var(--duration-fast) allow-discrete;
+  }
+  .dialogo[open] {
+    opacity: 1;
+    transform: none;
+    transition-duration: var(--duration-base);
+    transition-timing-function: var(--ease-entrada);
+  }
+  @starting-style {
+    .dialogo[open] { opacity: 0; transform: scale(0.96) translateY(0.5rem); }
+  }
+  .dialogo::backdrop {
+    background-color: oklch(0% 0 0 / 0);
+    transition:
+      background-color var(--duration-fast) var(--ease-saida),
+      overlay var(--duration-fast) allow-discrete,
+      display var(--duration-fast) allow-discrete;
+  }
+  .dialogo[open]::backdrop {
+    background-color: oklch(0% 0 0 / 0.5);
+  }
+  @starting-style {
+    .dialogo[open]::backdrop { background-color: oklch(0% 0 0 / 0); }
+  }
+}
+
+/* A-12 (mobile-native §4): o iPhone dá zoom e não volta quando o campo
+   tem fonte < 16px. Fora de @layer de propósito, para vencer classes
+   como text-body-sm só onde o ponteiro é o dedo. Nunca maximum-scale. */
+@media (pointer: coarse) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  select,
+  textarea {
+    font-size: max(1rem, 1em);
   }
 }

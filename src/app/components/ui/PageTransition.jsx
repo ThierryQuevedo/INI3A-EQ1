@@ -1,27 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
+/**
+ * Entrada suave a cada troca de rota, em CSS (.entrada-pagina em globals.css).
+ *
+ * - Não anima o primeiro carregamento: o conteúdo nasce visível e o LCP não
+ *   espera fade nenhum.
+ * - Sem animação de saída: a página nova aparece assim que chega.
+ * - "Reduzir movimento" é respeitado pelo bloco global de prefers-reduced-motion.
+ */
 export default function PageTransition({ children }) {
   const pathname = usePathname();
-  const reduzMovimento = useReducedMotion();
+  const [caminhoAnterior, setCaminhoAnterior] = useState(pathname);
+  const [navegou, setNavegou] = useState(false);
 
-  if (reduzMovimento) {
-    return children;
+  // Ajuste de estado durante o render (padrão do React para reagir a uma
+  // prop que muda), sem efeito extra.
+  if (pathname !== caminhoAnterior) {
+    setCaminhoAnterior(pathname);
+    setNavegou(true);
   }
 
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -8 }}
-        transition={{ duration: 0.22, ease: [0.28, 0.11, 0.32, 1] }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div key={pathname} className={navegou ? "entrada-pagina" : undefined}>
+      {children}
+    </div>
   );
 }

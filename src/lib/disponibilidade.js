@@ -1,31 +1,50 @@
+// Cálculo de horários livres. Roda igual no servidor (próximo horário dos
+// cards) e no navegador (tela de agendar), porque tudo é feito no fuso de
+// Brasília com chaves de dia 'AAAA-MM-DD' e horas 'HH:MM' — ver formatoData.js.
+// Card e tela usam a MESMA função e o MESMO conjunto de agendamentos (todos os
+// do prestador), para o card nunca prometer um horário que a tela não mostra.
+import {
+  ehChaveDiaValida,
+  hojeNoFuso,
+  partesNoFuso,
+  somarDias,
+  diaDaSemana,
+  instanteNoFuso,
+  minutosDaHora,
+} from './formatoData.js';
+
 export function gerarSlots(horaInicio, horaFim, duracaoMin) {
   const slots = [];
   const [hIni, mIni] = horaInicio.split(':').map(Number);
   const [hFim, mFim] = horaFim.split(':').map(Number);
   let atual = hIni * 60 + mIni;
   const fim = hFim * 60 + mFim;
-  while (atual + duracaoMin <= fim) {
+  const passo = Number(duracaoMin) > 0 ? Number(duracaoMin) : 30;
+  while (atual + passo <= fim) {
     const h = String(Math.floor(atual / 60)).padStart(2, '0');
     const m = String(atual % 60).padStart(2, '0');
     slots.push(`${h}:${m}`);
-    atual += duracaoMin;
+    atual += passo;
   }
   return slots;
 }
 
+/** true se o instante (ISO/Date) cai hoje, em Brasília. */
 export function ehHoje(dataOuIso) {
   if (!dataOuIso) return false;
-  const d = new Date(dataOuIso);
-  const hoje = new Date();
-  return d.toDateString() === hoje.toDateString();
+  const data = new Date(dataOuIso);
+  if (Number.isNaN(data.getTime())) return false;
+  return partesNoFuso(data).dia === hojeNoFuso();
 }
 
-export function ehDataPassada(data) {
-  const d = new Date(data);
-  d.setHours(0, 0, 0, 0);
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  return d < hoje;
+/** Aceita chave 'AAAA-MM-DD' ou Date; devolve a chave do dia em Brasília. */
+function paraChaveDia(dataOuChave) {
+  if (typeof dataOuChave === 'string' && ehChaveDiaValida(dataOuChave)) return dataOuChave;
+  return partesNoFuso(new Date(dataOuChave)).dia;
+}
+
+export function ehDataPassada(dataOuChave) {
+  return paraChaveDia(dataOuChave) < hojeNoFuso();
 }
 
 export function agruparPorPeriodo(slots) {
@@ -40,64 +59,93 @@ export function agruparPorPeriodo(slots) {
 }
 
 /**
- * Slots livres de um dia, dado as disponibilidades (blocos recorrentes por dia da semana)
- * e os agendamentos já existentes do prestador. Extraído de agendamentos/novo/page.jsx
- * para ser reusável também no servidor (cálculo em lote de "próximo horário livre").
+ * Agendamentos ativos de um dia como intervalos [início, fim) em minutos.
+ * Sem `duracao` no agendamento (dado antigo), conta só o minuto de início —
+ * o mesmo critério da checagem de conflito no servidor.
  */
-export function calcularSlotsLivresDoDia({ data, duracaoEstimada, disponibilidades, agendados }) {
-  if (ehDataPassada(data)) return [];
+function intervalosOcupados(agendados, diaChave) {
+  const intervalos = [];
+  for (const ag of agendados) {
+    if (ag.status === 'cancelado') continue;
+    const { dia, hora } = partesNoFuso(new Date(ag.dataHora));
+    if (dia !== diaChave) continue;
+    const inicio = minutosDaHora(hora);
+    const duracao = Number(ag.duracao) > 0 ? Number(ag.duracao) : 1;
+    intervalos.push([inicio, inicio + duracao]);
+  }
+  return intervalos;
+}
 
-  const diaSemana = data.getDay();
-  const dispsDoDia = disponibilidades.filter((d) => Number(d.diaSemana) === diaSemana);
+/**
+ * Horários livres ('HH:MM', em ordem) de um dia, dado as disponibilidades
+ * (blocos recorrentes por dia da semana) e os agendamentos do prestador.
+ * `dia` é a chave 'AAAA-MM-DD'; `data` (Date) continua aceito por compatibilidade.
+ */
+export function calcularSlotsLivresDoDia({ dia, data, duracaoEstimada, disponibilidades, agendados = [], agora = new Date() }) {
+  const diaChave = paraChaveDia(dia ?? data);
+  const { dia: hoje, hora: horaAgora } = partesNoFuso(agora);
+  if (diaChave < hoje) return [];
+
+  const semana = diaDaSemana(diaChave);
+  const dispsDoDia = disponibilidades.filter((d) => Number(d.diaSemana) === semana);
   if (dispsDoDia.length === 0) return [];
 
   const todosSlots = [];
   for (const disp of dispsDoDia) {
     if (!disp.horaInicio || !disp.horaFim) continue;
-    todosSlots.push(...gerarSlots(disp.horaInicio, disp.horaFim, duracaoEstimada));
+    todosSlots.push(...gerarSlots(disp.horaInicio.slice(0, 5), disp.horaFim.slice(0, 5), duracaoEstimada));
   }
 
   const slotsUnicos = Array.from(new Set(todosSlots)).sort();
-  const dataStr = data.toDateString();
+  const ocupados = intervalosOcupados(agendados, diaChave);
+  const duracao = Number(duracaoEstimada) > 0 ? Number(duracaoEstimada) : 30;
+  const minutosAgora = diaChave === hoje ? minutosDaHora(horaAgora) : -1;
 
-  const ocupados = agendados
-    .filter((ag) => ag.status !== 'cancelado' && new Date(ag.dataHora).toDateString() === dataStr)
-    .map((ag) => {
-      const d = new Date(ag.dataHora);
-      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    });
-
-  let livres = slotsUnicos.filter((s) => !ocupados.includes(s));
-
-  const agora = new Date();
-  if (dataStr === agora.toDateString()) {
-    const minutosAgora = agora.getHours() * 60 + agora.getMinutes();
-    livres = livres.filter((s) => {
-      const [h, m] = s.split(':').map(Number);
-      return h * 60 + m > minutosAgora;
-    });
-  }
-
-  return livres;
+  return slotsUnicos.filter((s) => {
+    const inicio = minutosDaHora(s);
+    if (inicio <= minutosAgora) return false;
+    const fim = inicio + duracao;
+    return !ocupados.some(([oIni, oFim]) => inicio < oFim && oIni < fim);
+  });
 }
 
 /**
- * Primeiro horário livre a partir de uma data, varrendo até `horizonteDias`.
- * Usado para calcular "próximo horário livre" em listagens (home/catálogo).
+ * Vagas dos próximos `quantidade` dias a partir de `diaInicial`:
+ * [{ dia: 'AAAA-MM-DD', slots: ['09:00', …] }].
  */
-export function proximoSlotLivre({ disponibilidades, agendados, duracaoEstimada, apartirDe = new Date(), horizonteDias = 14 }) {
-  for (let i = 0; i <= horizonteDias; i++) {
-    const data = new Date(apartirDe);
-    data.setDate(data.getDate() + i);
-    data.setHours(0, 0, 0, 0);
+export function calcularVagasPorDia({ diaInicial = hojeNoFuso(), quantidade = 14, ...dados }) {
+  const resultado = [];
+  for (let i = 0; i < quantidade; i++) {
+    const dia = somarDias(diaInicial, i);
+    resultado.push({ dia, slots: calcularSlotsLivresDoDia({ dia, ...dados }) });
+  }
+  return resultado;
+}
 
-    const livres = calcularSlotsLivresDoDia({ data, duracaoEstimada, disponibilidades, agendados });
-    if (livres.length > 0) {
-      const [h, m] = livres[0].split(':').map(Number);
-      const resultado = new Date(data);
-      resultado.setHours(h, m, 0, 0);
-      return resultado;
-    }
+/**
+ * Primeiro dia com vaga a partir de `apartirDe` (chave), varrendo até
+ * `horizonteDias`. Devolve { dia, hora } ou null.
+ */
+export function primeiraVaga({ apartirDe = hojeNoFuso(), horizonteDias = 14, ...dados }) {
+  for (let i = 0; i <= horizonteDias; i++) {
+    const dia = somarDias(apartirDe, i);
+    const livres = calcularSlotsLivresDoDia({ dia, ...dados });
+    if (livres.length > 0) return { dia, hora: livres[0] };
   }
   return null;
+}
+
+/**
+ * Primeiro horário livre como instante (Date), varrendo até `horizonteDias`.
+ * Usado para o "próximo horário" das listagens (home, catálogo, perfil).
+ */
+export function proximoSlotLivre({ disponibilidades, agendados, duracaoEstimada, apartirDe = null, horizonteDias = 14 }) {
+  const vaga = primeiraVaga({
+    disponibilidades,
+    agendados,
+    duracaoEstimada,
+    horizonteDias,
+    ...(apartirDe ? { apartirDe: paraChaveDia(apartirDe) } : {}),
+  });
+  return vaga ? instanteNoFuso(vaga.dia, vaga.hora) : null;
 }

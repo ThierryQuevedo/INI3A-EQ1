@@ -24,7 +24,7 @@ export default function BotaoVirarPrestador() {
 
   return (
     <div className="flex flex-col gap-2">
-      <Button type="button" variant="accent" onClick={() => { setErro(null); setAberto(true); }}>
+      <Button type="button" onClick={() => { setErro(null); setAberto(true); }}>
         <Briefcase size={16} aria-hidden="true" /> Virar prestador
       </Button>
       {erro && (

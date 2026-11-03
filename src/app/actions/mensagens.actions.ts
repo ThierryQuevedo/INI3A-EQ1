@@ -6,6 +6,7 @@ import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import { agendamentos, servicos, usuarios, mensagens } from '@/db/schema';
 import { getSession } from './auth.actions';
+import { imagemPublica } from '@/lib/imagemPublica';
 
 const STATUS_ENCERRADO = ['concluido', 'cancelado'];
 
@@ -26,10 +27,10 @@ async function obterContextoAgendamento(agendamentoId: number, usuarioId: number
       servicoNome: servicos.nome,
       clienteId: usuarios.id,
       clienteNome: usuarios.nome,
-      clienteImagem: usuarios.urlImagem,
+      clienteImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       prestadorId: prestadorUsuarios.id,
       prestadorNome: prestadorUsuarios.nome,
-      prestadorImagem: prestadorUsuarios.urlImagem,
+      prestadorImagem: imagemPublica(prestadorUsuarios.urlImagem, 'avatar', prestadorUsuarios.id),
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -74,10 +75,10 @@ export async function listarConversas() {
       servicoNome: servicos.nome,
       clienteId: usuarios.id,
       clienteNome: usuarios.nome,
-      clienteImagem: usuarios.urlImagem,
+      clienteImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       prestadorId: prestadorUsuarios.id,
       prestadorNome: prestadorUsuarios.nome,
-      prestadorImagem: prestadorUsuarios.urlImagem,
+      prestadorImagem: imagemPublica(prestadorUsuarios.urlImagem, 'avatar', prestadorUsuarios.id),
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))

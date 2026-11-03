@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
 import { eq, and, gte, asc, ne } from 'drizzle-orm';
 import { db } from '@/db';
-import { agendamentos, servicos, usuarios, avaliacoes } from '@/db/schema';
+import { agendamentos, servicos, usuarios, avaliacoes, categorias, disponibilidades } from '@/db/schema';
 import { getSession } from './auth.actions';
 import {
   notificarAgendamentoCancelado,
@@ -35,6 +35,14 @@ export async function criarAgendamento({
   return novo;
 }
 
+/**
+ * Cria o pedido de agendamento (nasce `pendente`; o prestador confirma depois).
+ *
+ * Repetir o envio é seguro: se o horário já tem um pedido ativo DESTE cliente
+ * para ESTE serviço (ex.: o primeiro envio chegou ao servidor mas a resposta
+ * se perdeu no 4G), devolve sucesso com esse pedido em vez de "horário já
+ * preenchido". `codigo: 'ocupado'` só sai quando outra pessoa marcou antes.
+ */
 export async function confirmarAgendamentoAction({
   servicoId,
   dataHora,
@@ -43,11 +51,11 @@ export async function confirmarAgendamentoAction({
   dataHora: string;
 }) {
   const usuario = await getSession();
-  if (!usuario) return { erro: 'Não autenticado.' };
+  if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para marcar.', codigo: 'sessao' };
 
   const agendamentoDate = new Date(dataHora);
   if (isNaN(agendamentoDate.getTime()) || agendamentoDate < new Date()) {
-    return { erro: 'Data ou horário inválido.' };
+    return { erro: 'Esse horário já passou. Escolha outro.', codigo: 'invalido' };
   }
 
   const [servicoExistente] = await db
@@ -57,11 +65,16 @@ export async function confirmarAgendamentoAction({
     .limit(1);
 
   if (!servicoExistente) {
-    return { erro: 'Serviço não encontrado.' };
+    return { erro: 'Este serviço não está mais disponível.', codigo: 'servico' };
   }
 
-  const agendamentoExistente = await db
-    .select({ id: agendamentos.id })
+  const [agendamentoExistente] = await db
+    .select({
+      id: agendamentos.id,
+      dataHora: agendamentos.dataHora,
+      clienteId: agendamentos.clienteId,
+      servicoId: agendamentos.servicoId,
+    })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
     .where(
@@ -73,8 +86,19 @@ export async function confirmarAgendamentoAction({
     )
     .limit(1);
 
-  if (agendamentoExistente.length > 0) {
-    return { erro: 'Este horário já foi preenchido. Por favor, escolha outro.' };
+  if (agendamentoExistente) {
+    const ehRepeticaoDoMesmoPedido =
+      agendamentoExistente.clienteId === usuario.id &&
+      agendamentoExistente.servicoId === Number(servicoId);
+
+    if (ehRepeticaoDoMesmoPedido) {
+      return {
+        erro: null,
+        sucesso: true,
+        agendamento: { id: agendamentoExistente.id, dataHora: agendamentoExistente.dataHora.toISOString() },
+      };
+    }
+    return { erro: 'Este horário acabou de ser preenchido. Escolha outro.', codigo: 'ocupado' };
   }
 
   const [novo] = await db
@@ -92,7 +116,95 @@ export async function confirmarAgendamentoAction({
   after(() => notificarNovoAgendamento(novo.id));
 
   revalidatePath('/agendamentos');
-  return novo;
+  return {
+    erro: null,
+    sucesso: true,
+    agendamento: { id: novo.id, dataHora: novo.dataHora.toISOString() },
+  };
+}
+
+/**
+ * Tudo o que a tela de agendar precisa, numa ida ao banco por etapa:
+ * serviço + prestador + categoria (uma consulta com junção) e, em paralelo,
+ * as disponibilidades do serviço e os agendamentos futuros do prestador
+ * (de todos os serviços dele, com a duração de cada um).
+ * Só sai o que a tela mostra: nada de e-mail ou telefone do prestador.
+ * Datas viram ISO para atravessar a fronteira servidor → cliente.
+ */
+export async function carregarAgendaDoServico(servicoId: number) {
+  const id = Number(servicoId);
+  if (!Number.isInteger(id) || id <= 0) return null;
+
+  const [servico] = await db
+    .select({
+      id: servicos.id,
+      slug: servicos.slug,
+      nome: servicos.nome,
+      preco: servicos.preco,
+      duracaoEstimada: servicos.duracaoEstimada,
+      prestadorId: servicos.prestadorId,
+      prestadorNome: usuarios.nome,
+      prestadorSlug: usuarios.slug,
+      categoriaId: servicos.categoriaId,
+      categoriaNome: categorias.nome,
+    })
+    .from(servicos)
+    .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
+    .where(eq(servicos.id, id))
+    .limit(1);
+
+  if (!servico) return null;
+
+  const [listaDisponibilidades, agendados] = await Promise.all([
+    db
+      .select({
+        diaSemana: disponibilidades.diaSemana,
+        horaInicio: disponibilidades.horaInicio,
+        horaFim: disponibilidades.horaFim,
+      })
+      .from(disponibilidades)
+      .where(and(eq(disponibilidades.prestadorId, servico.prestadorId), eq(disponibilidades.servicoId, id))),
+    listarOcupacaoDoPrestador(servico.prestadorId),
+  ]);
+
+  return {
+    servico: { ...servico, preco: String(servico.preco) },
+    disponibilidades: listaDisponibilidades,
+    agendados,
+  };
+}
+
+/** Agendamentos futuros do prestador como ocupação: só instante, status e duração. */
+async function listarOcupacaoDoPrestador(prestadorId: number) {
+  const linhas = await db
+    .select({
+      dataHora: agendamentos.dataHora,
+      status: agendamentos.status,
+      duracao: servicos.duracaoEstimada,
+    })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .where(
+      and(
+        eq(servicos.prestadorId, Number(prestadorId)),
+        gte(agendamentos.dataHora, new Date()),
+        ne(agendamentos.status, 'cancelado')
+      )
+    );
+
+  return linhas.map((l) => ({ dataHora: l.dataHora.toISOString(), status: l.status, duracao: l.duracao }));
+}
+
+/** Recarrega só a ocupação (usado quando alguém marca o horário antes do cliente). */
+export async function recarregarOcupacaoDoServico(servicoId: number) {
+  const [servico] = await db
+    .select({ prestadorId: servicos.prestadorId })
+    .from(servicos)
+    .where(eq(servicos.id, Number(servicoId)))
+    .limit(1);
+  if (!servico) return [];
+  return listarOcupacaoDoPrestador(servico.prestadorId);
 }
 
 export async function atualizarStatusAgendamento(id: number, status: string) {

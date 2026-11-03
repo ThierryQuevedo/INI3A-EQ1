@@ -1,6 +1,6 @@
 import { db } from '@/db';
 import { usuarios, servicos } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { getSession } from '@/app/actions/auth.actions';
 
 export const dynamic = 'force-dynamic';
@@ -144,11 +144,13 @@ async function persistirNoBanco({ tipo, servicoId, url }) {
     }
 
     if (tipo === 'servico' && servicoId) {
-      await db
+      // Só o dono do serviço pode trocar a foto dele.
+      const atualizados = await db
         .update(servicos)
         .set({ urlImagem: url })
-        .where(eq(servicos.id, Number(servicoId)));
-      return true;
+        .where(and(eq(servicos.id, Number(servicoId)), eq(servicos.prestadorId, usuario.id)))
+        .returning({ id: servicos.id });
+      return atualizados.length > 0;
     }
 
     return false;

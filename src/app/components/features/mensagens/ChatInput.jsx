@@ -39,7 +39,7 @@ export default function ChatInput({ onEnviar, disabled }) {
 
   if (disabled) {
     return (
-      <div className="px-4 py-3 text-center text-caption text-muted-foreground bg-muted rounded-xl">
+      <div className="px-4 py-3 text-center text-caption text-muted-foreground bg-muted rounded-lg">
         Esta conversa foi encerrada.
       </div>
     );
@@ -57,14 +57,14 @@ export default function ChatInput({ onEnviar, disabled }) {
         onKeyDown={handleKeyDown}
         rows={1}
         placeholder="Escreva uma mensagem..."
-        className="flex-1 resize-none max-h-[120px] rounded-xl border border-input bg-background px-4 py-2.5 text-body-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex-1 resize-none max-h-[120px] rounded-lg border border-input bg-background px-4 py-2.5 text-body-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
       <button
         type="button"
         onClick={enviar}
         disabled={!texto.trim() || enviando}
         aria-label="Enviar mensagem"
-        className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-colors duration-fast hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+        className="h-11 w-11 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center transition-colors hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
       >
         <Send size={18} aria-hidden="true" />
       </button>

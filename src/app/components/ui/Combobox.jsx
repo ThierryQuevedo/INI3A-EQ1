@@ -17,6 +17,8 @@ export default function Combobox({
   className = "",
   id,
   "aria-label": ariaLabel,
+  "aria-invalid": ariaInvalid,
+  "aria-describedby": ariaDescribedBy,
 }) {
   const [aberto, setAberto] = useState(false);
   const [indiceAtivo, setIndiceAtivo] = useState(-1);
@@ -85,12 +87,15 @@ export default function Combobox({
         aria-haspopup="listbox"
         aria-expanded={aberto}
         aria-label={ariaLabel}
-        className="h-10 w-full rounded-xl border border-input bg-card px-3 text-body-sm font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition-colors"
+        // aria-invalid não vale para role=button: o erro chega pelo aria-describedby.
+        data-invalido={ariaInvalid ? "" : undefined}
+        aria-describedby={ariaDescribedBy}
+        className="h-10 w-full rounded-lg border border-input data-[invalido]:border-destructive bg-card px-3 text-body-sm font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition-colors"
       >
         <span className="truncate">{selecionado ? selecionado.label : placeholder}</span>
         <ChevronDown
           size={16}
-          className={cn("shrink-0 text-muted-foreground transition-transform duration-200", aberto && "rotate-180")}
+          className={cn("shrink-0 text-muted-foreground transition-transform", aberto && "rotate-180")}
           aria-hidden="true"
         />
       </button>

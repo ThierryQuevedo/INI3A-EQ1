@@ -12,7 +12,7 @@ export default function ConversaListItem({ conversa }) {
   return (
     <Link
       href={`/mensagens/${agendamentoId}`}
-      className="flex items-center gap-4 p-4 rounded-2xl bg-card border border-border hover:bg-muted transition-colors duration-fast"
+      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:bg-muted transition-colors"
     >
       <Avatar nome={outroUsuario.nome} urlImagem={outroUsuario.urlImagem} size="lg" />
 
@@ -40,7 +40,7 @@ export default function ConversaListItem({ conversa }) {
       </div>
 
       {naoLidas > 0 && (
-        <span className="shrink-0 h-6 min-w-6 px-1.5 rounded-full bg-accent text-accent-foreground text-caption font-bold flex items-center justify-center">
+        <span className="shrink-0 h-6 min-w-6 px-1.5 rounded-full bg-contador text-contador-foreground text-caption font-bold flex items-center justify-center">
           {naoLidas}
         </span>
       )}
