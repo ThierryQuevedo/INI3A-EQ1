@@ -109,10 +109,10 @@ export default function Calendario({
 
       <div className="flex flex-wrap items-center gap-5 mt-6 pt-5 border-t border-border text-body-sm text-muted-foreground font-medium">
         <div className="flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-accent" aria-hidden="true" /> Disponível
+          <span className="w-3 h-3 rounded-full bg-primary" aria-hidden="true" /> Disponível
         </div>
         <div className="flex items-center gap-2">
-          <span className="w-3.5 h-3.5 rounded ring-2 ring-accent" aria-hidden="true" /> Hoje
+          <span className="w-3.5 h-3.5 rounded ring-2 ring-primary" aria-hidden="true" /> Hoje
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3.5 h-3.5 rounded bg-muted" aria-hidden="true" /> Indisponível

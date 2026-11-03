@@ -46,7 +46,7 @@ export default function FavoritoButton({ tipo, alvoId, favoritoInicial = false, 
 
   const estiloBase =
     variant === "overlay"
-      ? "absolute top-3 right-3 z-10 size-9 rounded-full bg-card/90 backdrop-blur-sm shadow-soft flex items-center justify-center hover:scale-105 transition-transform"
+      ? "absolute area-toque top-3 right-3 z-10 size-9 rounded-full bg-card/90 backdrop-blur-sm shadow-soft flex items-center justify-center hover:scale-105 transition-transform"
       : "size-12 shrink-0 rounded-lg border border-input bg-card hover:bg-muted flex items-center justify-center transition-colors";
 
   return (

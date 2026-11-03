@@ -30,6 +30,11 @@ export default function BottomNav({ usuario }) {
     { href: usuario ? "/configuracoes" : "/login", label: "Perfil", Icon: User },
   ];
 
+  // A-07: a tela de agendar é um fluxo de tarefa — o rodapé de revisão com
+  // "Marcar horário" ocupa a borda de baixo, ao alcance do polegar. O
+  // "Voltar" do topo continua lá (Nielsen #3).
+  if (pathname?.startsWith("/agendamentos/novo")) return null;
+
   return (
     <nav
       aria-label="Navegação principal"
@@ -44,7 +49,7 @@ export default function BottomNav({ usuario }) {
                 href={href}
                 aria-current={ativo ? "page" : undefined}
                 className={cn(
-                  "flex h-full min-w-0 flex-col items-center justify-center gap-1 px-1 text-caption font-medium transition-colors",
+                  "flex h-full min-w-0 flex-col items-center justify-center gap-1 px-1 text-caption font-medium transition duracao-rapida active:scale-[0.97]",
                   ativo ? "text-primary" : "text-muted-foreground hover:text-foreground"
                 )}
               >

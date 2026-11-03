@@ -22,7 +22,7 @@ export default function NotificacaoItem({ notificacao }) {
       interactive={!!notificacao.link}
       className={cn("flex gap-3", !lida && "border-primary/30 bg-primary/5")}
     >
-      <span className={cn("mt-1.5 size-2 rounded-full shrink-0", lida ? "bg-transparent" : "bg-accent")} aria-hidden="true" />
+      <span className={cn("mt-1.5 size-2 rounded-full shrink-0", lida ? "bg-transparent" : "bg-primary")} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="text-body-sm font-bold text-foreground">{notificacao.titulo}</p>
         <p className="text-body-sm text-muted-foreground mt-0.5">{notificacao.mensagem}</p>

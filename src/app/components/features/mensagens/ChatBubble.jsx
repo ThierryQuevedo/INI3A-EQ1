@@ -18,7 +18,7 @@ export default function ChatBubble({ mensagem, deMim }) {
         <p className="text-body-sm whitespace-pre-wrap break-words">{mensagem.texto}</p>
         <p
           className={cn(
-            "text-[11px] mt-1",
+            "text-caption mt-1",
             deMim ? "text-primary-foreground/70" : "text-muted-foreground"
           )}
         >

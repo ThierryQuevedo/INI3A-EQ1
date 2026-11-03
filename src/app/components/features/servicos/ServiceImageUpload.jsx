@@ -153,7 +153,7 @@ export default function ServiceImageUpload({
     <div className={`flex flex-col gap-2 ${className}`}>
       {/* Label e indicador de opcional/obrigatório */}
       <div className="flex items-center justify-between">
-        <label className="text-sm font-inter font-medium text-foreground">
+        <label className="text-caption font-inter font-medium text-foreground">
           {label} {required && <span className="text-destructive">*</span>}
         </label>
         <span className="text-caption text-muted-foreground font-inter">

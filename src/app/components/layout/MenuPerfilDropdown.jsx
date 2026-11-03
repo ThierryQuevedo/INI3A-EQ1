@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useId } from "react";
 import { User, LogOut, UserRound, Heart, Briefcase } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,6 +12,8 @@ export default function PerfilDropdown({ user }) {
     const [aberto, setAberto] = useState(false);
     const [confirmandoSaida, setConfirmandoSaida] = useState(false);
     const menuRef = useRef(null);
+    const botaoRef = useRef(null);
+    const idPainel = useId();
     const mounted = useMounted();
 
     useEffect(() => {
@@ -20,8 +22,14 @@ export default function PerfilDropdown({ user }) {
                 setAberto(false);
             }
         }
+        // Esc fecha e devolve o foco ao botão — senão quem navega por teclado
+        // fica com o foco num item que acabou de sumir.
         function handleKeyDown(event) {
-            if (event.key === "Escape") setAberto(false);
+            if (event.key !== "Escape") return;
+            setAberto((estavaAberto) => {
+                if (estavaAberto) botaoRef.current?.focus();
+                return false;
+            });
         }
         document.addEventListener("mousedown", handleClickFora);
         document.addEventListener("keydown", handleKeyDown);
@@ -47,11 +55,13 @@ export default function PerfilDropdown({ user }) {
     return (
         <div className="relative" ref={menuRef}>
             <button
+                ref={botaoRef}
+                type="button"
                 onClick={() => setAberto((prev) => !prev)}
                 className="bg-primary text-primary-foreground h-11 w-11 rounded-full p-0.5 hover:bg-primary-hover transition shadow-inner cursor-pointer overflow-hidden flex items-center justify-center"
                 aria-label="Menu do perfil"
-                aria-haspopup="menu"
                 aria-expanded={aberto}
+                aria-controls={aberto ? idPainel : undefined}
             >
                 {user?.urlImagem ? (
                     <Image
@@ -67,13 +77,13 @@ export default function PerfilDropdown({ user }) {
             </button>
 
             {aberto && (
-                <div
-                    role="menu"
+                <nav
+                    id={idPainel}
+                    aria-label="Conta"
                     className="absolute right-0 top-full mt-3 w-56 bg-card rounded-xl shadow-elevated border border-border overflow-hidden z-50"
                 >
                     <Link
                         href="/configuracoes"
-                        role="menuitem"
                         onClick={() => setAberto(false)}
                         className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                     >
@@ -83,7 +93,6 @@ export default function PerfilDropdown({ user }) {
                     {user?.id && (
                         <Link
                             href={user.tipo === 'prestador' ? `/prestador/${user.slug || user.id}` : `/cliente/${user.slug || user.id}`}
-                            role="menuitem"
                             onClick={() => setAberto(false)}
                             className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                         >
@@ -93,7 +102,6 @@ export default function PerfilDropdown({ user }) {
                     )}
                     <Link
                         href="/favoritos"
-                        role="menuitem"
                         onClick={() => setAberto(false)}
                         className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                     >
@@ -103,7 +111,6 @@ export default function PerfilDropdown({ user }) {
                     {user?.tipo === 'cliente' && (
                         <Link
                             href="/configuracoes#virar-prestador"
-                            role="menuitem"
                             onClick={() => setAberto(false)}
                             className="flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors"
                         >
@@ -114,14 +121,13 @@ export default function PerfilDropdown({ user }) {
                     <ThemeToggle variant="menuitem" onNavigate={() => setAberto(false)} />
                     <button
                         type="button"
-                        role="menuitem"
                         onClick={pedirConfirmacaoSaida}
                         className="w-full flex items-center gap-3 px-5 py-3.5 text-destructive hover:bg-muted transition-colors cursor-pointer"
                     >
                         <LogOut size={18} aria-hidden="true" />
                         <span className="text-body-sm font-bold">Sair</span>
                     </button>
-                </div>
+                </nav>
             )}
 
             <ConfirmDialog

@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:seed": "node --experimental-strip-types --env-file=.env db/seed.js",
     "db:slugs": "node --env-file=.env db/gerar-slugs.js",
+    "tokens:contraste": "node scripts/contraste.mjs",
     "db:fresh": "npx drizzle-kit migrate && node --experimental-strip-types --env-file=.env db/seed.js"
   },
   "dependencies": {

@@ -144,34 +144,47 @@ export async function deletarDisponibilidade(prestadorId: number, id: number) {
 /**
  * Calcula o próximo horário livre de vários serviços de uma vez (sem N+1 query),
  * reaproveitando a mesma lógica de slots usada na tela de agendamento.
+ * Os agendamentos considerados são os de TODOS os serviços do prestador — o
+ * mesmo conjunto que a tela de agendar usa (carregarAgendaDoServico) —, para o
+ * card nunca oferecer um horário que a tela seguinte mostra como ocupado.
  * Retorna { [servicoId]: isoString | null }.
  */
 export async function calcularProximosHorariosLivres(servicoIds: number[]) {
   const ids = Array.from(new Set((servicoIds || []).map(Number))).filter((n) => !Number.isNaN(n));
   if (ids.length === 0) return {};
 
-  const [servicosInfo, disp, agend] = await Promise.all([
+  const [servicosInfo, disp] = await Promise.all([
     db
-      .select({ id: servicos.id, duracaoEstimada: servicos.duracaoEstimada })
+      .select({ id: servicos.id, duracaoEstimada: servicos.duracaoEstimada, prestadorId: servicos.prestadorId })
       .from(servicos)
       .where(inArray(servicos.id, ids)),
     db
       .select()
       .from(disponibilidades)
       .where(inArray(disponibilidades.servicoId, ids)),
-    db
-      .select({ dataHora: agendamentos.dataHora, status: agendamentos.status, servicoId: agendamentos.servicoId })
-      .from(agendamentos)
-      .where(and(inArray(agendamentos.servicoId, ids), gte(agendamentos.dataHora, new Date()))),
   ]);
+
+  const prestadorIds = Array.from(new Set(servicosInfo.map((s) => s.prestadorId)));
+  const agend = prestadorIds.length === 0
+    ? []
+    : await db
+        .select({
+          dataHora: agendamentos.dataHora,
+          status: agendamentos.status,
+          duracao: servicos.duracaoEstimada,
+          prestadorId: servicos.prestadorId,
+        })
+        .from(agendamentos)
+        .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+        .where(and(inArray(servicos.prestadorId, prestadorIds), gte(agendamentos.dataHora, new Date())));
 
   const resultado: Record<number, string | null> = {};
   for (const servico of servicosInfo) {
     const dispDoServico = disp.filter((d) => d.servicoId === servico.id);
-    const agendDoServico = agend.filter((a) => a.servicoId === servico.id);
+    const agendDoPrestador = agend.filter((a) => a.prestadorId === servico.prestadorId);
     const proximo = proximoSlotLivre({
       disponibilidades: dispDoServico,
-      agendados: agendDoServico,
+      agendados: agendDoPrestador,
       duracaoEstimada: servico.duracaoEstimada,
     });
     resultado[servico.id] = proximo ? proximo.toISOString() : null;

@@ -9,6 +9,7 @@ import { db } from '@/db';
 import { usuarios, sessoes, prestadores } from '@/db/schema';
 import { SESSION_COOKIE, criarSessao, consumirProximo } from '@/lib/session';
 import { gerarSlug } from '@/lib/slug';
+import { imagemPublica } from '@/lib/imagemPublica';
 
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
   try {
@@ -159,8 +160,8 @@ export async function getSession() {
         telefone: usuarios.telefone,
         tipo: usuarios.tipo,
         admin: usuarios.admin,
-        urlImagem: usuarios.urlImagem,
-        urlBanner: usuarios.urlBanner,
+        urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
+        urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
         criadoEm: usuarios.criadoEm,
         expiraEm: sessoes.expiraEm,
       })

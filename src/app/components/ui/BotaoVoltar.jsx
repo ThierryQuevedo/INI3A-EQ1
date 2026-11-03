@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils';
 
 const VARIANTES = {
   // dentro do fluxo da página: discreto, sem cara de card
-  padrao: 'h-10 px-3 -ml-3 text-muted-foreground hover:text-foreground hover:bg-muted',
+  padrao: 'h-10 pointer-coarse:h-11 px-3 -ml-3 text-muted-foreground hover:text-foreground hover:bg-muted',
   // sobre banner/imagem: precisa de fundo próprio para manter contraste
-  sobreposto: 'h-10 px-3.5 text-foreground bg-card/95 hover:bg-card border border-border shadow-soft',
+  sobreposto: 'h-10 pointer-coarse:h-11 px-3.5 text-foreground bg-card/95 hover:bg-card border border-border shadow-soft',
 };
 
 export default function BotaoVoltar({ fallbackHref = '/servicos', variant = 'padrao', className = '' }) {

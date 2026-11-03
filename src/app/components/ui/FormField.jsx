@@ -7,11 +7,11 @@ export default function FormField({ id, label, error, hint, required = false, cl
       </label>
       {children}
       {error && (
-        <p className="mt-1.5 text-body-sm text-destructive font-medium" role="alert">
+        <p id={id ? `${id}-erro` : undefined} className="mt-1.5 text-body-sm text-destructive font-medium" role="alert">
           {error}
         </p>
       )}
-      {!error && hint && <p className="mt-1.5 text-body-sm text-muted-foreground">{hint}</p>}
+      {!error && hint && <p id={id ? `${id}-dica` : undefined} className="mt-1.5 text-body-sm text-muted-foreground">{hint}</p>}
     </div>
   );
 }

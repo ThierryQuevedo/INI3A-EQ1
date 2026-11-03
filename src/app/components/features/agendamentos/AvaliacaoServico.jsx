@@ -106,7 +106,7 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
         type="button"
         onClick={enviarAvaliacao}
         disabled={pending}
-        className="mt-2 bg-accent hover:bg-accent-hover disabled:opacity-60 disabled:cursor-not-allowed text-accent-foreground text-caption font-bold px-4 h-11 rounded-lg transition-colors cursor-pointer"
+        className="mt-2 bg-primary hover:bg-primary-hover disabled:opacity-60 disabled:cursor-not-allowed text-primary-foreground text-caption font-bold px-4 h-11 rounded-lg transition-colors cursor-pointer"
       >
         {pending ? "Enviando..." : "Enviar avaliação"}
       </button>

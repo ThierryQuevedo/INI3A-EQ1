@@ -1,11 +1,11 @@
 import Link from "next/link";
-import Form from "next/form";
-import { Search, CalendarDays, Clock, Star, ArrowRight, ChevronRight } from "lucide-react";
+import { CalendarDays, Clock, Star, ArrowRight, ChevronRight } from "lucide-react";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios, categorias, prestadores } from "@/db/schema";
 import CategoryIcon from "@/app/components/features/servicos/CategoryIcon";
 import CarrosselServicos from "@/app/components/features/home/CarrosselServicos";
+import BuscaHome from "@/app/components/features/home/BuscaHome";
 import SecaoPertoDeVoce from "@/app/components/features/home/SecaoPertoDeVoce";
 import { Button } from "@/app/components/ui/button";
 import { comEstatisticas } from "@/lib/avaliacoes";
@@ -15,6 +15,7 @@ import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
 import { calcularProximosHorariosLivres } from "@/app/actions/disponibilidades.actions";
 import { ehHoje } from "@/lib/disponibilidade";
 import PageContainer from "@/app/components/ui/PageContainer";
+import { imagemPublica } from '@/lib/imagemPublica';
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,7 @@ function CabecalhoSecao({ Icon, titulo, href, rotuloLink = "Ver todos" }) {
       {href && (
         <Link
           href={href}
-          className="inline-flex items-center gap-0.5 shrink-0 text-body-sm font-semibold text-primary hover:underline underline-offset-4"
+          className="inline-flex items-center gap-0.5 shrink-0 min-h-6 pointer-coarse:min-h-11 text-body-sm font-semibold text-primary hover:underline underline-offset-4"
         >
           {rotuloLink}
           <ChevronRight size={16} aria-hidden="true" />
@@ -41,14 +42,14 @@ function CabecalhoSecao({ Icon, titulo, href, rotuloLink = "Ver todos" }) {
 export default async function Home() {
   const usuario = await getSession();
 
-  const [catalogoBruto, listaCategorias, proximoAgendamento] = await Promise.all([
+  const [catalogoBruto, listaCategorias, proximoAgendamento, indiceBusca] = await Promise.all([
     db
       .select({
         id: servicos.id,
         slug: servicos.slug,
         nomeServico: servicos.nome,
         preco: servicos.preco,
-        urlImagem: servicos.urlImagem,
+        urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
         duracaoEstimada: servicos.duracaoEstimada,
         nomeProfissional: usuarios.nome,
         nomeCategoria: categorias.nome,
@@ -63,6 +64,26 @@ export default async function Home() {
       .limit(24),
     listarCategorias(),
     usuario && usuario.tipo === "cliente" ? buscarDashboardCliente(usuario.id) : null,
+    // Índice leve para o preview da busca (fuzzy search no cliente): só os
+    // campos que a lista de sugestões mostra, sem descrição nem horários.
+    db
+      .select({
+        id: servicos.id,
+        slug: servicos.slug,
+        nome: servicos.nome,
+        preco: servicos.preco,
+        urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
+        categoria: categorias.nome,
+        prestadorId: servicos.prestadorId,
+        prestadorNome: usuarios.nome,
+        prestadorSlug: usuarios.slug,
+        prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
+      })
+      .from(servicos)
+      .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+      .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
+      .orderBy(desc(servicos.id))
+      .limit(500),
   ]);
 
   const catalogo = await comEstatisticas(catalogoBruto);
@@ -90,21 +111,7 @@ export default async function Home() {
           </p>
         </div>
 
-        <Form action="/servicos/" className="relative w-full md:max-w-sm shrink-0">
-          <Search
-            size={18}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-            aria-hidden="true"
-          />
-          <label htmlFor="busca-home" className="sr-only">Buscar por serviço, prestador ou categoria</label>
-          <input
-            id="busca-home"
-            type="search"
-            name="q"
-            placeholder="Buscar serviço ou profissional"
-            className="w-full h-11 rounded-lg border border-input bg-card pl-10 pr-4 text-body-sm text-foreground placeholder:text-muted-foreground outline-none transition focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent"
-          />
-        </Form>
+        <BuscaHome servicos={indiceBusca} categorias={listaCategorias.map((c) => ({ id: c.id, nome: c.nome }))} />
       </section>
 
       {agendamentoProximo && (
@@ -171,7 +178,7 @@ export default async function Home() {
             Explore todos os serviços, com filtros de categoria, preço, avaliação e horário.
           </p>
         </div>
-        <Button asChild variant="accent" size="lg" className="shrink-0">
+        <Button asChild variant="secondary" size="lg" className="shrink-0">
           <Link href="/servicos">
             Ver catálogo completo
             <ArrowRight aria-hidden="true" />

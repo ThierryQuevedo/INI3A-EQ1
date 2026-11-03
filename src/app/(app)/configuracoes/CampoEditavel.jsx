@@ -90,7 +90,7 @@ function ModalEdicao({ label, name, valor, icon, action, type, onClose }) {
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 rounded-lg h-11 text-body-sm font-bold text-accent-foreground bg-accent hover:bg-accent-hover transition-colors disabled:opacity-60 cursor-pointer"
+              className="flex-1 rounded-lg h-11 text-body-sm font-bold text-primary-foreground bg-primary hover:bg-primary-hover transition-colors disabled:opacity-60 cursor-pointer"
             >
               {isPending ? "Salvando..." : "Salvar"}
             </button>

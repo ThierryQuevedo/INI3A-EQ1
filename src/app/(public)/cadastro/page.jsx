@@ -88,7 +88,7 @@ export default function CadastrarPage() {
   }
 
   return (
-    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100vh-4rem)]">
+    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100dvh-4rem)]">
       <AuthShowcase
         title="Cadastre seu horário livre ou encontre um profissional na hora."
         className="max-lg:hidden lg:flex"
@@ -117,6 +117,8 @@ export default function CadastrarPage() {
               id="nome"
               type="text"
               name="nome"
+              autoComplete="name"
+              autoCapitalize="words"
               value={campos.nome}
               onChange={handleChange}
               aria-invalid={!!erros.nome}
@@ -129,6 +131,9 @@ export default function CadastrarPage() {
               id="email"
               type="email"
               name="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
               value={campos.email}
               onChange={handleChange}
               aria-invalid={!!erros.email}
@@ -139,13 +144,16 @@ export default function CadastrarPage() {
           <FormField id="cel" label="Telefone" error={erros.cel}>
             <Input
               id="cel"
-              type="text"
+              type="tel"
               name="cel"
-              inputMode="numeric"
+              autoComplete="tel-national"
+              inputMode="tel"
               value={campos.cel}
               onChange={handleChange}
               onKeyDown={(e) => {
-                const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter"];
+                // Vários teclados Android mandam "Unidentified"/"Process" no keydown:
+                // deixar passar — mascararTelefone() já limpa o que não é número.
+                const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter", "Unidentified", "Process"];
                 if (permitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
                 if (!/^[0-9]$/.test(e.key)) {
                   e.preventDefault();
@@ -163,6 +171,7 @@ export default function CadastrarPage() {
                 id="senha"
                 type={showPassword ? "text" : "password"}
                 name="senha"
+                autoComplete="new-password"
                 value={campos.senha}
                 onChange={handleChange}
                 aria-invalid={!!erros.senha}
@@ -215,7 +224,7 @@ export default function CadastrarPage() {
             </div>
           </div>
 
-          <Button type="submit" variant="accent" size="lg" className="w-full mt-2" disabled={isPending}>
+          <Button type="submit" size="lg" className="w-full mt-2" disabled={isPending}>
             {isPending ? "Cadastrando..." : "Cadastrar"}
           </Button>
         </form>

@@ -1,6 +1,7 @@
 import { and, avg, count, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 import { db } from '@/db';
 import { agendamentos, avaliacoes, servicos, usuarios } from '@/db/schema';
+import { imagemPublica } from './imagemPublica.js';
 
 /*
  ao_encontrado — o agendamento não existe;
@@ -23,7 +24,7 @@ export async function verificarPodeAvaliar(agendamentoId, usuarioId) {
       servicoId: servicos.id,
       servicoNome: servicos.nome,
       servicoSlug: servicos.slug,
-      servicoImagem: servicos.urlImagem,
+      servicoImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       prestadorNome: usuarios.nome,
       nota: avaliacoes.notaParaPrestador,
       comentario: avaliacoes.comentarioPrestador,
@@ -89,7 +90,7 @@ export async function avaliacoesPorServico(servicoId, { limite } = {}) {
       comentario: avaliacoes.comentarioPrestador,
       dataHora: agendamentos.dataHora,
       clienteNome: usuarios.nome,
-      clienteImagem: usuarios.urlImagem,
+      clienteImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
     })
     .from(avaliacoes)
     .innerJoin(agendamentos, eq(avaliacoes.agendamentoId, agendamentos.id))

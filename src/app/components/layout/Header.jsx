@@ -12,7 +12,7 @@ export default function Header({ usuario }) {
         <header className="sticky top-0 z-50 w-full bg-card border-b border-border h-16 shrink-0 shadow-soft">
             <div className="max-w-6xl mx-auto h-full px-4 sm:px-6 lg:px-10 flex items-center justify-between gap-4">
 
-                <Link href="/" className="shrink-0 p-1 rounded-lg hover:opacity-90 transition-opacity">
+                <Link href="/" className="shrink-0 inline-flex items-center min-h-11 p-1 rounded-lg hover:opacity-90 transition-opacity">
                     <Image
                         src={logotipo}
                         className="w-32 sm:w-36 h-auto object-contain"
@@ -54,7 +54,7 @@ export default function Header({ usuario }) {
                             </Link>
                             <Link
                                 href="/cadastro"
-                                className="text-body-sm font-bold bg-accent hover:bg-accent-hover text-accent-foreground px-4 h-11 inline-flex items-center rounded-lg transition"
+                                className="text-body-sm font-bold bg-primary hover:bg-primary-hover text-primary-foreground px-4 h-11 inline-flex items-center rounded-lg transition"
                             >
                                 Criar Conta
                             </Link>

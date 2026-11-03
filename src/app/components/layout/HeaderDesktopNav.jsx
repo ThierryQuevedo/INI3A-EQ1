@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import BadgeNaoLidas from "@/app/components/features/mensagens/BadgeNaoLidas";
 
-/** Navegação horizontal no desktop (≥md) — substitui o hambúrguer. */
+
 export default function HeaderDesktopNav({ usuario, className }) {
   const pathname = usePathname();
   const ehPrestador = usuario?.tipo === "prestador";

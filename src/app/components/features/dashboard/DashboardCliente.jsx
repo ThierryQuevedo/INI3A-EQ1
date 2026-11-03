@@ -92,7 +92,7 @@ export default function DashboardCliente({ usuario, dados }) {
                 <User aria-hidden="true" /> Perfil público
               </Link>
             </Button>
-            <Button asChild variant="accent" size="sm">
+            <Button asChild size="sm">
               <Link href="/servicos">
                 <Search aria-hidden="true" /> Explorar serviços
               </Link>

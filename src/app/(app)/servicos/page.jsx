@@ -7,16 +7,19 @@ import ServicosClient from './ServicosClient';
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.actions';
 import { listarIdsFavoritos } from '@/app/actions/favoritos.actions';
+import { imagemPublica } from '@/lib/imagemPublica';
 
 export default async function ServicosPage() {
-  const dadosBrutos = await db
+  // As três consultas não dependem uma da outra: vão juntas ao banco (A-02).
+  const [dadosBrutos, listaCategorias, favoritos] = await Promise.all([
+    db
     .select({
       id: servicos.id,
       slug: servicos.slug,
       nomeServico: servicos.nome,
       descricao: servicos.descricao,
       preco: servicos.preco,
-      urlImagem: servicos.urlImagem,
+      urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       duracaoEstimada: servicos.duracaoEstimada,
       prestadorId: servicos.prestadorId,
       prestadorSlug: usuarios.slug,
@@ -29,16 +32,19 @@ export default async function ServicosPage() {
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .leftJoin(prestadores, eq(prestadores.usuarioId, servicos.prestadorId));
+    .leftJoin(prestadores, eq(prestadores.usuarioId, servicos.prestadorId)),
+    db
+      .select({ id: categorias.id, nome: categorias.nome })
+      .from(categorias),
+    listarIdsFavoritos(),
+  ]);
 
-  const listaCategorias = await db
-    .select({ id: categorias.id, nome: categorias.nome })
-    .from(categorias);
-
-  const comEstat = await comEstatisticas(dadosBrutos);
-  const proximosHorarios = await calcularProximosHorariosLivres(comEstat.map((s) => s.id));
-  const { servicos: idsFavoritados } = await listarIdsFavoritos();
-  const favoritosSet = new Set(idsFavoritados);
+  // Estatísticas e próximo horário dependem só dos ids: também em paralelo.
+  const [comEstat, proximosHorarios] = await Promise.all([
+    comEstatisticas(dadosBrutos),
+    calcularProximosHorariosLivres(dadosBrutos.map((s) => s.id)),
+  ]);
+  const favoritosSet = new Set(favoritos.servicos);
   const listaServicos = comEstat.map((s) => ({
     ...s,
     proximoHorario: proximosHorarios[s.id] ?? null,

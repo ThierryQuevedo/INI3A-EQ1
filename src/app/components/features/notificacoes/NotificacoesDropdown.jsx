@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,9 @@ export default function NotificacoesDropdown() {
   const [naoLidas, setNaoLidas] = useState(0);
   const [carregado, setCarregado] = useState(false);
   const menuRef = useRef(null);
+  const botaoRef = useRef(null);
+  const idPainel = useId();
+  const idTitulo = useId();
 
   useEffect(() => {
     let ativo = true;
@@ -42,8 +45,13 @@ export default function NotificacoesDropdown() {
     function handleClickFora(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) setAberto(false);
     }
+    // Esc fecha e devolve o foco ao sino.
     function handleKeyDown(event) {
-      if (event.key === "Escape") setAberto(false);
+      if (event.key !== "Escape") return;
+      setAberto((estavaAberto) => {
+        if (estavaAberto) botaoRef.current?.focus();
+        return false;
+      });
     }
     document.addEventListener("mousedown", handleClickFora);
     document.addEventListener("keydown", handleKeyDown);
@@ -87,28 +95,30 @@ export default function NotificacoesDropdown() {
   return (
     <div className="relative" ref={menuRef}>
       <button
+        ref={botaoRef}
         type="button"
         onClick={alternarAberto}
         className="relative h-11 w-11 flex items-center justify-center rounded-full hover:bg-muted transition-colors cursor-pointer"
-        aria-label="Notificações"
-        aria-haspopup="menu"
+        aria-label={naoLidas > 0 ? `Notificações, ${naoLidas} não lidas` : "Notificações"}
         aria-expanded={aberto}
+        aria-controls={aberto ? idPainel : undefined}
       >
         <Bell size={20} className="text-foreground" aria-hidden="true" />
         {naoLidas > 0 && (
-          <span className="absolute top-1.5 right-1.5 h-4 min-w-4 px-1 rounded-full bg-accent text-accent-foreground text-[10px] font-bold flex items-center justify-center">
+          <span aria-hidden="true" className="absolute top-0 right-0 h-5 min-w-5 px-1 rounded-full bg-contador text-contador-foreground text-caption leading-none ring-2 ring-card font-bold flex items-center justify-center">
             {naoLidas > 9 ? "9+" : naoLidas}
           </span>
         )}
       </button>
 
       {aberto && (
-        <div
-          role="menu"
+        <section
+          id={idPainel}
+          aria-labelledby={idTitulo}
           className="absolute right-0 top-full mt-3 w-80 max-w-[90vw] bg-card rounded-xl shadow-elevated border border-border overflow-hidden z-50"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
-            <h2 className="text-body-sm font-bold text-foreground">Notificações</h2>
+            <h2 id={idTitulo} className="text-body-sm font-bold text-foreground">Notificações</h2>
             {naoLidas > 0 && (
               <button
                 type="button"
@@ -121,7 +131,7 @@ export default function NotificacoesDropdown() {
             )}
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-80 overflow-y-auto" aria-busy={!carregado}>
             {!carregado ? (
               <p className="px-5 py-8 text-center text-body-sm text-muted-foreground">Carregando...</p>
             ) : notificacoes.length === 0 ? (
@@ -132,7 +142,7 @@ export default function NotificacoesDropdown() {
                 const conteudo = (
                   <div className={cn("flex gap-3 px-5 py-3.5 hover:bg-muted transition-colors", naoLida && "bg-primary/5")}>
                     <span
-                      className={cn("mt-1.5 size-2 rounded-full shrink-0", naoLida ? "bg-accent" : "bg-transparent")}
+                      className={cn("mt-1.5 size-2 rounded-full shrink-0", naoLida ? "bg-primary" : "bg-transparent")}
                       aria-hidden="true"
                     />
                     <div className="min-w-0 flex-1">
@@ -147,7 +157,6 @@ export default function NotificacoesDropdown() {
                   <Link
                     key={notificacao.id}
                     href={notificacao.link}
-                    role="menuitem"
                     onClick={() => clicarNotificacao(notificacao)}
                     className="block"
                   >
@@ -157,7 +166,6 @@ export default function NotificacoesDropdown() {
                   <button
                     key={notificacao.id}
                     type="button"
-                    role="menuitem"
                     onClick={() => clicarNotificacao(notificacao)}
                     className="block w-full text-left cursor-pointer"
                   >
@@ -175,7 +183,7 @@ export default function NotificacoesDropdown() {
           >
             Ver todas
           </Link>
-        </div>
+        </section>
       )}
     </div>
   );

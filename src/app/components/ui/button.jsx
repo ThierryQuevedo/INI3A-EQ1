@@ -16,15 +16,17 @@ const buttonVariants = cva(
           "border border-input bg-transparent hover:bg-muted",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        accent: "bg-accent text-accent-foreground shadow-soft hover:bg-accent-hover",
+        // Laranja: SÓ o ato de marcar horário (regra D1, máx. 1 por tela).
+        marcar: "bg-cta text-cta-foreground shadow-soft hover:bg-cta-hover",
         ghost: "hover:bg-muted",
         "ghost-destructive": "text-destructive hover:bg-destructive/10",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-11 px-5 py-2",
-        sm: "h-10 px-4 text-caption",
-        compacto: "h-9 px-3 text-caption",
+        // Compactos com mouse; 44px em tela de toque (alvo mínimo do projeto).
+        sm: "h-10 pointer-coarse:h-11 px-4 text-caption",
+        compacto: "h-9 pointer-coarse:h-11 px-3 text-caption",
         lg: "h-12 px-8 text-body",
         icon: "h-11 w-11 rounded-full",
       },

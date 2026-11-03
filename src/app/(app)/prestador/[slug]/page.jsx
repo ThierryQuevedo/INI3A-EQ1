@@ -1,4 +1,5 @@
 import { MapPin, Phone, Users, Star, Clock3, CalendarDays } from 'lucide-react';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 import { buscarPerfilPrestador } from '@/app/actions/prestadores.actions';
@@ -107,10 +108,11 @@ export default async function PerfilPrestador({ params }) {
             rotuloAvaliacoes={totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'}
             acoes={
               <>
-                <Button asChild variant="accent" className="flex-1">
-                  <a href={primeiroServico ? `/agendamentos/novo?servico=${primeiroServico.id}` : '#servicos'}>
+                <Button asChild variant="marcar" className="flex-1">
+                  {/* <Link> respeita o basePath e não recarrega a página inteira (A-01). */}
+                  <Link href={primeiroServico ? `/agendamentos/novo/?servico=${primeiroServico.id}` : '#servicos'}>
                     <CalendarDays aria-hidden="true" /> Agendar
-                  </a>
+                  </Link>
                 </Button>
                 {usuario.telefone && (
                   <Button asChild variant="outline" size="icon" className="rounded-lg">

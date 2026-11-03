@@ -13,6 +13,7 @@ import {
 } from '@/db/schema';
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { getSession } from '@/app/actions/auth.actions';
+import { imagemPublica } from '@/lib/imagemPublica';
 
 export async function buscarPerfilPrestador(identificador: string | number) {
   if (!identificador) return null;
@@ -29,8 +30,8 @@ export async function buscarPerfilPrestador(identificador: string | number) {
       nome: usuarios.nome,
       email: usuarios.email,
       telefone: usuarios.telefone,
-      urlImagem: usuarios.urlImagem,
-      urlBanner: usuarios.urlBanner,
+      urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
+      urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
       criadoEm: usuarios.criadoEm,
       biografia: prestadores.biografia,
       raioAtendimentoKm: prestadores.raioAtendimentoKm,
@@ -54,7 +55,7 @@ export async function buscarPerfilPrestador(identificador: string | number) {
       nome: servicos.nome,
       slug: servicos.slug,
       preco: servicos.preco,
-      urlImagem: servicos.urlImagem,
+      urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       duracaoEstimada: servicos.duracaoEstimada,
       categoriaNome: categorias.nome,
     })
@@ -97,7 +98,7 @@ export async function buscarPerfilPrestador(identificador: string | number) {
       comentario: avaliacoes.comentarioPrestador,
       dataHora: agendamentos.dataHora,
       clienteNome: usuarios.nome,
-      clienteImagem: usuarios.urlImagem,
+      clienteImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       servicoNome: servicos.nome,
     })
     .from(avaliacoes)

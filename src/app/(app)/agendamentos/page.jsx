@@ -43,7 +43,7 @@ function CardAgendamento({ item, usuarioLogado }) {
     : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
 
   return (
-    <Card padding="default" interactive>
+    <Card padding="default" interactive id={`pedido-${item.id}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
         <div className="flex items-center gap-4 min-w-0 flex-1">
         <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/15' : 'bg-secondary'}`}>
@@ -66,6 +66,12 @@ function CardAgendamento({ item, usuarioLogado }) {
           ) : (
             <p className="text-body-sm text-muted-foreground truncate mt-1">
               {item.clienteNome}{item.clienteTelefone ? ` · ${item.clienteTelefone}` : ''}
+            </p>
+          )}
+          {/* A-06: o selo "Aguardando confirmação" ganha o que acontece a seguir. */}
+          {usuarioLogado.tipo === 'cliente' && item.status === 'pendente' && (
+            <p className="text-body-sm text-muted-foreground mt-1">
+              O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail.
             </p>
           )}
         </div>
@@ -164,7 +170,7 @@ export default async function AgendamentosPage() {
         title="Sua Agenda"
         description={<>Olá, <span className="font-semibold text-foreground">{usuarioLogado.nome}</span>. Aqui estão seus agendamentos.</>}
         actions={usuarioLogado.tipo === 'cliente' && (
-          <Button asChild variant="accent">
+          <Button asChild>
             <Link href="/servicos">Agendar novo horário</Link>
           </Button>
         )}

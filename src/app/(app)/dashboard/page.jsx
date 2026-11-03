@@ -193,7 +193,7 @@ export default async function Dashboard() {
                 <CalendarClock aria-hidden="true" /> Disponibilidade
               </Link>
             </Button>
-            <Button asChild variant="accent" size="sm">
+            <Button asChild size="sm">
               <Link href="/servicos/novo">
                 <Plus aria-hidden="true" /> Novo serviço
               </Link>

@@ -263,7 +263,7 @@ export default function UserBannerUpload({
               onClick={handleRemoverCapa}
               title="Remover capa"
               aria-label="Remover capa do perfil"
-              className="px-3 py-2 rounded-lg bg-black/60 hover:bg-destructive text-white hover:text-destructive-foreground backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition shadow-md active:scale-95 cursor-pointer"
+              className="px-3 py-2 pointer-coarse:min-h-11 pointer-coarse:min-w-11 justify-center rounded-lg bg-black/60 hover:bg-destructive text-white hover:text-destructive-foreground backdrop-blur-md text-caption font-medium flex items-center gap-1.5 transition shadow-md active:scale-95 cursor-pointer"
             >
               <Trash2 size={15} aria-hidden="true" />
               <span className="max-sm:hidden sm:inline">Remover</span>
@@ -275,7 +275,7 @@ export default function UserBannerUpload({
             onClick={abrirSeletor}
             title="Alterar capa"
             aria-label="Alterar capa do perfil"
-            className="px-3.5 py-2 rounded-lg bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition shadow-md active:scale-95 cursor-pointer"
+            className="px-3.5 py-2 pointer-coarse:min-h-11 rounded-lg bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition shadow-md active:scale-95 cursor-pointer"
           >
             <Camera size={16} aria-hidden="true" />
             <span>{imagemExibida ? "Alterar capa" : "Adicionar capa"}</span>

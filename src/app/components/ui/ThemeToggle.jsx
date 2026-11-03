@@ -24,7 +24,6 @@ export default function ThemeToggle({ className, variant = "icon", onNavigate })
     return (
       <button
         type="button"
-        role="menuitem"
         onClick={alternarTema}
         className="w-full flex items-center gap-3 px-5 py-3.5 text-foreground hover:bg-muted transition-colors cursor-pointer"
       >

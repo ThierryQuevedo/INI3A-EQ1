@@ -90,9 +90,9 @@ export default function ServiceCard({ servico, interativo = true }) {
           )}
         </div>
 
-        {(proximoHorario !== undefined || distanciaKm != null) && (
+        {((!interativo && proximoHorario) || distanciaKm != null) && (
           <div className="mt-1.5 flex items-center gap-2 flex-wrap">
-            <AvailabilityBadge proximoHorario={proximoHorario} />
+            {!interativo && <AvailabilityBadge proximoHorario={proximoHorario} />}
             {distanciaKm != null && (
               <span className="text-caption text-muted-foreground">{formatarDistancia(distanciaKm)}</span>
             )}
@@ -113,8 +113,8 @@ export default function ServiceCard({ servico, interativo = true }) {
         <div className={classeConteudo}>{conteudo}</div>
       )}
 
-      <div className="mt-auto px-4 pb-4 pt-1 flex items-baseline justify-between gap-2">
-        <span className="text-body-lg font-bold text-foreground whitespace-nowrap">
+      <div className="mt-auto px-4 pb-4 pt-1 flex flex-wrap items-baseline justify-between gap-x-2">
+        <span className="text-body-lg font-bold text-foreground whitespace-nowrap tabular-nums">
           {formatarPreco(preco)}
         </span>
         {duracaoEstimada != null && (
@@ -122,11 +122,19 @@ export default function ServiceCard({ servico, interativo = true }) {
         )}
       </div>
 
+      {/* A-03 / C-10 / G-07: dois alvos separados (8px). A pílula do próximo
+          horário é o atalho: abre a tela de agendar já com dia e hora
+          marcados. "Ver horários" abre a mesma tela no primeiro dia com vaga. */}
       {interativo && (
-        <div className="px-4 pb-4">
-          <Button asChild variant="outline" size="sm" className="w-full">
-            <Link href={`/agendamentos/novo/?servico=${id}`}>
-              <Calendar size={16} aria-hidden="true" /> Agendar
+        <div className="px-4 pb-4 flex flex-col gap-2">
+          {proximoHorario ? (
+            <AvailabilityBadge proximoHorario={proximoHorario} servicoId={id} nomeServico={nomeServico} />
+          ) : proximoHorario === null ? (
+            <p className="text-caption text-muted-foreground">Sem vaga nos próximos 14 dias</p>
+          ) : null}
+          <Button asChild variant="ghost" className="w-full text-primary">
+            <Link href={`/agendamentos/novo/?servico=${id}`} aria-label={`Ver horários de ${nomeServico || "este serviço"}`}>
+              <Calendar size={16} aria-hidden="true" /> Ver horários
             </Link>
           </Button>
         </div>

@@ -203,7 +203,7 @@ export default function ProfileAvatar({
           {!isUploading && (
             <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 z-10">
               <Camera size={24} className="stroke-[2.2]" aria-hidden="true" />
-              <span className="text-[11px] font-semibold tracking-wide uppercase">
+              <span className="text-caption font-semibold">
                 Alterar
               </span>
             </div>
@@ -212,7 +212,7 @@ export default function ProfileAvatar({
           {isDragging && (
             <div className="absolute inset-0 bg-primary/90 text-primary-foreground backdrop-blur-sm flex flex-col items-center justify-center gap-1 z-20">
               <Camera size={26} className="animate-bounce" aria-hidden="true" />
-              <span className="text-[10px] font-bold uppercase tracking-wider">
+              <span className="text-caption font-bold">
                 Solte aqui
               </span>
             </div>
@@ -221,7 +221,7 @@ export default function ProfileAvatar({
           {isUploading && (
             <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center gap-1.5 z-20 text-white">
               <Loader2 size={30} className="animate-spin text-white" aria-hidden="true" />
-              <span className="text-[11px] font-semibold">Salvando foto...</span>
+              <span className="text-caption font-semibold">Salvando foto...</span>
             </div>
           )}
         </div>
@@ -232,7 +232,7 @@ export default function ProfileAvatar({
             onClick={handleRemoverFoto}
             title="Remover foto de perfil"
             aria-label="Remover foto de perfil"
-            className="absolute -bottom-1 -right-1 z-20 w-8 h-8 rounded-full bg-card hover:bg-destructive hover:text-destructive-foreground text-muted-foreground border border-border shadow-soft flex items-center justify-center transition-colors cursor-pointer"
+            className="absolute area-toque -bottom-1 -right-1 z-20 w-8 h-8 rounded-full bg-card hover:bg-destructive hover:text-destructive-foreground text-muted-foreground border border-border shadow-soft flex items-center justify-center transition-colors cursor-pointer"
           >
             <Trash2 size={14} aria-hidden="true" />
           </button>

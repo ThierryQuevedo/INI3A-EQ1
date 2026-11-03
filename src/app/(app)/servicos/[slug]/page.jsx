@@ -20,6 +20,7 @@ import { getSession } from "@/app/actions/auth.actions";
 import { listarIdsFavoritos } from "@/app/actions/favoritos.actions";
 import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 import PageContainer from "@/app/components/ui/PageContainer";
+import { imagemPublica } from '@/lib/imagemPublica';
 
 const PREVIA_AVALIACOES = 3;
 
@@ -43,14 +44,14 @@ export default async function DetalheServico({ params }) {
       descricao: servicos.descricao,
       preco: servicos.preco,
       duracaoEstimada: servicos.duracaoEstimada,
-      urlImagem: servicos.urlImagem,
+      urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       categoriaNome: categorias.nome,
       prestadorId: servicos.prestadorId,
       prestadorSlug: usuarios.slug,
       prestadorNome: usuarios.nome,
       prestadorEmail: usuarios.email,
       prestadorTelefone: usuarios.telefone,
-      prestadorImagem: usuarios.urlImagem,
+      prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       prestadorBiografia: prestadores.biografia,
     })
     .from(servicos)
@@ -171,7 +172,7 @@ export default async function DetalheServico({ params }) {
             </div>
 
             <div className="flex items-center gap-2 mt-4">
-              <Button asChild variant="accent" size="lg" className="flex-1 px-4">
+              <Button asChild variant="marcar" size="lg" className="flex-1 px-4">
                 <Link href={hrefAgendar}>
                   <Calendar aria-hidden="true" /> Agendar serviço
                 </Link>
@@ -202,7 +203,7 @@ export default async function DetalheServico({ params }) {
               <ul className="mt-3 space-y-1">
                 {servico.prestador.telefone && (
                   <li>
-                    <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-2.5 h-9 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
+                    <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-2.5 h-9 pointer-coarse:h-11 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
                       <Phone size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
                       <span className="sr-only">Telefone: </span>
                       <span className="truncate">{servico.prestador.telefone}</span>
@@ -211,7 +212,7 @@ export default async function DetalheServico({ params }) {
                 )}
                 {servico.prestador.email && (
                   <li>
-                    <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-2.5 h-9 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
+                    <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-2.5 h-9 pointer-coarse:h-11 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
                       <Mail size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
                       <span className="sr-only">E-mail: </span>
                       <span className="truncate">{servico.prestador.email}</span>

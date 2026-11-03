@@ -3,7 +3,10 @@
 import { useId, useState } from "react";
 import { SlidersHorizontal, Check, MapPin } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
-import BottomSheet from "@/app/components/ui/BottomSheet";
+import dynamic from "next/dynamic";
+
+// Só abre no celular, por toque: carrega o sheet (e o framer-motion) sob demanda.
+const BottomSheet = dynamic(() => import("@/app/components/ui/BottomSheet"), { ssr: false });
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +35,7 @@ function Pill({ ativo, children, ...props }) {
     <button
       type="button"
       className={cn(
-        "px-3.5 h-9 rounded-md text-body-sm font-medium border transition-colors cursor-pointer",
+        "px-3.5 h-9 pointer-coarse:h-11 rounded-md text-body-sm font-medium border transition-colors cursor-pointer",
         ativo
           ? "bg-primary text-primary-foreground border-primary"
           : "bg-transparent text-foreground border-border hover:bg-muted"
@@ -139,8 +142,8 @@ function CamposFiltro({
           checked={filtros.comHorarioHoje}
           onChange={(e) => onChange({ ...filtros, comHorarioHoje: e.target.checked })}
         />
-        <span className="size-6 shrink-0 border-2 border-input rounded-md flex items-center justify-center peer-checked:bg-accent peer-checked:border-accent peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 transition-colors">
-          <Check size={14} className="text-accent-foreground opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden="true" />
+        <span className="size-6 shrink-0 border-2 border-input rounded-md flex items-center justify-center peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 transition-colors">
+          <Check size={14} className="text-primary-foreground opacity-0 peer-checked:opacity-100" strokeWidth={3} aria-hidden="true" />
         </span>
         <span className="text-foreground text-body-sm font-medium">Com horário hoje</span>
       </label>
@@ -193,7 +196,7 @@ export default function FilterDrawer({
         <Button variant="outline" onClick={() => setAbertoMobile(true)} className="relative">
           <SlidersHorizontal size={16} aria-hidden="true" />
           Filtros
-          {ativo && <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-accent" aria-hidden="true" />}
+          {ativo && <span className="absolute -top-1 -right-1 size-2.5 rounded-full bg-primary" aria-hidden="true" />}
         </Button>
         <BottomSheet open={abertoMobile} onClose={() => setAbertoMobile(false)} title="Filtros">
           <CamposFiltro {...propsCampos} />
@@ -201,7 +204,7 @@ export default function FilterDrawer({
             <Button variant="outline" className="flex-1" onClick={() => onChange(FILTROS_PADRAO)}>
               Limpar
             </Button>
-            <Button variant="accent" className="flex-1" onClick={() => setAbertoMobile(false)}>
+            <Button className="flex-1" onClick={() => setAbertoMobile(false)}>
               Ver resultados
             </Button>
           </div>

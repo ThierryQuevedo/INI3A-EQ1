@@ -1,6 +1,6 @@
 import Skeleton from "@/app/components/ui/Skeleton";
 
-/** Espelha o ServiceCard: imagem 1:1, textos, preço e botão "Agendar". */
+
 export default function CatalogoCardSkeleton() {
   return (
     <div className="rounded-xl border border-border overflow-hidden bg-card flex flex-col h-full">

@@ -342,7 +342,7 @@ export default function DisponibilidadePage() {
       <div className="mb-6">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 h-9 -ml-2 px-2 rounded-lg text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
+          className="flex items-center gap-2 h-9 pointer-coarse:h-11 -ml-2 px-2 rounded-lg text-body-sm text-primary font-semibold mb-3 hover:bg-muted transition-colors cursor-pointer"
         >
           <ArrowLeft size={16} aria-hidden="true" />
           Voltar
@@ -370,7 +370,7 @@ export default function DisponibilidadePage() {
                 key={s.id}
                 onClick={() => setServicoSelecionadoId(s.id)}
                 aria-pressed={ativo}
-                className={`px-4 h-10 rounded-lg text-body-sm font-bold transition border-2 cursor-pointer ${
+                className={`px-4 h-10 pointer-coarse:h-11 rounded-lg text-body-sm font-bold transition border-2 cursor-pointer ${
                   ativo
                     ? 'bg-primary border-primary text-primary-foreground shadow-soft'
                     : 'bg-muted border-transparent text-foreground hover:border-primary/30'

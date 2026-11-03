@@ -9,6 +9,7 @@ import {
   agendamentos,
   avaliacoes,
 } from '@/db/schema';
+import { imagemPublica } from '@/lib/imagemPublica';
 
 export async function buscarPerfilCliente(identificador) {
   if (!identificador) return null;
@@ -25,8 +26,8 @@ export async function buscarPerfilCliente(identificador) {
       nome: usuarios.nome,
       email: usuarios.email,
       telefone: usuarios.telefone,
-      urlImagem: usuarios.urlImagem,
-      urlBanner: usuarios.urlBanner,
+      urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
+      urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
       tipo: usuarios.tipo,
       criadoEm: usuarios.criadoEm,
     })
@@ -81,7 +82,7 @@ export async function buscarPerfilCliente(identificador) {
       comentario: avaliacoes.comentarioCliente,
       dataHora: agendamentos.dataHora,
       prestadorNome: usuarios.nome,
-      prestadorImagem: usuarios.urlImagem,
+      prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       prestadorSlug: usuarios.slug,
       servicoNome: servicos.nome,
     })
@@ -123,11 +124,11 @@ export async function buscarDashboardCliente(clienteId) {
       servicoSlug: servicos.slug,
       servicoPreco: servicos.preco,
       servicoDuracao: servicos.duracaoEstimada,
-      servicoImagem: servicos.urlImagem,
+      servicoImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       prestadorNome: usuarios.nome,
       prestadorSlug: usuarios.slug,
       prestadorTelefone: usuarios.telefone,
-      prestadorImagem: usuarios.urlImagem,
+      prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -152,11 +153,11 @@ export async function buscarDashboardCliente(clienteId) {
       servicoSlug: servicos.slug,
       servicoPreco: servicos.preco,
       servicoDuracao: servicos.duracaoEstimada,
-      servicoImagem: servicos.urlImagem,
+      servicoImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       prestadorNome: usuarios.nome,
       prestadorSlug: usuarios.slug,
       prestadorTelefone: usuarios.telefone,
-      prestadorImagem: usuarios.urlImagem,
+      prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       avaliacaoNota: avaliacoes.notaParaPrestador,
       avaliacaoComentario: avaliacoes.comentarioPrestador,
     })
@@ -177,7 +178,7 @@ export async function buscarDashboardCliente(clienteId) {
       servicoSlug: servicos.slug,
       prestadorNome: usuarios.nome,
       prestadorSlug: usuarios.slug,
-      prestadorImagem: usuarios.urlImagem,
+      prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
