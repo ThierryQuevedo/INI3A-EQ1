@@ -4,9 +4,17 @@ import { eq, and, inArray, gte } from 'drizzle-orm';
 import { db } from '@/db';
 import { disponibilidades, servicos, agendamentos } from '@/db/schema';
 import { proximoSlotLivre } from '@/lib/disponibilidade';
+import { getSession } from './auth.actions';
 
-export async function listarDisponibilidades(prestadorId: number, servicoId?: number) {
-  const filtros = [eq(disponibilidades.prestadorId, Number(prestadorId))];
+const ERRO_SESSAO = 'Sua sessão expirou. Entre de novo para continuar.';
+
+// O prestador vem sempre da sessão, nunca do cliente: server actions são
+// endpoints públicos, e um id recebido por parâmetro pode ser forjado.
+export async function listarDisponibilidades(servicoId?: number) {
+  const usuario = await getSession();
+  if (!usuario) return [];
+
+  const filtros = [eq(disponibilidades.prestadorId, usuario.id)];
 
   // Sem o filtro de servicoId, a agenda de todos os serviços do prestador
   // aparecia junta (horários "iguais" entre serviços diferentes).
@@ -21,9 +29,12 @@ export async function listarDisponibilidades(prestadorId: number, servicoId?: nu
 }
 
 export async function criarDisponibilidade(
-  prestadorId: number,
   { diaSemana, horaInicio, horaFim, servicoId }: { diaSemana: number; horaInicio: string; horaFim: string; servicoId: number }
 ) {
+  const usuario = await getSession();
+  if (!usuario) return { erro: ERRO_SESSAO };
+  const prestadorId = usuario.id;
+
   if (diaSemana < 0 || diaSemana > 6) {
     return { erro: 'diaSemana deve ser entre 0 (dom) e 6 (sáb).' };
   }
@@ -34,6 +45,16 @@ export async function criarDisponibilidade(
     return { erro: 'servicoId é obrigatório.' };
   }
 
+  // Sem isto, um prestador poderia abrir horários no serviço de outro.
+  const [servicoProprio] = await db
+    .select({ id: servicos.id })
+    .from(servicos)
+    .where(and(eq(servicos.id, Number(servicoId)), eq(servicos.prestadorId, prestadorId)))
+    .limit(1);
+  if (!servicoProprio) {
+    return { erro: 'Você não tem permissão para alterar este serviço.' };
+  }
+
   // Checa apenas as disponibilidades cadastradas para ESSE serviço nesse dia
   // (checar todas as do prestador misturaria a agenda de serviços diferentes).
   const disponibilidadesDoDia = await db
@@ -41,7 +62,7 @@ export async function criarDisponibilidade(
     .from(disponibilidades)
     .where(
       and(
-        eq(disponibilidades.prestadorId, Number(prestadorId)),
+        eq(disponibilidades.prestadorId, prestadorId),
         eq(disponibilidades.servicoId, Number(servicoId)),
         eq(disponibilidades.diaSemana, Number(diaSemana))
       )
@@ -58,7 +79,7 @@ export async function criarDisponibilidade(
   const [nova] = await db
     .insert(disponibilidades)
     .values({
-      prestadorId: Number(prestadorId),
+      prestadorId,
       servicoId: Number(servicoId),
       diaSemana: Number(diaSemana),
       horaInicio,
@@ -70,10 +91,13 @@ export async function criarDisponibilidade(
 }
 
 export async function atualizarDisponibilidade(
-  prestadorId: number,
   id: number,
   { horaInicio, horaFim }: { horaInicio: string; horaFim: string }
 ) {
+  const usuario = await getSession();
+  if (!usuario) return { erro: ERRO_SESSAO };
+  const prestadorId = usuario.id;
+
   if (!horaInicio || !horaFim || horaInicio >= horaFim) {
     return { erro: 'Horários inválidos (horaInicio deve ser menor que horaFim).' };
   }
@@ -128,13 +152,16 @@ export async function atualizarDisponibilidade(
   return atualizada;
 }
 
-export async function deletarDisponibilidade(prestadorId: number, id: number) {
+export async function deletarDisponibilidade(id: number) {
+  const usuario = await getSession();
+  if (!usuario) return { erro: ERRO_SESSAO };
+
   await db
     .delete(disponibilidades)
     .where(
       and(
         eq(disponibilidades.id, Number(id)),
-        eq(disponibilidades.prestadorId, Number(prestadorId))
+        eq(disponibilidades.prestadorId, usuario.id)
       )
     );
 

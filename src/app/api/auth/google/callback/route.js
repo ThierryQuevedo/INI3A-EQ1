@@ -3,11 +3,12 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
-import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios } from '@/db/schema';
 import { getGoogleOAuthClient } from '@/lib/google-oauth';
-import { criarSessao, consumirProximo } from '@/lib/session';
+import { COMPLETAR_CADASTRO_COOKIE, criarSessao, consumirProximo } from '@/lib/session';
+import { destinoPadrao, filtroEmail, gerarSlugUnicoDeUsuario, normalizarEmail } from '@/lib/usuarios';
+import { CAMINHO_BASE } from '@/lib/caminhoBase';
 
 const STATE_COOKIE = 'google_oauth_state';
 
@@ -22,8 +23,10 @@ function redirecionarComErro(baseUrl) {
 }
 
 export async function GET(request) {
-  const baseUrl = process.env.SITE_URL || `${request.nextUrl.origin}/26-marcaai`;
-  
+  // SITE_URL pode vir com ou sem o basePath; sem ele o redirect cairia fora da aplicação.
+  const origem = (process.env.SITE_URL || request.nextUrl.origin).replace(/\/+$/, '');
+  const baseUrl = origem.endsWith(CAMINHO_BASE) ? origem : `${origem}${CAMINHO_BASE}`;
+
   const { searchParams } = request.nextUrl;
   const code = searchParams.get('code');
   const state = searchParams.get('state');
@@ -51,7 +54,7 @@ export async function GET(request) {
     });
     const payload = ticket.getPayload();
 
-    const email = payload?.email;
+    const email = normalizarEmail(payload?.email);
     if (!email || payload.email_verified === false) {
       return redirecionarComErro(baseUrl);
     }
@@ -62,38 +65,49 @@ export async function GET(request) {
     const [existente] = await db
       .select({ id: usuarios.id, tipo: usuarios.tipo })
       .from(usuarios)
-      .where(eq(usuarios.email, email))
+      .where(filtroEmail(email))
       .limit(1);
 
-    let usuario = existente;
+    // E-mail já cadastrado é login normal; e-mail novo é cadastro.
+    if (existente) {
+      await criarSessao(existente.id);
+      revalidatePath('/', 'layout');
 
-    if (!usuario) {
-      const senhaAleatoria = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
-
-      const [novo] = await db
-        .insert(usuarios)
-        .values({
-          nome,
-          email,
-          senha: senhaAleatoria,
-          tipo: 'cliente',
-          urlImagem,
-        })
-        .returning({ id: usuarios.id, tipo: usuarios.tipo });
-
-      usuario = novo;
+      const proximo = await consumirProximo();
+      return NextResponse.redirect(buildUrl(proximo ?? destinoPadrao(existente.tipo), baseUrl));
     }
 
-    if (!usuario) {
+    const senhaAleatoria = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
+
+    const [novo] = await db
+      .insert(usuarios)
+      .values({
+        nome,
+        slug: await gerarSlugUnicoDeUsuario(nome),
+        email,
+        senha: senhaAleatoria,
+        tipo: 'cliente',
+        urlImagem,
+      })
+      .returning({ id: usuarios.id });
+
+    if (!novo) {
       return redirecionarComErro(baseUrl);
     }
 
-    await criarSessao(usuario.id);
+    await criarSessao(novo.id);
     revalidatePath('/', 'layout');
 
-    const proximo = await consumirProximo();
-    const destino = proximo ?? (usuario.tipo === 'prestador' ? '/dashboard' : '/');
-    return NextResponse.redirect(buildUrl(destino, baseUrl));
+    // O destino guardado (cookie de "próximo") só é consumido depois da pergunta.
+    cookieStore.set(COMPLETAR_CADASTRO_COOKIE, '1', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 3600,
+      path: '/',
+    });
+
+    return NextResponse.redirect(buildUrl('/cadastro/completar/', baseUrl));
   } catch (error) {
     console.error('Erro no callback do Google:', error);
     return redirecionarComErro(baseUrl);

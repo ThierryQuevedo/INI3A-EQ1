@@ -1,4 +1,4 @@
-import { Calendar, Phone, Mail, Clock3, Star, ChevronRight } from 'lucide-react';
+import { Calendar, Phone, Mail, Clock3, Star, ChevronRight, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -21,6 +21,9 @@ import { listarIdsFavoritos } from "@/app/actions/favoritos.actions";
 import FavoritoButton from "@/app/components/features/favoritos/FavoritoButton";
 import PageContainer from "@/app/components/ui/PageContainer";
 import { imagemPublica } from '@/lib/imagemPublica';
+import { mascararEmail, servicoTemAgendamentos } from '@/lib/servicos';
+import ExcluirServicoButton from '@/app/components/features/servicos/ExcluirServicoButton';
+import AlternarServicoAtivoButton from '@/app/components/features/servicos/AlternarServicoAtivoButton';
 
 const PREVIA_AVALIACOES = 3;
 
@@ -53,6 +56,7 @@ export default async function DetalheServico({ params }) {
       prestadorTelefone: usuarios.telefone,
       prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       prestadorBiografia: prestadores.biografia,
+      desativadoEm: servicos.desativadoEm,
     })
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
@@ -83,6 +87,7 @@ export default async function DetalheServico({ params }) {
     totalAvaliacoes: estatisticas?.total ?? 0,
     prestadorId: dadosDb.prestadorId,
     prestadorSlug: dadosDb.prestadorSlug || dadosDb.prestadorId,
+    desativado: !!dadosDb.desativadoEm,
     prestador: {
       nome: dadosDb.prestadorNome || "Profissional",
       biografia: dadosDb.prestadorBiografia,
@@ -99,6 +104,7 @@ export default async function DetalheServico({ params }) {
     : `/api/auth/entrar/?proximo=${encodeURIComponent(destinoAgendar)}`;
 
   const ehDono = usuarioLogado?.id === servico.prestadorId;
+  const temAgendamentos = ehDono && (await servicoTemAgendamentos(servico.id));
 
   return (
     <PageContainer size="lg" className="py-6 sm:py-8">
@@ -123,6 +129,9 @@ export default async function DetalheServico({ params }) {
               <CategoryIcon nome={servico.categoria} size={13} />
               {servico.categoria}
             </Badge>
+          )}
+          {servico.desativado && (
+            <Badge variant="neutro" size="sm" className="mb-2 ml-1">Desativado</Badge>
           )}
           <h1 className="text-h5 sm:text-h4 font-bold text-foreground break-words">{servico.nome}</h1>
           <p className="text-body-sm text-muted-foreground mt-1">
@@ -171,19 +180,59 @@ export default async function DetalheServico({ params }) {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 mt-4">
-              <Button asChild variant="marcar" size="lg" className="flex-1 px-4">
-                <Link href={hrefAgendar}>
-                  <Calendar aria-hidden="true" /> Agendar serviço
+            {servico.desativado ? (
+              <p className="text-body-sm text-muted-foreground mt-4">
+                {ehDono
+                  ? 'Este serviço está desativado: ele não aparece na busca e não recebe novos agendamentos.'
+                  : 'Este serviço está indisponível no momento e não aceita novos agendamentos.'}
+              </p>
+            ) : (
+              <div className="flex items-center gap-2 mt-4">
+                <Button asChild variant="marcar" size="lg" className="flex-1 px-4">
+                  <Link href={hrefAgendar}>
+                    <Calendar aria-hidden="true" /> Agendar serviço
+                  </Link>
+                </Button>
+                <FavoritoButton
+                  tipo="servico"
+                  alvoId={servico.id}
+                  favoritoInicial={favoritoInicial}
+                  variant="standalone"
+                />
+              </div>
+            )}
+
+            {ehDono && (
+              <Button asChild variant="outline" size="lg" className="w-full mt-2">
+                <Link href={`/servicos/${slug}/editar`}>
+                  <Pencil aria-hidden="true" /> Editar serviço
                 </Link>
               </Button>
-              <FavoritoButton
-                tipo="servico"
-                alvoId={servico.id}
-                favoritoInicial={favoritoInicial}
-                variant="standalone"
+            )}
+
+            {ehDono && (
+              <AlternarServicoAtivoButton
+                servicoId={servico.id}
+                desativado={servico.desativado}
+                className="w-full mt-2"
               />
-            </div>
+            )}
+
+            {ehDono && (
+              temAgendamentos ? (
+                <p className="text-caption text-muted-foreground mt-3">
+                  Este serviço já tem agendamentos, por isso não pode ser excluído.
+                  {!servico.desativado && ' Para tirá-lo do ar, desative.'}
+                </p>
+              ) : (
+                <ExcluirServicoButton
+                  servicoId={servico.id}
+                  servicoNome={servico.nome}
+                  emailMascarado={mascararEmail(usuarioLogado.email)}
+                  className="w-full mt-2"
+                />
+              )
+            )}
           </Card>
 
           <Card padding="sm" className="sm:p-5">

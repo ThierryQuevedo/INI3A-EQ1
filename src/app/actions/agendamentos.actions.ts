@@ -2,9 +2,10 @@
 
 import { revalidatePath } from 'next/cache';
 import { after } from 'next/server';
-import { eq, and, gte, asc, ne } from 'drizzle-orm';
+import { eq, and, gte, asc, isNull, ne, or } from 'drizzle-orm';
+import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
-import { agendamentos, servicos, usuarios, avaliacoes, categorias, disponibilidades } from '@/db/schema';
+import { agendamentos, servicos, usuarios, avaliacoes, categorias, disponibilidades, mensagens } from '@/db/schema';
 import { getSession } from './auth.actions';
 import {
   notificarAgendamentoCancelado,
@@ -12,28 +13,17 @@ import {
   notificarNovoAgendamento,
   notificarServicoConcluido,
 } from '@/lib/notificacoes';
+import { buscarMotivosCancelamento, textoDoMotivo } from '@/lib/motivoCancelamento';
 
-export async function criarAgendamento({
-  clienteId,
-  servicoId,
-  dataHora,
-}: {
-  clienteId: number;
-  servicoId: number;
-  dataHora: string;
-}) {
-  const [novo] = await db
-    .insert(agendamentos)
-    .values({
-      clienteId,
-      servicoId,
-      dataHora: new Date(dataHora),
-      status: 'pendente',
-    })
-    .returning();
+// `usuarios` entra duas vezes no join (cliente e prestador).
+const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_agenda');
 
-  return novo;
-}
+const TRANSICOES_PERMITIDAS = {
+  pendente: ['confirmado', 'cancelado'],
+  confirmado: ['concluido', 'cancelado'],
+};
+
+const TAMANHO_MAXIMO_MOTIVO = 500;
 
 /**
  * Cria o pedido de agendamento (nasce `pendente`; o prestador confirma depois).
@@ -61,7 +51,7 @@ export async function confirmarAgendamentoAction({
   const [servicoExistente] = await db
     .select({ id: servicos.id, prestadorId: servicos.prestadorId })
     .from(servicos)
-    .where(eq(servicos.id, Number(servicoId)))
+    .where(and(eq(servicos.id, Number(servicoId)), isNull(servicos.desativadoEm)))
     .limit(1);
 
   if (!servicoExistente) {
@@ -151,7 +141,7 @@ export async function carregarAgendaDoServico(servicoId: number) {
     .from(servicos)
     .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(eq(servicos.id, id))
+    .where(and(eq(servicos.id, id), isNull(servicos.desativadoEm)))
     .limit(1);
 
   if (!servico) return null;
@@ -207,140 +197,141 @@ export async function recarregarOcupacaoDoServico(servicoId: number) {
   return listarOcupacaoDoPrestador(servico.prestadorId);
 }
 
-export async function atualizarStatusAgendamento(id: number, status: string) {
+/**
+ * Muda o status de um agendamento e devolve `{ erro }` para a tela explicar
+ * quando não deu. As regras ficam aqui, não só no botão: concluir exige que o
+ * horário já tenha começado, e cancelar algo já confirmado exige um motivo. O
+ * motivo vai para o chat do agendamento e para o aviso enviado ao outro lado.
+ */
+export async function atualizarStatusAgendamento(id: number, status: string, motivo?: string) {
   const usuario = await getSession();
-  if (!usuario) return;
+  if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para continuar.' };
+
+  const agendamentoId = Number(id);
 
   const [atual] = await db
     .select({
       status: agendamentos.status,
+      dataHora: agendamentos.dataHora,
       clienteId: agendamentos.clienteId,
       prestadorId: servicos.prestadorId,
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
-    .where(eq(agendamentos.id, Number(id)))
+    .where(eq(agendamentos.id, agendamentoId))
     .limit(1);
 
-  if (!atual) return;
+  if (!atual) return { erro: 'Agendamento não encontrado.' };
 
   const ehPrestador = atual.prestadorId === usuario.id;
   const ehCliente = atual.clienteId === usuario.id;
   const permitido = status === 'cancelado' ? ehPrestador || ehCliente : ehPrestador;
-  if (!permitido) return;
+  if (!permitido) return { erro: 'Você não pode alterar este agendamento.' };
 
-  if (atual.status === status) return;
+  if (atual.status === status) return { erro: null, sucesso: true };
 
-  await db.update(agendamentos).set({ status }).where(eq(agendamentos.id, id));
+  if (!TRANSICOES_PERMITIDAS[atual.status]?.includes(status)) {
+    return { erro: 'Este agendamento já foi encerrado.' };
+  }
+
+  if (status === 'concluido' && atual.dataHora > new Date()) {
+    return { erro: 'Só é possível concluir depois que o horário agendado começar.' };
+  }
+
+  const motivoLimpo = status === 'cancelado' ? String(motivo ?? '').trim().slice(0, TAMANHO_MAXIMO_MOTIVO) : '';
+
+  if (status === 'cancelado' && atual.status === 'confirmado' && !motivoLimpo) {
+    return { erro: 'Conte o motivo para cancelar um agendamento já confirmado.' };
+  }
+
+  // A condição no status evita que dois cliques (ou os dois lados ao mesmo
+  // tempo) apliquem a mudança e disparem o aviso duas vezes.
+  const atualizou = await db.transaction(async (tx) => {
+    const linhas = await tx
+      .update(agendamentos)
+      .set({ status })
+      .where(and(eq(agendamentos.id, agendamentoId), eq(agendamentos.status, atual.status)))
+      .returning({ id: agendamentos.id });
+
+    if (linhas.length === 0) return false;
+
+    if (motivoLimpo) {
+      await tx.insert(mensagens).values({
+        agendamentoId,
+        remetenteId: usuario.id,
+        texto: textoDoMotivo(motivoLimpo),
+      });
+    }
+
+    return true;
+  });
+
+  if (!atualizou) return { erro: 'Este agendamento acabou de mudar. Atualize a página e confira.' };
 
   switch (status) {
     case 'confirmado':
-      after(() => notificarAgendamentoConfirmado(id));
+      after(() => notificarAgendamentoConfirmado(agendamentoId));
       break;
     case 'cancelado':
-      after(() => notificarAgendamentoCancelado(id));
+      after(() =>
+        notificarAgendamentoCancelado(agendamentoId, { canceladoPorId: usuario.id, motivo: motivoLimpo })
+      );
       break;
     case 'concluido':
-      after(() => notificarServicoConcluido(id));
+      after(() => notificarServicoConcluido(agendamentoId));
       break;
   }
 
   revalidatePath('/dashboard');
   revalidatePath('/agendamentos');
+  revalidatePath('/mensagens');
+  return { erro: null, sucesso: true };
 }
 
-export async function listarAgendamentos() {
-  return await db.select().from(agendamentos);
-}
-
+/**
+ * Agenda do usuário logado, nos dois papéis: uma conta de prestador também pode
+ * agendar serviços de outros profissionais. `papel` diz de que lado ele está em
+ * cada item, e o telefone do cliente só sai para quem atende.
+ */
 export async function listarMeusAgendamentos() {
   const usuario = await getSession();
   if (!usuario) return [];
 
-  if (usuario.tipo === 'prestador') {
-    return await db
-      .select({
-        id: agendamentos.id,
-        dataHora: agendamentos.dataHora,
-        status: agendamentos.status,
-        servicoNome: servicos.nome,
-        clienteNome: usuarios.nome,
-        clienteTelefone: usuarios.telefone,
-      })
-      .from(agendamentos)
-      .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
-      .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
-      .where(eq(servicos.prestadorId, usuario.id))
-      .orderBy(asc(agendamentos.dataHora));
-  }
-
-  return await db
+  const linhas = await db
     .select({
       id: agendamentos.id,
       dataHora: agendamentos.dataHora,
       status: agendamentos.status,
+      clienteId: agendamentos.clienteId,
       servicoNome: servicos.nome,
       servicoPreco: servicos.preco,
-      prestadorNome: usuarios.nome,
+      clienteNome: usuarios.nome,
+      clienteTelefone: usuarios.telefone,
+      prestadorNome: prestadorUsuarios.nome,
       avaliacaoNota: avaliacoes.notaParaPrestador,
       avaliacaoComentario: avaliacoes.comentarioPrestador,
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
-    .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
+    .innerJoin(prestadorUsuarios, eq(servicos.prestadorId, prestadorUsuarios.id))
     .leftJoin(avaliacoes, eq(avaliacoes.agendamentoId, agendamentos.id))
-    .where(eq(agendamentos.clienteId, usuario.id))
+    .where(or(eq(servicos.prestadorId, usuario.id), eq(agendamentos.clienteId, usuario.id)))
     .orderBy(asc(agendamentos.dataHora));
-}
 
-export async function listarAgendamentosPorPrestador(prestadorId: number) {
-  return await db
-    .select({
-      dataHora: agendamentos.dataHora,
-      status: agendamentos.status,
-      servicoId: agendamentos.servicoId,
-    })
-    .from(agendamentos)
-    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
-    .where(
-      and(
-        eq(servicos.prestadorId, Number(prestadorId)),
-        gte(agendamentos.dataHora, new Date())
-      )
-    );
-}
+  const motivos = await buscarMotivosCancelamento(
+    linhas.filter((l) => l.status === 'cancelado').map((l) => l.id)
+  );
 
-export async function buscarAgendamento(id: number) {
-  const [agendamento] = await db
-    .select()
-    .from(agendamentos)
-    .where(eq(agendamentos.id, Number(id)))
-    .limit(1);
-
-  return agendamento ?? null;
-}
-
-export async function atualizarAgendamento(
-  id: number,
-  { status, dataHora }: { status?: string; dataHora?: string }
-) {
-  const [atualizado] = await db
-    .update(agendamentos)
-    .set({
-      ...(status && { status }),
-      ...(dataHora && { dataHora: new Date(dataHora) }),
-    })
-    .where(eq(agendamentos.id, Number(id)))
-    .returning();
-
-  return atualizado ?? null;
-}
-
-export async function deletarAgendamento(id: number) {
-  const [deletado] = await db
-    .delete(agendamentos)
-    .where(eq(agendamentos.id, Number(id)))
-    .returning();
-
-  return deletado ?? null;
+  return linhas.map(({ clienteId, clienteTelefone, ...item }) => {
+    const papel = clienteId === usuario.id ? 'cliente' : 'prestador';
+    const cancelamento = motivos.get(item.id);
+    return {
+      ...item,
+      papel,
+      clienteTelefone: papel === 'prestador' ? clienteTelefone : null,
+      motivoCancelamento: cancelamento?.motivo ?? null,
+      motivoFoiMeu: cancelamento?.remetenteId === usuario.id,
+    };
+  });
 }

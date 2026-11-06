@@ -19,6 +19,7 @@ import {
   emailAgendamentoConfirmado,
   emailAgendamentoSolicitadoCliente,
   emailNovaAvaliacao,
+  emailNovaMensagem,
   emailNovoAgendamentoPrestador,
   emailServicoConcluido,
 } from './emails/templates.js';
@@ -144,17 +145,42 @@ export async function notificarAgendamentoConfirmado(agendamentoId) {
   });
 }
 
-/** Agendamento cancelado: avisa o cliente. */
-export async function notificarAgendamentoCancelado(agendamentoId) {
+/** Agendamento cancelado: avisa o outro lado, com o motivo quando houver. */
+export async function notificarAgendamentoCancelado(agendamentoId, { canceladoPorId, motivo }) {
   await comProtecao('notificarAgendamentoCancelado', async () => {
     const dados = await dadosDoAgendamento(agendamentoId);
     if (!dados) return;
 
+    const canceladoPeloCliente = canceladoPorId === dados.clienteId;
+
     await registrarEEnviar({
-      usuarioId: dados.clienteId,
-      emailDestino: dados.clienteEmail,
+      usuarioId: canceladoPeloCliente ? dados.prestadorId : dados.clienteId,
+      emailDestino: canceladoPeloCliente ? dados.prestadorEmail : dados.clienteEmail,
       tipo: 'agendamento_cancelado',
-      template: emailAgendamentoCancelado(dados),
+      template: emailAgendamentoCancelado({ ...dados, canceladoPeloCliente, motivo }),
+    });
+  });
+}
+
+/** Mensagem nova no chat: avisa quem está do outro lado da conversa. */
+export async function notificarNovaMensagem(agendamentoId, { remetenteId, texto }) {
+  await comProtecao('notificarNovaMensagem', async () => {
+    const dados = await dadosDoAgendamento(agendamentoId);
+    if (!dados) return;
+
+    const enviadaPeloCliente = remetenteId === dados.clienteId;
+
+    await registrarEEnviar({
+      usuarioId: enviadaPeloCliente ? dados.prestadorId : dados.clienteId,
+      emailDestino: enviadaPeloCliente ? dados.prestadorEmail : dados.clienteEmail,
+      tipo: 'mensagem_recebida',
+      template: emailNovaMensagem({
+        agendamentoId,
+        destinatarioNome: enviadaPeloCliente ? dados.prestadorNome : dados.clienteNome,
+        remetenteNome: enviadaPeloCliente ? dados.clienteNome : dados.prestadorNome,
+        servicoNome: dados.servicoNome,
+        texto,
+      }),
     });
   });
 }

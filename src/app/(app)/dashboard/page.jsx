@@ -15,6 +15,7 @@ import { agendamentos, servicos, usuarios } from "@/db/schema";
 import { eq, and, gte, lt } from "drizzle-orm";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
 import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
+import { buscarMotivosCancelamento } from "@/lib/motivoCancelamento";
 
 export const dynamic = 'force-dynamic';
 
@@ -32,7 +33,8 @@ function formatarData(data) {
 /** Uma linha por agendamento: hora | cliente e serviço | status + ações. */
 function LinhaAgendamento({ ag, mostrarData }) {
   const podeConfirmar = ag.status === 'pendente';
-  const podeConcluir = ag.status === 'confirmado';
+  const horarioComecou = new Date(ag.dataHora) <= new Date();
+  const podeConcluir = ag.status === 'confirmado' && horarioComecou;
   const podeCancelar = ag.status !== 'cancelado' && ag.status !== 'concluido';
 
   return (
@@ -47,6 +49,11 @@ function LinhaAgendamento({ ag, mostrarData }) {
           <p className="text-caption text-muted-foreground truncate">
             {ag.servicoNome} · {ag.duracaoEstimada} min
           </p>
+          {ag.motivoCancelamento && (
+            <p className="text-caption text-muted-foreground mt-0.5 break-words">
+              <span className="font-semibold">Motivo:</span> {ag.motivoCancelamento}
+            </p>
+          )}
         </div>
       </div>
 
@@ -73,13 +80,22 @@ function LinhaAgendamento({ ag, mostrarData }) {
             descricao={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
           />
         )}
+        {ag.status === 'confirmado' && !horarioComecou && (
+          <span className="text-caption text-muted-foreground">Concluir libera no horário marcado</span>
+        )}
         {podeCancelar && (
           <BotaoAcaoAgendamento
             agendamentoId={ag.id}
             novoStatus="cancelado"
             label="Cancelar"
             titulo="Cancelar agendamento?"
-            descricao={`Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`}
+            descricao={
+              ag.status === 'confirmado'
+                ? `Este horário de ${ag.clienteNome} já estava confirmado. O motivo será enviado para a outra pessoa. Esta ação não pode ser desfeita.`
+                : `Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`
+            }
+            pedirMotivo
+            motivoObrigatorio={ag.status === 'confirmado'}
             variant="destructive"
             aparencia="perigo"
           />
@@ -111,7 +127,7 @@ export default async function Dashboard() {
   const usuario = await requireSession();
 
   if (usuario.tipo === 'cliente') {
-    const dadosCliente = await buscarDashboardCliente(usuario.id);
+    const dadosCliente = await buscarDashboardCliente();
     return <DashboardCliente usuario={usuario} dados={dadosCliente} />;
   }
 
@@ -134,7 +150,7 @@ export default async function Dashboard() {
 
   const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
 
-  const [agendamentosHoje, agendamentosFuturos, perfilPrestador, faturamento] = await Promise.all([
+  const [agendamentosHojeBrutos, agendamentosFuturosBrutos, perfilPrestador, faturamento] = await Promise.all([
     db.select(camposAgendamento)
       .from(agendamentos)
       .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -169,6 +185,13 @@ export default async function Dashboard() {
         gte(agendamentos.dataHora, primeiroDiaMes)
       )),
   ]);
+
+  const motivos = await buscarMotivosCancelamento(
+    [...agendamentosHojeBrutos, ...agendamentosFuturosBrutos].filter((a) => a.status === 'cancelado').map((a) => a.id)
+  );
+  const comMotivo = (a) => ({ ...a, motivoCancelamento: motivos.get(a.id)?.motivo ?? null });
+  const agendamentosHoje = agendamentosHojeBrutos.map(comMotivo);
+  const agendamentosFuturos = agendamentosFuturosBrutos.map(comMotivo);
 
   const faturamentoTotal = faturamento.reduce((acc, curr) => acc + Number(curr.preco || 0), 0);
 

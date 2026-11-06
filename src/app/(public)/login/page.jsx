@@ -3,7 +3,9 @@ import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios } from "@/db/schema";
+import { getSession } from "@/app/actions/auth.actions";
 import { PROXIMO_COOKIE, caminhoInternoSeguro } from "@/lib/session";
+import { destinoPadrao } from "@/lib/usuarios";
 import { ehChaveDiaValida, ehHoraValida, formatarDiaExtenso, formatarHora } from "@/lib/formatoData";
 import LoginForm from "./LoginForm";
 
@@ -49,11 +51,20 @@ async function lerPedidoEmAndamento() {
 }
 
 export default async function LoginPage() {
+  // Quem já entrou não tem o que fazer aqui (ex.: voltou pelo histórico do navegador).
+  // O formulário é quem navega: esta página também é renderizada de novo logo após
+  // o login, e um redirect() aqui passaria na frente do destino que a action devolveu.
+  const usuario = await getSession();
+  const cookieStore = await cookies();
+  const destinoSessao = usuario
+    ? caminhoInternoSeguro(cookieStore.get(PROXIMO_COOKIE)?.value) ?? destinoPadrao(usuario.tipo)
+    : null;
+
   const pedido = await lerPedidoEmAndamento();
 
   return (
     <Suspense>
-      <LoginForm pedido={pedido} />
+      <LoginForm pedido={pedido} destinoSessao={destinoSessao} />
     </Suspense>
   );
 }

@@ -1,0 +1,267 @@
+"use client";
+
+import { startTransition, useState } from "react";
+import { useActionState } from "react";
+import { cadastrar } from "@/app/actions/auth.actions";
+import { useIrAposEntrar } from "@/lib/useIrAposEntrar";
+import Link from 'next/link';
+import Image from "next/image";
+import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png"
+import { Eye, EyeOff } from 'lucide-react';
+import GoogleIcon from "../../components/Icons/GoogleIcons";
+import { formatarTelefone as mascararTelefone } from "@/lib/formatarTelefone";
+import { Button } from "@/app/components/ui/button";
+import AuthShowcase from "@/app/components/features/auth/AuthShowcase";
+import { Card } from "@/app/components/ui/card";
+import FormField from "@/app/components/ui/FormField";
+import { Input } from "@/app/components/ui/input";
+
+const estadoInicial = { erro: null };
+
+// Regex de validação
+const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validarCampos({ nome, email, cel, senha }) {
+  const erros = {};
+
+  const nomeTrim = nome.trim();
+  if (!nomeTrim) {
+    erros.nome = "Informe seu nome completo.";
+  } else if (nomeTrim.split(/\s+/).length < 2) {
+    erros.nome = "Informe nome e sobrenome.";
+  } else if (nomeTrim.length < 3) {
+    erros.nome = "Nome muito curto.";
+  }
+
+  if (!email.trim()) {
+    erros.email = "Informe seu e-mail.";
+  } else if (!REGEX_EMAIL.test(email.trim())) {
+    erros.email = "E-mail inválido.";
+  }
+
+  const celDigitos = cel.replace(/\D/g, "");
+  if (!celDigitos) {
+    erros.cel = "Informe seu telefone.";
+  } else if (celDigitos.length < 10 || celDigitos.length > 11) {
+    erros.cel = "Telefone inválido. Ex: (11) 91234-5678";
+  }
+
+  if (!senha) {
+    erros.senha = "Crie uma senha.";
+  } else if (senha.length < 6) {
+    erros.senha = "A senha deve ter pelo menos 6 caracteres.";
+  }
+
+  return erros;
+}
+
+export default function CadastroForm({ destinoSessao = null }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [categoria, setCategoria] = useState("cliente");
+  const [state, formAction, isPending] = useActionState(cadastrar, estadoInicial);
+  const destino = state?.destino ?? destinoSessao;
+  useIrAposEntrar(destino);
+  // A navegação leva um instante: o botão segue ocupado até a página trocar.
+  const cadastrando = isPending || !!destino;
+
+  const [campos, setCampos] = useState({ nome: "", email: "", cel: "", senha: "" });
+  const [errosLocais, setErrosLocais] = useState({});
+
+  // Erro do servidor (e-mail ou telefone já em uso) aparece no próprio campo.
+  const erros = { ...state?.errosCampos, ...errosLocais };
+
+  function handleChange(e) {
+    const { name, value } = e.target;
+    const valorFinal = name === "cel" ? mascararTelefone(value) : value;
+
+    setCampos((prev) => ({ ...prev, [name]: valorFinal }));
+    setErrosLocais((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
+  }
+
+  // Valida o que está de fato no formulário: o preenchimento automático do
+  // navegador (que uma guia anônima não tem) nem sempre avisa o estado do React.
+  // O envio é manual porque, quando o React executa a `action` do <form>, ele
+  // reseta os campos a cada tentativa — e um erro faria a pessoa redigitar tudo.
+  function handleSubmit(e) {
+    e.preventDefault();
+    const dados = new FormData(e.currentTarget);
+    const valores = {
+      nome: String(dados.get("nome") ?? ""),
+      email: String(dados.get("email") ?? "").trim(),
+      cel: mascararTelefone(dados.get("cel")),
+      senha: String(dados.get("senha") ?? ""),
+    };
+
+    setCampos(valores);
+    const novosErros = validarCampos(valores);
+    setErrosLocais(novosErros);
+    if (Object.keys(novosErros).length > 0) return;
+
+    dados.set("email", valores.email);
+    dados.set("cel", valores.cel);
+    startTransition(() => formAction(dados));
+  }
+
+  return (
+    <div className="lg:grid lg:grid-cols-2 lg:min-h-[calc(100dvh-4rem)]">
+      <AuthShowcase
+        title="Cadastre seu horário livre ou encontre um profissional na hora."
+        className="max-lg:hidden lg:flex"
+      />
+
+      <div className="flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-16">
+        <Link href="/" className="w-48 mb-8 lg:hidden"><Image src={logotipo} alt="Marca Aí — página inicial"/></Link>
+        <Card className="w-full max-w-md p-8 md:p-10">
+
+        <h1 className="text-h6 font-bold text-center text-foreground mb-8 tracking-wide">
+          Criar conta Marca Aí
+        </h1>
+
+        {state?.erro && (
+          <div role="alert" className="mb-4 p-3 bg-destructive/10 border border-destructive/40 text-destructive text-body-sm rounded-lg text-center">
+            {state.erro}
+          </div>
+        )}
+
+        <form action={formAction} onSubmit={handleSubmit} noValidate className="space-y-5">
+
+          <input type="hidden" name="tipo" value={categoria} />
+
+          <FormField id="nome" label="Nome Completo" error={erros.nome}>
+            <Input
+              id="nome"
+              type="text"
+              name="nome"
+              autoComplete="name"
+              autoCapitalize="words"
+              value={campos.nome}
+              onChange={handleChange}
+              aria-invalid={!!erros.nome}
+              placeholder="Ex: Maria da Silva"
+            />
+          </FormField>
+
+          <FormField id="email" label="E-mail" error={erros.email}>
+            <Input
+              id="email"
+              type="email"
+              name="email"
+              autoComplete="email"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={campos.email}
+              onChange={handleChange}
+              aria-invalid={!!erros.email}
+              placeholder="seuemail@exemplo.com"
+            />
+          </FormField>
+
+          <FormField id="cel" label="Telefone" error={erros.cel}>
+            <Input
+              id="cel"
+              type="tel"
+              name="cel"
+              autoComplete="tel-national"
+              inputMode="tel"
+              value={campos.cel}
+              onChange={handleChange}
+              onKeyDown={(e) => {
+                // Vários teclados Android mandam "Unidentified"/"Process" no keydown:
+                // deixar passar — mascararTelefone() já limpa o que não é número.
+                const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter", "Unidentified", "Process"];
+                if (permitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
+                if (!/^[0-9]$/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+              aria-invalid={!!erros.cel}
+              placeholder="(11) 91234-5678"
+              maxLength={15}
+            />
+          </FormField>
+
+          <FormField id="senha" label="Senha" error={erros.senha}>
+            <div className="relative">
+              <Input
+                id="senha"
+                type={showPassword ? "text" : "password"}
+                name="senha"
+                autoComplete="new-password"
+                value={campos.senha}
+                onChange={handleChange}
+                aria-invalid={!!erros.senha}
+                placeholder="Crie uma senha"
+                className="pr-14"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+                className="absolute right-0.5 top-1/2 -translate-y-1/2 size-toque flex items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.97] transition duracao-rapida cursor-pointer"
+              >
+                {showPassword ? (
+                  <Eye className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
+                ) : (
+                  <EyeOff className="w-5 h-5 stroke-[1.5]" aria-hidden="true" />
+                )}
+              </button>
+            </div>
+          </FormField>
+
+          <div className="pt-2">
+            <span className="block text-foreground text-body-sm font-semibold mb-3">
+              Qual categoria você se enquadra?
+            </span>
+
+            <div className="flex justify-center gap-3" role="group" aria-label="Categoria de conta">
+              <Button
+                type="button"
+                variant={categoria === "cliente" ? "default" : "outline"}
+                size="lg"
+                onClick={() => setCategoria("cliente")}
+                aria-pressed={categoria === "cliente"}
+                className="flex-1 max-w-40"
+              >
+                Cliente
+              </Button>
+
+              <Button
+                type="button"
+                variant={categoria === "prestador" ? "default" : "outline"}
+                size="lg"
+                onClick={() => setCategoria("prestador")}
+                aria-pressed={categoria === "prestador"}
+                className="flex-1 max-w-40"
+              >
+                Prestador
+              </Button>
+            </div>
+          </div>
+
+          <Button type="submit" size="lg" className="w-full mt-2" disabled={cadastrando}>
+            {cadastrando ? "Cadastrando..." : "Cadastrar"}
+          </Button>
+        </form>
+
+        <Button asChild variant="outline" size="lg" className="w-full mt-4">
+          <a href="/26-marcaai/api/auth/google">
+            <GoogleIcon size={20} />
+            <span>Continuar com Google</span>
+          </a>
+        </Button>
+
+        <div className="text-center mt-6">
+          <p className="text-body-sm text-muted-foreground">
+            Já tem uma conta?{" "}
+            <Link href="/login" className="relative area-toque font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
+              Faça login
+            </Link>
+          </p>
+        </div>
+
+        </Card>
+      </div>
+    </div>
+  );
+}

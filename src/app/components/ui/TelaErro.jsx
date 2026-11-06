@@ -30,6 +30,22 @@ export default function TelaErro({ error, reset, titulo = 'Não conseguimos abri
     // Registro para quem estiver depurando; o usuário vê só a mensagem abaixo.
     if (error) console.error(error);
     refTitulo.current?.focus();
+
+    // Aba aberta antes de um deploy: o JavaScript dela aponta para actions e
+    // arquivos que não existem mais. Recarregar busca a versão nova e resolve.
+    if (/Server Action|ChunkLoadError|Loading chunk/i.test(error?.message ?? '')) {
+      try {
+        const CHAVE = 'marcaai_recarregou_por_versao';
+        const ultimaVez = Number(sessionStorage.getItem(CHAVE)) || 0;
+        // Uma vez por minuto no máximo, para nunca entrar em ciclo de recarga.
+        if (Date.now() - ultimaVez > 60000) {
+          sessionStorage.setItem(CHAVE, String(Date.now()));
+          window.location.reload();
+        }
+      } catch {
+        // Sem sessionStorage a pessoa ainda tem o botão "Tentar de novo".
+      }
+    }
   }, [error]);
 
   const Icone = online ? CircleAlert : WifiOff;

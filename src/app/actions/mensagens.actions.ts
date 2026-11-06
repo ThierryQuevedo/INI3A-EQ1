@@ -1,18 +1,26 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { eq, and, ne, asc, gt, isNull, inArray, sql } from 'drizzle-orm';
+import { after } from 'next/server';
+import { eq, and, ne, asc, gt, isNull, inArray, or, sql } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
 import { agendamentos, servicos, usuarios, mensagens } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
+import { notificarNovaMensagem } from '@/lib/notificacoes';
 
 const STATUS_ENCERRADO = ['concluido', 'cancelado'];
 
 // `usuarios` entra duas vezes no join (cliente e prestador), então o segundo
 // lado precisa de um alias — mesmo padrão usado em src/lib/notificacoes.js.
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_mensagens');
+
+// Uma conta de prestador também pode agendar serviços de outros profissionais:
+// as conversas dela são as dos dois lados, seja qual for `usuarios.tipo`.
+function filtroConversasDoUsuario(usuarioId) {
+  return or(eq(servicos.prestadorId, usuarioId), eq(agendamentos.clienteId, usuarioId));
+}
 
 /**
  * Resolve um agendamento para o usuário logado: confirma que ele é o cliente
@@ -63,11 +71,6 @@ export async function listarConversas() {
   const usuario = await getSession();
   if (!usuario) return [];
 
-  const filtro =
-    usuario.tipo === 'prestador'
-      ? eq(servicos.prestadorId, usuario.id)
-      : eq(agendamentos.clienteId, usuario.id);
-
   const linhas = await db
     .select({
       agendamentoId: agendamentos.id,
@@ -84,7 +87,7 @@ export async function listarConversas() {
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
     .innerJoin(usuarios, eq(agendamentos.clienteId, usuarios.id))
     .innerJoin(prestadorUsuarios, eq(servicos.prestadorId, prestadorUsuarios.id))
-    .where(filtro);
+    .where(filtroConversasDoUsuario(usuario.id));
 
   if (linhas.length === 0) return [];
 
@@ -108,9 +111,9 @@ export async function listarConversas() {
     const ultima = msgs[msgs.length - 1] ?? null;
     const naoLidas = msgs.filter((m) => m.remetenteId !== usuario.id && !m.lidaEm).length;
     const outroUsuario =
-      usuario.tipo === 'prestador'
-        ? { id: linha.clienteId, nome: linha.clienteNome, urlImagem: linha.clienteImagem }
-        : { id: linha.prestadorId, nome: linha.prestadorNome, urlImagem: linha.prestadorImagem };
+      linha.clienteId === usuario.id
+        ? { id: linha.prestadorId, nome: linha.prestadorNome, urlImagem: linha.prestadorImagem }
+        : { id: linha.clienteId, nome: linha.clienteNome, urlImagem: linha.clienteImagem };
 
     return {
       agendamentoId: linha.agendamentoId,
@@ -181,6 +184,27 @@ export async function enviarMensagem({ agendamentoId, texto }: { agendamentoId: 
     })
     .returning();
 
+  // Só a primeira mensagem ainda não lida gera aviso: uma sequência de mensagens
+  // seguidas não vira uma sequência de e-mails.
+  const [anteriorNaoLida] = await db
+    .select({ id: mensagens.id })
+    .from(mensagens)
+    .where(
+      and(
+        eq(mensagens.agendamentoId, Number(agendamentoId)),
+        eq(mensagens.remetenteId, usuario.id),
+        isNull(mensagens.lidaEm),
+        ne(mensagens.id, nova.id)
+      )
+    )
+    .limit(1);
+
+  if (!anteriorNaoLida) {
+    after(() =>
+      notificarNovaMensagem(Number(agendamentoId), { remetenteId: usuario.id, texto: textoLimpo })
+    );
+  }
+
   revalidatePath('/mensagens');
   revalidatePath(`/mensagens/${agendamentoId}`);
 
@@ -214,17 +238,14 @@ export async function contarNaoLidas() {
   const usuario = await getSession();
   if (!usuario) return 0;
 
-  const filtro =
-    usuario.tipo === 'prestador'
-      ? eq(servicos.prestadorId, usuario.id)
-      : eq(agendamentos.clienteId, usuario.id);
-
   const [resultado] = await db
     .select({ total: sql<number>`count(*)`.mapWith(Number) })
     .from(mensagens)
     .innerJoin(agendamentos, eq(mensagens.agendamentoId, agendamentos.id))
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
-    .where(and(filtro, ne(mensagens.remetenteId, usuario.id), isNull(mensagens.lidaEm)));
+    .where(
+      and(filtroConversasDoUsuario(usuario.id), ne(mensagens.remetenteId, usuario.id), isNull(mensagens.lidaEm))
+    );
 
   return resultado?.total ?? 0;
 }

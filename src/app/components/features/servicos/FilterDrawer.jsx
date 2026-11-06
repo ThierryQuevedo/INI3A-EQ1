@@ -192,7 +192,7 @@ export default function FilterDrawer({
 
   return (
     <>
-      <div className="max-md:block md:hidden">
+      <div className="max-lg:block lg:hidden">
         <Button variant="outline" onClick={() => setAbertoMobile(true)} className="relative">
           <SlidersHorizontal size={16} aria-hidden="true" />
           Filtros
@@ -213,7 +213,7 @@ export default function FilterDrawer({
 
       {/* Sticky abaixo do header (h-16): acompanha a rolagem da lista em vez
           de deixar uma coluna vazia; rola por dentro se não couber na tela. */}
-      <aside className="max-md:hidden md:block md:sticky md:top-20 md:max-h-[calc(100dvh-6rem)] md:overflow-y-auto w-72 shrink-0 bg-card border border-border rounded-xl p-5 h-fit">
+      <aside className="max-lg:hidden lg:block lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto w-72 shrink-0 bg-card border border-border rounded-xl p-5 h-fit">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-body-lg text-foreground">Filtros</h2>
           {ativo && (

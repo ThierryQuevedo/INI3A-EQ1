@@ -53,6 +53,8 @@ export const servicos = pgTable('servicos', {
   descricao: text('descricao'),
   preco: decimal('preco', { precision: 10, scale: 2 }).notNull(),
   duracaoEstimada: integer('duracao_estimada').notNull(),
+  // Preenchido = desativado pelo prestador: fora da busca e de novos agendamentos.
+  desativadoEm: timestamp('desativado_em'),
 });
 
 export const disponibilidades = pgTable('disponibilidades', {

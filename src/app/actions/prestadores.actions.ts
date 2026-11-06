@@ -1,6 +1,6 @@
 'use server';
 
-import { eq, or, and, avg, count, countDistinct, desc, isNotNull } from 'drizzle-orm';
+import { eq, or, and, avg, count, countDistinct, desc, isNotNull, isNull } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/db';
 import {
@@ -15,7 +15,11 @@ import { comEstatisticas } from '@/lib/avaliacoes';
 import { getSession } from '@/app/actions/auth.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
 
-export async function buscarPerfilPrestador(identificador: string | number) {
+// `incluirDesativados` é só para o próprio prestador ver os serviços que tirou do ar.
+export async function buscarPerfilPrestador(
+  identificador: string | number,
+  { incluirDesativados = false } = {}
+) {
   if (!identificador) return null;
 
   const isNumero = !isNaN(Number(identificador)) && Number(identificador) > 0;
@@ -58,10 +62,16 @@ export async function buscarPerfilPrestador(identificador: string | number) {
       urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       duracaoEstimada: servicos.duracaoEstimada,
       categoriaNome: categorias.nome,
+      desativadoEm: servicos.desativadoEm,
     })
     .from(servicos)
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(eq(servicos.prestadorId, prestadorId));
+    .where(
+      and(
+        eq(servicos.prestadorId, prestadorId),
+        incluirDesativados ? undefined : isNull(servicos.desativadoEm)
+      )
+    );
 
   const [estatAvaliacoes] = await db
     .select({

@@ -28,6 +28,9 @@ export async function criarSessao(usuarioId) {
   return sessionId;
 }
 
+// Conta criada agora pelo Google: ainda falta perguntar se é cliente ou prestador.
+export const COMPLETAR_CADASTRO_COOKIE = 'marcaai_completar_cadastro';
+
 // routing pós login
 export const PROXIMO_COOKIE = 'marcaai_proximo';
 

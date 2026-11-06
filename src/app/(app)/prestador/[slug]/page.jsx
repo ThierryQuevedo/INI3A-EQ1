@@ -1,4 +1,4 @@
-import { MapPin, Phone, Users, Star, Clock3, CalendarDays } from 'lucide-react';
+import { MapPin, Phone, Users, Star, Clock3, CalendarDays, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -7,6 +7,7 @@ import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.a
 import { listarIdsFavoritos } from '@/app/actions/favoritos.actions';
 import { getSession } from '@/app/actions/auth.actions';
 import { Button } from '@/app/components/ui/button';
+import { Badge } from '@/app/components/ui/badge';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import FavoritoButton from '@/app/components/features/favoritos/FavoritoButton';
 import { PerfilBanner, PerfilResumo, CardAvaliacao } from '@/app/components/features/perfil/PerfilPublico';
@@ -27,7 +28,10 @@ export default async function PerfilPrestador({ params }) {
     return notFound();
   }
 
-  const perfil = await buscarPerfilPrestador(slug);
+  const visitante = await getSession();
+  const eDoVisitante = !!visitante && (visitante.slug === slug || String(visitante.id) === slug);
+
+  const perfil = await buscarPerfilPrestador(slug, { incluirDesativados: eDoVisitante });
 
   if (!perfil) {
     return notFound();
@@ -35,10 +39,7 @@ export default async function PerfilPrestador({ params }) {
 
   const { usuario, servicos, avaliacaoMedia, totalAvaliacoes, totalClientesAtendidos, avaliacoes } = perfil;
 
-  const [visitante, { servicos: idsServicosFavoritados, prestadores: idsPrestadoresFavoritados }] = await Promise.all([
-    getSession(),
-    listarIdsFavoritos(),
-  ]);
+  const { servicos: idsServicosFavoritados, prestadores: idsPrestadoresFavoritados } = await listarIdsFavoritos();
   const favoritosServicoSet = new Set(idsServicosFavoritados);
   const prestadorFavoritado = idsPrestadoresFavoritados.includes(usuario.id);
   const souOPrestador = visitante?.id === usuario.id;
@@ -67,9 +68,10 @@ export default async function PerfilPrestador({ params }) {
     totalAvaliacoes: s.totalAvaliacoes,
     proximoHorario: proximosHorarios[s.id] ?? null,
     favoritoInicial: favoritosServicoSet.has(s.id),
+    desativado: !!s.desativadoEm,
   }));
 
-  const primeiroServico = servicosFormatados[0] ?? null;
+  const primeiroServico = servicosFormatados.find((s) => !s.desativado) ?? null;
 
   const avaliacoesVisiveis = avaliacoes.slice(0, LIMITE_AVALIACOES);
   const avaliacoesExtras = avaliacoes.slice(LIMITE_AVALIACOES);
@@ -150,7 +152,17 @@ export default async function PerfilPrestador({ params }) {
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
                   {servicosFormatados.map((s) => (
-                    <ServiceCard key={s.id} servico={s} />
+                    <div key={s.id} className="flex flex-col gap-2 min-w-0">
+                      <ServiceCard servico={s} />
+                      {s.desativado && <Badge variant="neutro" size="sm" className="self-start">Desativado</Badge>}
+                      {souOPrestador && s.slug && (
+                        <Button asChild variant="outline" size="sm" className="w-full">
+                          <Link href={`/servicos/${s.slug}/editar`}>
+                            <Pencil aria-hidden="true" /> Editar
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   ))}
                 </div>
               )}

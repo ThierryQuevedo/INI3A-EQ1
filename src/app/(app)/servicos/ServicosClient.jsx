@@ -119,13 +119,13 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                     <Input
                         id="busca-servicos"
                         className="h-12 pl-11 text-body"
-                        placeholder="Buscar por serviço, prestador ou categoria..."
+                        placeholder="Buscar serviço ou profissional"
                         value={termoBusca}
                         onChange={(e) => setTermoBusca(e.target.value)}
                     />
                 </div>
 
-                <div className="flex max-md:flex-col md:flex-row max-md:gap-6 md:gap-8 items-start">
+                <div className="flex max-lg:flex-col lg:flex-row max-lg:gap-6 lg:gap-8 items-start">
                     <FilterDrawer
                         filtros={filtros}
                         onChange={setFiltros}
@@ -154,7 +154,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                                 }
                             />
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-5">
                                 {servicosFiltrados.map((servico) => (
                                     <ServiceCard key={servico.id} servico={servico} />
                                 ))}

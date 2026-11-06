@@ -113,7 +113,7 @@ export default function DisponibilidadePage() {
     async function carregarDisponibilidades() {
       setLoading(true);
       try {
-        const dados = await listarDisponibilidades(prestadorId, servicoSelecionadoId);
+        const dados = await listarDisponibilidades(servicoSelecionadoId);
         if (montado) {
           setDisponibilidades(Array.isArray(dados) ? dados.map(normalizarBloco) : []);
         }
@@ -147,12 +147,6 @@ export default function DisponibilidadePage() {
     return grupos;
   }, [disponibilidades]);
 
-  async function resolverPrestadorId() {
-    if (prestadorId != null) return prestadorId;
-    const usuario = await getSession();
-    return usuario?.id ?? null;
-  }
-
   function marcarProcessando(diaValor, ativo) {
     setDiasProcessando((prev) => {
       const novo = new Set(prev);
@@ -173,8 +167,6 @@ export default function DisponibilidadePage() {
 
   async function onAdicionarHorario(dia) {
     if (servicoSelecionadoId == null) return;
-    const idPrestador = await resolverPrestadorId();
-    if (idPrestador == null) return;
 
     const rangesDia = blocosPorDia[dia.valor] || [];
     let inicio = '09:00';
@@ -199,7 +191,7 @@ export default function DisponibilidadePage() {
     marcarProcessando(dia.valor, true);
     setDisponibilidades((prev) => [...prev, otimista]);
     try {
-      const resultado = await criarDisponibilidade(idPrestador, {
+      const resultado = await criarDisponibilidade({
         diaSemana: dia.valor,
         horaInicio: inicio,
         horaFim: fim,
@@ -249,15 +241,12 @@ export default function DisponibilidadePage() {
       return;
     }
 
-    const idPrestador = await resolverPrestadorId();
-    if (idPrestador == null) return;
-
     const anterior = disponibilidadesRef.current;
     setDisponibilidades((prev) => prev.map((d) => (d.id === range.id ? { ...d, [campo]: novoValor } : d)));
 
     marcarProcessando(dia.valor, true);
     try {
-      const resultado = await atualizarDisponibilidade(idPrestador, range.id, {
+      const resultado = await atualizarDisponibilidade(range.id, {
         horaInicio: novoRange.horaInicio,
         horaFim: novoRange.horaFim,
       });
@@ -278,8 +267,6 @@ export default function DisponibilidadePage() {
   async function confirmarAcao() {
     if (!confirmacao) return;
     const { tipo, dia } = confirmacao;
-    const idPrestador = await resolverPrestadorId();
-    if (idPrestador == null) return;
 
     const ids = tipo === 'horario' ? [confirmacao.range.id] : confirmacao.ranges.map((r) => r.id);
     const mensagemSucesso = tipo === 'horario' ? 'Horário removido.' : `Horários de ${dia.nome} removidos.`;
@@ -291,7 +278,13 @@ export default function DisponibilidadePage() {
     marcarProcessando(dia.valor, true);
     setDisponibilidades((prev) => prev.filter((d) => !ids.includes(d.id)));
     try {
-      await Promise.all(ids.map((id) => deletarDisponibilidade(idPrestador, id)));
+      const resultados = await Promise.all(ids.map((id) => deletarDisponibilidade(id)));
+      const falha = resultados.find((r) => r?.erro);
+      if (falha) {
+        setDisponibilidades((prev) => [...prev, ...removidos]);
+        definirErroDia(dia.valor, falha.erro);
+        return;
+      }
       toast.success(mensagemSucesso);
     } catch {
       setDisponibilidades((prev) => [...prev, ...removidos]);

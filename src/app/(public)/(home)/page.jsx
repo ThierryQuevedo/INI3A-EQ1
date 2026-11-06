@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CalendarDays, Clock, Star, ArrowRight, ChevronRight } from "lucide-react";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios, categorias, prestadores } from "@/db/schema";
 import CategoryIcon from "@/app/components/features/servicos/CategoryIcon";
@@ -60,10 +60,11 @@ export default async function Home() {
       .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
       .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
       .leftJoin(prestadores, eq(servicos.prestadorId, prestadores.usuarioId))
+      .where(isNull(servicos.desativadoEm))
       .orderBy(desc(servicos.id))
       .limit(24),
     listarCategorias(),
-    usuario && usuario.tipo === "cliente" ? buscarDashboardCliente(usuario.id) : null,
+    usuario && usuario.tipo === "cliente" ? buscarDashboardCliente() : null,
     // Índice leve para o preview da busca (fuzzy search no cliente): só os
     // campos que a lista de sugestões mostra, sem descrição nem horários.
     db
@@ -82,6 +83,7 @@ export default async function Home() {
       .from(servicos)
       .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
       .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
+      .where(isNull(servicos.desativadoEm))
       .orderBy(desc(servicos.id))
       .limit(500),
   ]);

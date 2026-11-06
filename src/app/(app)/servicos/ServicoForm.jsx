@@ -16,17 +16,19 @@ const CLASSE_TEXTAREA =
 
 const ESTADO_INICIAL = { erro: null, campo: null };
 
-export default function NovoServicoForm({ categorias = [], action, nomePrestador }) {
+/** Formulário de serviço: cria um novo ou, recebendo `servico`, edita o existente. */
+export default function ServicoForm({ categorias = [], action, nomePrestador, servico = null }) {
   const [estado, formAction, enviando] = useActionState(action, ESTADO_INICIAL);
+  const editando = !!servico;
 
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState(servico ? String(servico.categoriaId) : '');
   const [novaCategoria, setNovaCategoria] = useState('');
   const [erroCategoriaLocal, setErroCategoriaLocal] = useState(false);
-  const [nome, setNome] = useState('');
-  const [preco, setPreco] = useState('');
-  const [duracao, setDuracao] = useState('');
-  const [descricao, setDescricao] = useState('');
-  const [urlImagem, setUrlImagem] = useState('');
+  const [nome, setNome] = useState(servico?.nome ?? '');
+  const [preco, setPreco] = useState(servico?.preco ?? '');
+  const [duracao, setDuracao] = useState(servico ? String(servico.duracaoEstimada) : '');
+  const [descricao, setDescricao] = useState(servico?.descricao ?? '');
+  const [urlImagem, setUrlImagem] = useState(servico?.urlImagem ?? '');
 
   // Erro vindo do servidor: leva o foco ao campo em questão.
   useEffect(() => {
@@ -93,10 +95,14 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
   return (
     <PageContainer size="lg" className="py-8">
-      <BotaoVoltar fallbackHref="/dashboard" className="h-toque mb-3" />
+      <BotaoVoltar fallbackHref={editando ? `/servicos/${servico.slug || servico.id}` : '/dashboard'} className="h-toque mb-3" />
       <PageHeader
-        title="Novo serviço"
-        description="Preencha as informações abaixo. O card de pré-visualização mostra como ele vai aparecer para os clientes."
+        title={editando ? 'Editar serviço' : 'Novo serviço'}
+        description={
+          editando
+            ? 'As alterações valem para os próximos agendamentos. O card de pré-visualização mostra como ele vai aparecer para os clientes.'
+            : 'Preencha as informações abaixo. O card de pré-visualização mostra como ele vai aparecer para os clientes.'
+        }
         className="mb-6"
       />
 
@@ -110,6 +116,8 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
           aria-busy={enviando}
           className="bg-card rounded-xl shadow-soft border border-border p-6 md:p-8 space-y-6"
         >
+          {editando && <input type="hidden" name="servicoId" value={servico.id} />}
+
           <FormField id="nome" label="Nome do serviço" required error={erroDoCampo('nome')}>
             <Input
               id="nome"
@@ -226,6 +234,7 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
           <ServiceImageUpload
             name="urlImagem"
+            initialUrl={servico?.urlImagem ?? ''}
             label="Foto de apresentação do serviço"
             maxSizeMB={5}
             onChange={(url) => setUrlImagem(url || '')}
@@ -257,7 +266,9 @@ export default function NovoServicoForm({ categorias = [], action, nomePrestador
 
           <Button type="submit" size="lg" className="w-full" disabled={enviando}>
             {enviando && <Loader2 className="animate-spin" aria-hidden="true" />}
-            {enviando ? 'Cadastrando…' : 'Cadastrar serviço'}
+            {editando
+              ? (enviando ? 'Salvando…' : 'Salvar alterações')
+              : (enviando ? 'Cadastrando…' : 'Cadastrar serviço')}
           </Button>
         </form>
 

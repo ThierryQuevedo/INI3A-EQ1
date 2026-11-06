@@ -10,6 +10,7 @@ import {
   avaliacoes,
 } from '@/db/schema';
 import { imagemPublica } from '@/lib/imagemPublica';
+import { getSession } from './auth.actions';
 
 export async function buscarPerfilCliente(identificador) {
   if (!identificador) return null;
@@ -109,8 +110,13 @@ export async function buscarPerfilCliente(identificador) {
   };
 }
 
-export async function buscarDashboardCliente(clienteId) {
-  const id = Number(clienteId);
+// O cliente vem da sessão: o painel traz agendamentos e telefones, e receber o
+// id por parâmetro deixaria qualquer um ler o painel de outra pessoa.
+export async function buscarDashboardCliente() {
+  const usuario = await getSession();
+  if (!usuario) return null;
+
+  const id = usuario.id;
   const agora = new Date();
 
   // Próximos agendamentos ativos

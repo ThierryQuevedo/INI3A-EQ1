@@ -7,72 +7,77 @@ import bcrypt from 'bcryptjs';
 import { and, eq, ne } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, sessoes, prestadores } from '@/db/schema';
-import { SESSION_COOKIE, criarSessao, consumirProximo } from '@/lib/session';
-import { gerarSlug } from '@/lib/slug';
+import { SESSION_COOKIE, COMPLETAR_CADASTRO_COOKIE, criarSessao, consumirProximo } from '@/lib/session';
+import { destinoPadrao, filtroEmail, gerarSlugUnicoDeUsuario, normalizarEmail } from '@/lib/usuarios';
+import { desformatarTelefone, formatarTelefone } from '@/lib/formatarTelefone';
 import { imagemPublica } from '@/lib/imagemPublica';
 
+const ERRO_EMAIL_EM_USO = 'Já existe uma conta com este e-mail.';
+const ERRO_TELEFONE_EM_USO = 'Este telefone já está em uso em outra conta.';
+
+// Login e cadastro devolvem `destino` e quem navega é o formulário, com uma
+// carga completa da página (ver lib/useIrAposEntrar.js). Como a página nasce do
+// zero, não há o que revalidar aqui.
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
   try {
-    const nome = formData.get('nome');
-    const email = formData.get('email');
-    const senha = formData.get('senha');
-    const tipo = formData.get('tipo');
-    const telefone = formData.get('cel');
+    const nome = String(formData.get('nome') ?? '').trim();
+    const email = normalizarEmail(formData.get('email'));
+    const senha = String(formData.get('senha') ?? '');
+    const tipo = formData.get('tipo') === 'prestador' ? 'prestador' : 'cliente';
+    const digitosTelefone = desformatarTelefone(formData.get('cel'));
 
-    if (!nome || !email || !senha || !tipo || !telefone) {
+    if (!nome || !email || !senha || !digitosTelefone) {
       return { erro: 'Campos incompletos.' };
     }
 
-    const existente = await db
+    // Sempre na mesma máscara: é ela que a coluna única compara.
+    const telefone = formatarTelefone(digitosTelefone);
+
+    const [emailExistente] = await db
       .select({ id: usuarios.id })
       .from(usuarios)
-      .where(eq(usuarios.email, String(email)))
+      .where(filtroEmail(email))
       .limit(1);
 
-    if (existente.length > 0) {
-      return { erro: 'Já existe uma conta com este e-mail.' };
+    if (emailExistente) {
+      return { erro: ERRO_EMAIL_EM_USO, errosCampos: { email: ERRO_EMAIL_EM_USO } };
     }
 
-    const senhaHash = await bcrypt.hash(String(senha), 10);
-
-    let baseSlug = gerarSlug(String(nome));
-    if (!baseSlug) baseSlug = 'usuario';
-    let finalSlug = baseSlug;
-    const [slugExistente] = await db
+    const [telefoneExistente] = await db
       .select({ id: usuarios.id })
       .from(usuarios)
-      .where(eq(usuarios.slug, finalSlug))
+      .where(eq(usuarios.telefone, telefone))
       .limit(1);
 
-    if (slugExistente) {
-      finalSlug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
+    if (telefoneExistente) {
+      return { erro: ERRO_TELEFONE_EM_USO, errosCampos: { cel: ERRO_TELEFONE_EM_USO } };
     }
 
-    const resultadoNovoUsuario = await db
-      .insert(usuarios)
-      .values({
-        nome: String(nome),
-        slug: finalSlug,
-        email: String(email),
-        telefone: String(telefone),
-        senha: senhaHash,
-        tipo: String(tipo),
-      })
-      .returning({ id: usuarios.id });
+    const senhaHash = await bcrypt.hash(senha, 10);
+    const slug = await gerarSlugUnicoDeUsuario(nome);
 
-    const novoUsuario = resultadoNovoUsuario[0];
+    const novoUsuario = await db.transaction(async (tx) => {
+      const [criado] = await tx
+        .insert(usuarios)
+        .values({ nome, slug, email, telefone, senha: senhaHash, tipo })
+        .returning({ id: usuarios.id });
 
-    if (!novoUsuario) {
-      return { erro: 'Erro ao criar conta de usuário.' };
-    }
+      if (tipo === 'prestador') {
+        await tx.insert(prestadores).values({ usuarioId: criado.id });
+      }
 
-    if (String(tipo).toLowerCase() === 'prestador') {
-      await db.insert(prestadores).values({ usuarioId: novoUsuario.id });
-    }
+      return criado;
+    });
 
-    return await login(estadoAnterior, formData);
-
+    await criarSessao(novoUsuario.id);
+    const proximo = await consumirProximo();
+    return { erro: null, destino: proximo ?? destinoPadrao(tipo) };
   } catch (error) {
+    // Dois envios simultâneos podem passar pelas consultas acima e bater na
+    // restrição única do banco: é dado repetido, não falha do servidor.
+    if (error?.cause?.code === '23505' || error?.code === '23505') {
+      return { erro: 'Este e-mail ou telefone já está em uso em outra conta.' };
+    }
     console.error('Erro no cadastro:', error);
     return { erro: 'Ocorreu um erro ao realizar o cadastro. Tente novamente mais tarde.' };
   }
@@ -90,7 +95,7 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
     const resultado = await db
       .select()
       .from(usuarios)
-      .where(eq(usuarios.email, String(email)))
+      .where(filtroEmail(email))
       .limit(1);
 
     const usuario = resultado[0];
@@ -113,18 +118,34 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
     await criarSessao(usuario.id);
     const proximo = await consumirProximo();
 
-    revalidatePath('/', 'layout');
-
-    return {
-      erro: null,
-      sucesso: true,
-      redirectTo: proximo ?? (usuario.tipo === 'prestador' ? '/dashboard' : '/'),
-    };
-
+    return { erro: null, destino: proximo ?? destinoPadrao(usuario.tipo) };
   } catch (error) {
     console.error('Erro na consulta de login:', error);
     return { erro: 'Falha na conexão com o banco de dados. Tente novamente.' };
   }
+}
+
+/**
+ * Último passo de quem criou a conta pelo Google: a conta nasce como cliente e
+ * aqui a pessoa diz se também vai oferecer serviços. Depois disso, continua de
+ * onde parou (ex.: o agendamento que estava marcando antes de entrar).
+ */
+export async function concluirCadastroGoogle(estadoAnterior: unknown, formData: FormData) {
+  const usuario = await requireSession();
+  const virarPrestador = formData.get('tipo') === 'prestador';
+
+  if (virarPrestador && usuario.tipo !== 'prestador') {
+    await db.transaction(async (tx) => {
+      await tx.update(usuarios).set({ tipo: 'prestador' }).where(eq(usuarios.id, usuario.id));
+      await tx.insert(prestadores).values({ usuarioId: usuario.id }).onConflictDoNothing();
+    });
+  }
+
+  const cookieStore = await cookies();
+  cookieStore.delete(COMPLETAR_CADASTRO_COOKIE);
+
+  const proximo = await consumirProximo();
+  return { destino: proximo ?? destinoPadrao(virarPrestador ? 'prestador' : usuario.tipo) };
 }
 
 export async function logout() {

@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { startTransition, useState } from "react";
 import { useActionState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { login } from "@/app/actions/auth.actions";
+import { useIrAposEntrar } from "@/lib/useIrAposEntrar";
 import Link from 'next/link';
 import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png";
 import Image from "next/image";
@@ -24,11 +25,14 @@ const estadoInicial = { erro: null, errosCampos: {} };
  * login (e-mail ou Google) e o cadastro voltam para a tela de agendar.
  * Google primeiro (não exige lembrar senha); e-mail logo abaixo.
  */
-export default function LoginForm({ pedido = null }) {
-  const router = useRouter();
+export default function LoginForm({ pedido = null, destinoSessao = null }) {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, isPending] = useActionState(login, estadoInicial);
+  const destino = state?.destino ?? destinoSessao;
+  useIrAposEntrar(destino);
+  // A navegação leva um instante: o botão segue ocupado até a página trocar.
+  const entrando = isPending || !!destino;
 
   // Estados locais para os valores e validação do cliente
   const [email, setEmail] = useState("");
@@ -42,24 +46,18 @@ export default function LoginForm({ pedido = null }) {
   const erroEmail = errosLocais.email || state?.errosCampos?.email;
   const erroSenha = errosLocais.senha || state?.errosCampos?.senha;
 
-  useEffect(() => {
-    if (state?.sucesso && state?.redirectTo) {
-      router.push(state.redirectTo);
-    }
-  }, [state, router]);
-
-  const validarCampos = () => {
+  const validarCampos = (emailDigitado, senhaDigitada) => {
     const novosErros = {};
 
-    if (!email) {
+    if (!emailDigitado) {
       novosErros.email = "Informe o e-mail.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailDigitado)) {
       novosErros.email = "Insira um e-mail válido.";
     }
 
-    if (!senha) {
+    if (!senhaDigitada) {
       novosErros.senha = "Informe a senha.";
-    } else if (senha.length < 6) {
+    } else if (senhaDigitada.length < 6) {
       novosErros.senha = "A senha deve ter pelo menos 6 caracteres.";
     }
 
@@ -67,10 +65,22 @@ export default function LoginForm({ pedido = null }) {
     return Object.keys(novosErros).length === 0;
   };
 
+  // Valida o que está de fato no formulário: o preenchimento automático do
+  // navegador (que uma guia anônima não tem) nem sempre avisa o estado do React.
+  // O envio é manual porque, quando o React executa a `action` do <form>, ele
+  // reseta os campos a cada tentativa.
   const handleSubmit = (e) => {
-    if (!validarCampos()) {
-      e.preventDefault(); // Impede a execução do Server Action se houver erros no client
-    }
+    e.preventDefault();
+    const dados = new FormData(e.currentTarget);
+    const emailDigitado = String(dados.get("email") ?? "").trim();
+    const senhaDigitada = String(dados.get("senha") ?? "");
+
+    setEmail(emailDigitado);
+    setSenha(senhaDigitada);
+    if (!validarCampos(emailDigitado, senhaDigitada)) return;
+
+    dados.set("email", emailDigitado);
+    startTransition(() => formAction(dados));
   };
 
   return (
@@ -184,15 +194,15 @@ export default function LoginForm({ pedido = null }) {
               </div>
             </FormField>
 
-            <Button type="submit" size="lg" className="w-full mt-2" disabled={isPending}>
-              {isPending ? "Entrando..." : "Entrar"}
+            <Button type="submit" size="lg" className="w-full mt-2" disabled={entrando}>
+              {entrando ? "Entrando..." : "Entrar"}
             </Button>
           </form>
 
           <div className="text-center mt-6">
             <p className="text-body-sm text-muted-foreground">
               Ainda não tem uma conta?{" "}
-              <Link href="/cadastro" className="font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
+              <Link href="/cadastro" className="relative area-toque font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
                 Cadastre-se
               </Link>
             </p>

@@ -29,15 +29,15 @@ export default function AuthShowcase({ title, className }) {
   return (
     <aside
       className={cn(
-        "flex-col justify-between bg-secondary text-secondary-foreground border-r border-border p-12 xl:p-16",
+        "flex-col bg-secondary text-secondary-foreground border-r border-border p-12 xl:p-16",
         className
       )}
     >
       <Link href="/" className="w-fit rounded-lg">
-        <Image src={logotipo} alt="Marca Aí — página inicial" className="w-32 h-auto" priority />
+        <Image src={logotipo} alt="Marca Aí — página inicial" className="w-64 xl:w-80 h-auto" priority />
       </Link>
 
-      <div className="mt-auto max-w-md">
+      <div className="mt-12 xl:mt-16 max-w-md">
         <h2 className="text-h3 font-bold leading-[1.1] mb-8 text-balance">{title}</h2>
 
         <ul className="space-y-5">

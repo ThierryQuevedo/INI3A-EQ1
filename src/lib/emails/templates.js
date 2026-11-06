@@ -117,30 +117,74 @@ export function emailAgendamentoConfirmado({ clienteNome, prestadorNome, servico
   };
 }
 
-export function emailAgendamentoCancelado({ clienteNome, prestadorNome, servicoNome, dataHora }) {
+export function emailAgendamentoCancelado({ clienteNome, prestadorNome, servicoNome, dataHora, canceladoPeloCliente, motivo }) {
   const quando = formatarDataHora(dataHora);
-  const link = linkApp('/servicos');
+  const destinatarioNome = canceladoPeloCliente ? prestadorNome : clienteNome;
+  const quemCancelou = canceladoPeloCliente ? clienteNome : prestadorNome;
+  const link = linkApp(canceladoPeloCliente ? '/agendamentos' : '/servicos');
+  const complementoMotivo = motivo ? ` Motivo: "${motivo}"` : '';
+
+  const itens = [
+    ['Serviço', escapar(servicoNome)],
+    [canceladoPeloCliente ? 'Cliente' : 'Profissional', escapar(quemCancelou)],
+    ['Quando', escapar(quando)],
+  ];
+  if (motivo) itens.push(['Motivo', `“${escapar(motivo)}”`]);
 
   return {
     assunto: `Agendamento cancelado: ${servicoNome}`,
     titulo: 'Agendamento cancelado',
-    mensagem: `Seu agendamento de "${servicoNome}" com ${prestadorNome} para ${quando} foi cancelado.`,
+    mensagem: `${quemCancelou} cancelou o agendamento de "${servicoNome}" de ${quando}.${complementoMotivo}`,
     link,
     html: layoutEmail({
-      saudacao: `Olá, ${clienteNome}.`,
+      saudacao: `Olá, ${destinatarioNome}.`,
       paragrafos: [
-        `Infelizmente o seu agendamento com <strong>${escapar(prestadorNome)}</strong> foi cancelado.`,
-        'Você pode escolher um novo horário ou procurar outro profissional no catálogo.',
+        `<strong>${escapar(quemCancelou)}</strong> cancelou o agendamento.`,
+        canceladoPeloCliente
+          ? 'O horário voltou a ficar livre na sua agenda.'
+          : 'Você pode escolher um novo horário ou procurar outro profissional no catálogo.',
+      ],
+      destaque: { rotulo: 'Agendamento cancelado', itens },
+      cta: canceladoPeloCliente
+        ? { texto: 'Ver minha agenda', href: link }
+        : { texto: 'Buscar serviços', href: link },
+    }),
+  };
+}
+
+export function emailCodigoExclusaoServico({ usuarioNome, servicoNome, codigo }) {
+  return {
+    assunto: `${codigo} é o seu código para excluir um serviço`,
+    html: layoutEmail({
+      saudacao: `Olá, ${usuarioNome}.`,
+      paragrafos: [
+        `Recebemos um pedido para excluir o serviço <strong>${escapar(servicoNome)}</strong>. Para confirmar, use o código abaixo. Ele vale por 10 minutos.`,
+        'Se não foi você, não informe este código a ninguém e troque a sua senha.',
       ],
       destaque: {
-        rotulo: 'Agendamento cancelado',
-        itens: [
-          ['Serviço', escapar(servicoNome)],
-          ['Profissional', escapar(prestadorNome)],
-          ['Quando', escapar(quando)],
-        ],
+        rotulo: 'Código de confirmação',
+        itens: [['Código', `<span style="font-size: 22px; font-weight: 700; letter-spacing: 0.12em;">${escapar(codigo)}</span>`]],
       },
-      cta: { texto: 'Buscar serviços', href: link },
+    }),
+  };
+}
+
+export function emailNovaMensagem({ agendamentoId, destinatarioNome, remetenteNome, servicoNome, texto }) {
+  const link = linkApp(`/mensagens/${agendamentoId}/`);
+  const previa = texto.length > 140 ? `${texto.slice(0, 140)}…` : texto;
+
+  return {
+    assunto: `Nova mensagem de ${remetenteNome}`,
+    titulo: 'Nova mensagem',
+    mensagem: `${remetenteNome}: "${previa}"`,
+    link,
+    html: layoutEmail({
+      saudacao: `Olá, ${destinatarioNome}!`,
+      paragrafos: [
+        `<strong>${escapar(remetenteNome)}</strong> enviou uma mensagem sobre <strong>${escapar(servicoNome)}</strong>:`,
+        `“${escapar(previa)}”`,
+      ],
+      cta: { texto: 'Responder', href: link },
     }),
   };
 }

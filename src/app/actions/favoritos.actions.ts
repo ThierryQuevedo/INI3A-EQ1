@@ -1,7 +1,7 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { eq, and, isNotNull, inArray, avg, count } from 'drizzle-orm';
+import { eq, and, isNotNull, isNull, inArray, avg, count } from 'drizzle-orm';
 import { db } from '@/db';
 import { favoritos, servicos, usuarios, categorias, prestadores, avaliacoes, agendamentos } from '@/db/schema';
 import { getSession } from './auth.actions';
@@ -103,7 +103,8 @@ export async function listarFavoritos() {
     .innerJoin(servicos, eq(favoritos.servicoId, servicos.id))
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .where(and(eq(favoritos.usuarioId, usuario.id), isNotNull(favoritos.servicoId)));
+    // Desativado some da lista, mas o favorito fica guardado e volta ao reativar.
+    .where(and(eq(favoritos.usuarioId, usuario.id), isNotNull(favoritos.servicoId), isNull(servicos.desativadoEm)));
 
   const servicosComEstat = await comEstatisticas(favoritosServico);
   const servicosFavoritados = servicosComEstat.map((s) => ({ ...s, favoritoInicial: true }));

@@ -24,6 +24,9 @@ export default function ConfirmDialog({
   cancelLabel = "Cancelar",
   onConfirm,
   variant = "default",
+  confirmDesabilitado = false,
+  confirmPendenteLabel = "Salvando...",
+  children,
 }) {
   const [pendente, setPendente] = useState(false);
   const refDialogo = useRef(null);
@@ -43,11 +46,13 @@ export default function ConfirmDialog({
 
   async function handleConfirmar() {
     setPendente(true);
+    // `onConfirm` devolve false para manter o modal aberto (ex.: fluxo em etapas).
+    let manterAberto = false;
     try {
-      await onConfirm?.();
+      manterAberto = (await onConfirm?.()) === false;
     } finally {
       setPendente(false);
-      onOpenChange?.(false);
+      if (!manterAberto) onOpenChange?.(false);
     }
   }
 
@@ -90,6 +95,8 @@ export default function ConfirmDialog({
           </p>
         )}
 
+        {children && <div className="mb-6">{children}</div>}
+
         <div className="flex gap-3">
           <Button type="button" variant="outline" className="flex-1" onClick={fechar} disabled={pendente}>
             {cancelLabel}
@@ -99,9 +106,9 @@ export default function ConfirmDialog({
             variant={variant === "destructive" ? "destructive" : "default"}
             className="flex-1"
             onClick={handleConfirmar}
-            disabled={pendente}
+            disabled={pendente || confirmDesabilitado}
           >
-            {pendente ? "Salvando..." : confirmLabel}
+            {pendente ? confirmPendenteLabel : confirmLabel}
           </Button>
         </div>
       </div>

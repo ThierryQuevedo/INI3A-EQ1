@@ -41,6 +41,9 @@ function CardAgendamento({ item, usuarioLogado }) {
   const dataTag = destaque
     ? dataLabel
     : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+  // O papel é de cada agendamento, não da conta: prestador também agenda serviços.
+  const ehCliente = item.papel === 'cliente';
+  const horarioComecou = new Date(item.dataHora) <= new Date();
 
   return (
     <Card padding="default" interactive id={`pedido-${item.id}`}>
@@ -58,8 +61,13 @@ function CardAgendamento({ item, usuarioLogado }) {
             <span className={`px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 ${destaque ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
               {dataTag}
             </span>
+            {usuarioLogado.tipo === 'prestador' && (
+              <span className="px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 bg-secondary text-secondary-foreground">
+                {ehCliente ? 'Você agendou' : 'Você atende'}
+              </span>
+            )}
           </div>
-          {usuarioLogado.tipo === 'cliente' ? (
+          {ehCliente ? (
             <p className="text-body-sm text-muted-foreground truncate mt-1">
               {item.prestadorNome} · <span className="text-success font-semibold">{formatarPreco(item.servicoPreco)}</span>
             </p>
@@ -69,28 +77,52 @@ function CardAgendamento({ item, usuarioLogado }) {
             </p>
           )}
           {/* A-06: o selo "Aguardando confirmação" ganha o que acontece a seguir. */}
-          {usuarioLogado.tipo === 'cliente' && item.status === 'pendente' && (
+          {ehCliente && item.status === 'pendente' && (
             <p className="text-body-sm text-muted-foreground mt-1">
               O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail.
             </p>
+          )}
+          {item.status === 'cancelado' && (
+            <>
+              {item.motivoCancelamento && (
+                <p className="text-body-sm text-foreground mt-1 break-words whitespace-pre-line">
+                  <span className="font-semibold">
+                    {item.motivoFoiMeu
+                      ? 'Motivo informado por você: '
+                      : `Motivo informado por ${ehCliente ? item.prestadorNome : item.clienteNome}: `}
+                  </span>
+                  {item.motivoCancelamento}
+                </p>
+              )}
+              <Link
+                href={`/mensagens/${item.id}`}
+                className="relative area-toque inline-block mt-1 text-body-sm font-semibold text-primary underline underline-offset-4 hover:text-primary-hover"
+              >
+                Ver conversa
+              </Link>
+            </>
           )}
         </div>
 
         </div>
 
-        <div className="flex items-center justify-between gap-2 sm:flex-col sm:items-end shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-end shrink-0">
           <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-md text-caption font-semibold ${statusBadgeClass(item.status)}`}>
             <Icon size={13} aria-hidden="true" />
             {rotuloStatus(item.status)}
           </span>
-          {usuarioLogado.tipo === 'prestador' && item.status === 'confirmado' && (
-            <BotaoAcaoAgendamento
-              agendamentoId={item.id}
-              novoStatus="concluido"
-              label="Concluir"
-              titulo="Concluir agendamento?"
-              descricao="Confirma que o serviço foi realizado?"
-            />
+          {!ehCliente && item.status === 'confirmado' && (
+            horarioComecou ? (
+              <BotaoAcaoAgendamento
+                agendamentoId={item.id}
+                novoStatus="concluido"
+                label="Concluir"
+                titulo="Concluir agendamento?"
+                descricao="Confirma que o serviço foi realizado?"
+              />
+            ) : (
+              <p className="text-caption text-muted-foreground sm:text-right">Concluir libera no horário marcado</p>
+            )
           )}
           {STATUS_CANCELAVEL.includes(item.status) && (
             <BotaoAcaoAgendamento
@@ -98,7 +130,13 @@ function CardAgendamento({ item, usuarioLogado }) {
               novoStatus="cancelado"
               label="Cancelar"
               titulo="Cancelar agendamento?"
-              descricao="Essa ação não pode ser desfeita."
+              descricao={
+                item.status === 'confirmado'
+                  ? 'Este horário já estava confirmado. O motivo será enviado para a outra pessoa. Essa ação não pode ser desfeita.'
+                  : 'Essa ação não pode ser desfeita.'
+              }
+              pedirMotivo
+              motivoObrigatorio={item.status === 'confirmado'}
               variant="destructive"
               aparencia="perigo"
             />
@@ -106,7 +144,7 @@ function CardAgendamento({ item, usuarioLogado }) {
         </div>
       </div>
 
-      {usuarioLogado.tipo === 'cliente' && item.status === 'concluido' && (
+      {ehCliente && item.status === 'concluido' && (
         <div className="mt-4 pt-4 border-t border-border">
           <AvaliacaoServico
             agendamentoId={item.id}
@@ -169,11 +207,11 @@ export default async function AgendamentosPage() {
       <PageHeader
         title="Sua Agenda"
         description={<>Olá, <span className="font-semibold text-foreground">{usuarioLogado.nome}</span>. Aqui estão seus agendamentos.</>}
-        actions={usuarioLogado.tipo === 'cliente' && (
+        actions={
           <Button asChild>
             <Link href="/servicos">Agendar novo horário</Link>
           </Button>
-        )}
+        }
       />
 
       {meusAgendamentos.length === 0 ? (
@@ -184,10 +222,10 @@ export default async function AgendamentosPage() {
             description={
               usuarioLogado.tipo === 'cliente'
                 ? 'Que tal escolher um serviço e marcar seu primeiro horário?'
-                : 'Assim que um cliente agendar um horário com você, ele aparece aqui.'
+                : 'Os horários que clientes marcarem com você e os que você marcar com outros profissionais aparecem aqui.'
             }
-            actionLabel={usuarioLogado.tipo === 'cliente' ? 'Ver serviços disponíveis' : undefined}
-            actionHref={usuarioLogado.tipo === 'cliente' ? '/servicos' : undefined}
+            actionLabel="Ver serviços disponíveis"
+            actionHref="/servicos"
           />
         </Card>
       ) : (

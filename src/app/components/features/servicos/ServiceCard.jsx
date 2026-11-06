@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Calendar } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
 import PlaceholderImage from "@/app/components/ui/PlaceholderImage";
@@ -54,7 +55,11 @@ export default function ServiceCard({ servico, interativo = true }) {
 
         {nomeCategoria && (
           <span
-            className="absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-md max-w-[80%] shadow-soft inline-flex items-center gap-1.5 min-w-0"
+            className={cn(
+              "absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-md shadow-soft inline-flex items-center gap-1.5 min-w-0",
+              // Margens de 12px + coração de 36px + 8px de folga até o coração.
+              mostrarFavorito ? "max-w-[calc(100%-4.25rem)]" : "max-w-[80%]"
+            )}
             title={nomeCategoria}
           >
             <CategoryIcon nome={nomeCategoria} size={13} className="shrink-0" />
@@ -113,7 +118,9 @@ export default function ServiceCard({ servico, interativo = true }) {
         <div className={classeConteudo}>{conteudo}</div>
       )}
 
-      <div className="mt-auto px-4 pb-4 pt-1 flex flex-wrap items-baseline justify-between gap-x-2">
+      {/* Com ações abaixo, quem vai para o fim do card são elas: a data pode
+          quebrar em duas linhas, e o preço continua alinhado entre os vizinhos. */}
+      <div className={cn("px-4 pb-4 pt-1 flex flex-wrap items-baseline justify-between gap-x-2", !interativo && "mt-auto")}>
         <span className="text-body-lg font-bold text-foreground whitespace-nowrap tabular-nums">
           {formatarPreco(preco)}
         </span>
@@ -126,7 +133,7 @@ export default function ServiceCard({ servico, interativo = true }) {
           horário é o atalho: abre a tela de agendar já com dia e hora
           marcados. "Ver horários" abre a mesma tela no primeiro dia com vaga. */}
       {interativo && (
-        <div className="px-4 pb-4 flex flex-col gap-2">
+        <div className="mt-auto px-4 pb-4 flex flex-col gap-2">
           {proximoHorario ? (
             <AvailabilityBadge proximoHorario={proximoHorario} servicoId={id} nomeServico={nomeServico} />
           ) : proximoHorario === null ? (

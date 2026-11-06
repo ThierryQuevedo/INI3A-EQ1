@@ -1,12 +1,13 @@
 export const dynamic = 'force-dynamic';
 
-import { eq } from 'drizzle-orm';
+import { eq, isNull } from 'drizzle-orm';
 import { db } from '@/db';
 import { servicos, usuarios, categorias, prestadores } from '@/db/schema';
 import ServicosClient from './ServicosClient';
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { calcularProximosHorariosLivres } from '@/app/actions/disponibilidades.actions';
 import { listarIdsFavoritos } from '@/app/actions/favoritos.actions';
+import { listarCategorias } from '@/app/actions/servicos.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
 
 export default async function ServicosPage() {
@@ -32,10 +33,9 @@ export default async function ServicosPage() {
     .from(servicos)
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    .leftJoin(prestadores, eq(prestadores.usuarioId, servicos.prestadorId)),
-    db
-      .select({ id: categorias.id, nome: categorias.nome })
-      .from(categorias),
+    .leftJoin(prestadores, eq(prestadores.usuarioId, servicos.prestadorId))
+    .where(isNull(servicos.desativadoEm)),
+    listarCategorias(),
     listarIdsFavoritos(),
   ]);
 

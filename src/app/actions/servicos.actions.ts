@@ -2,12 +2,46 @@
 
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
-import { eq, getTableColumns } from 'drizzle-orm';
+import { eq, getTableColumns, inArray, sql } from 'drizzle-orm';
 import { db } from '@/db';
 import { servicos, categorias, prestadores } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { gerarSlug } from '@/lib/slug';
 import { imagemPublica } from '@/lib/imagemPublica';
+import { CATEGORIAS_PADRAO } from '@/lib/categorias';
+import { CAMINHO_BASE } from '@/lib/caminhoBase';
+import { servicoTemAgendamentos } from '@/lib/servicos';
+import { conferirCodigo, criarCodigo, descartarCodigo } from '@/lib/codigoVerificacao';
+import { enviarEmail } from '@/lib/email';
+import { emailCodigoExclusaoServico } from '@/lib/emails/templates';
+
+const ERRO_SERVICO_COM_AGENDAMENTOS = 'Este serviço já tem agendamentos e não pode ser excluído.';
+
+// Só o dono passa daqui, e serviço com agendamento nunca é excluído.
+// Devolve `{ erro }` ou `{ usuario, servico }`.
+async function validarExclusaoDeServico(servicoId) {
+  const usuario = await getSession();
+  if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para continuar.' };
+
+  const [servico] = await db
+    .select({ id: servicos.id, nome: servicos.nome, prestadorId: servicos.prestadorId })
+    .from(servicos)
+    .where(eq(servicos.id, Number(servicoId)))
+    .limit(1);
+
+  if (!servico || servico.prestadorId !== usuario.id) {
+    return { erro: 'Você não pode excluir este serviço.' };
+  }
+  if (await servicoTemAgendamentos(servico.id)) {
+    return { erro: ERRO_SERVICO_COM_AGENDAMENTOS };
+  }
+
+  return { usuario, servico };
+}
+
+function chaveCodigoExclusao(usuarioId, servicoId) {
+  return `excluir-servico:${usuarioId}:${servicoId}`;
+}
 
 export async function buscarServico(id: number) {
   const [servico] = await db
@@ -33,8 +67,12 @@ export async function listarServicos() {
   return await db.select().from(servicos);
 }
 
+/** Só as categorias do sistema: as criadas em "Outro" não entram em filtros nem em listas. */
 export async function listarCategorias() {
-  return await db.select().from(categorias);
+  return await db
+    .select()
+    .from(categorias)
+    .where(inArray(categorias.nome, CATEGORIAS_PADRAO));
 }
 
 export async function listarServicosPorPrestador(prestadorId: number) {
@@ -49,16 +87,26 @@ export async function listarServicosPorPrestador(prestadorId: number) {
     .where(eq(servicos.prestadorId, Number(prestadorId)));
 }
 
-// Assinatura do useActionState: devolve { erro } em vez de lançar, para o
-// formulário mostrar a mensagem sem perder o que a pessoa digitou.
-export async function cadastrarServico(_estadoAnterior: unknown, formData: FormData) {
-  const usuario = await getSession();
-  if (!usuario) {
-    redirect('/login');
+// A URL do serviço é o slug e a busca por ele pega uma linha só: dois serviços
+// com o mesmo nome fariam um dos dois abrir a página do outro.
+async function gerarSlugUnicoDeServico(nome: string) {
+  const base = gerarSlug(nome) || 'servico';
+  let candidato = base;
+
+  for (let sufixo = 2; ; sufixo++) {
+    const [existente] = await db
+      .select({ id: servicos.id })
+      .from(servicos)
+      .where(eq(servicos.slug, candidato))
+      .limit(1);
+    if (!existente) return candidato;
+    candidato = `${base}-${sufixo}`;
   }
+}
 
-  const prestadorId = Number(usuario.id);
-
+// Campos em comum entre criar e editar. Devolve `{ erro, campo }` ao primeiro
+// problema, ou `{ dados }` com tudo limpo e pronto para gravar.
+function validarCamposServico(formData) {
   const nome = formData.get('nome')?.toString().trim() || '';
   const categoriaIdRaw = formData.get('categoriaId')?.toString() || '';
   const novaCategoriaNome = formData.get('novaCategoria')?.toString().trim() || '';
@@ -66,7 +114,6 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
   const duracaoRaw = formData.get('duracaoEstimada')?.toString() || '';
   const descricao = formData.get('descricao')?.toString().trim() || '';
 
-  // Valida tudo antes de gravar qualquer coisa.
   if (!nome) return { erro: 'Informe o nome do serviço.', campo: 'nome' };
   if (!categoriaIdRaw) return { erro: 'Selecione uma categoria para continuar.', campo: 'categoriaId' };
   if (categoriaIdRaw === 'outro' && !novaCategoriaNome) {
@@ -83,8 +130,52 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
     return { erro: 'A duração deve ser um número inteiro de minutos, entre 1 e 1440.', campo: 'duracaoEstimada' };
   }
 
-  const urlImagemRaw = formData.get('urlImagem');
-  const urlImagem = urlImagemRaw && urlImagemRaw.toString().trim() !== '' ? urlImagemRaw.toString().trim() : null;
+  return {
+    dados: {
+      nome,
+      categoriaIdRaw,
+      novaCategoriaNome,
+      preco: precoNum.toFixed(2),
+      duracaoEstimada,
+      descricao: descricao || null,
+      urlImagem: formData.get('urlImagem')?.toString().trim() || null,
+    },
+  };
+}
+
+// `categorias.nome` é único: dois prestadores digitando "Aula" em "Outro" usam a
+// mesma categoria em vez de o segundo receber um erro ao salvar.
+async function resolverCategoriaId(categoriaIdRaw, novaCategoriaNome) {
+  if (categoriaIdRaw !== 'outro') return Number(categoriaIdRaw);
+
+  const [existente] = await db
+    .select({ id: categorias.id })
+    .from(categorias)
+    .where(sql`lower(${categorias.nome}) = ${novaCategoriaNome.toLowerCase()}`)
+    .limit(1);
+  if (existente) return existente.id;
+
+  const [nova] = await db
+    .insert(categorias)
+    .values({ nome: novaCategoriaNome })
+    .returning({ id: categorias.id });
+  return nova.id;
+}
+
+// Assinatura do useActionState: devolve { erro } em vez de lançar, para o
+// formulário mostrar a mensagem sem perder o que a pessoa digitou.
+export async function cadastrarServico(_estadoAnterior: unknown, formData: FormData) {
+  const usuario = await getSession();
+  if (!usuario) {
+    redirect('/login');
+  }
+
+  const prestadorId = Number(usuario.id);
+
+  // Valida tudo antes de gravar qualquer coisa.
+  const validacao = validarCamposServico(formData);
+  if (!validacao.dados) return validacao;
+  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem } = validacao.dados;
 
   try {
     const [prestadorExiste] = await db
@@ -104,25 +195,14 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
       });
     }
 
-    let categoriaIdFinal: number;
-    if (categoriaIdRaw === 'outro') {
-      const [novaCat] = await db
-        .insert(categorias)
-        .values({ nome: novaCategoriaNome })
-        .returning({ id: categorias.id });
-      categoriaIdFinal = novaCat.id;
-    } else {
-      categoriaIdFinal = Number(categoriaIdRaw);
-    }
-
     await db.insert(servicos).values({
       prestadorId,
-      categoriaId: categoriaIdFinal,
+      categoriaId: await resolverCategoriaId(categoriaIdRaw, novaCategoriaNome),
       nome,
-      slug: gerarSlug(nome),
-      descricao: descricao || null,
+      slug: await gerarSlugUnicoDeServico(nome),
+      descricao,
       urlImagem,
-      preco: precoNum.toFixed(2),
+      preco,
       duracaoEstimada,
     });
   } catch (error) {
@@ -135,4 +215,144 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
 
   // Fora do try: redirect() funciona lançando um sinal interno do Next.
   redirect('/dashboard');
+}
+
+/**
+ * Desativa ou reativa um serviço do próprio prestador. Desativado, ele sai da
+ * busca e não recebe novos agendamentos; os que já existem continuam valendo.
+ */
+export async function alterarServicoAtivo(servicoId: number, ativo: boolean) {
+  const usuario = await getSession();
+  if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para continuar.' };
+
+  const [servico] = await db
+    .select({ prestadorId: servicos.prestadorId })
+    .from(servicos)
+    .where(eq(servicos.id, Number(servicoId)))
+    .limit(1);
+
+  if (!servico || servico.prestadorId !== usuario.id) {
+    return { erro: 'Você não pode alterar este serviço.' };
+  }
+
+  await db
+    .update(servicos)
+    .set({ desativadoEm: ativo ? null : new Date() })
+    .where(eq(servicos.id, Number(servicoId)));
+
+  // Catálogo, home, favoritos e perfil mudam juntos.
+  revalidatePath('/', 'layout');
+  return { erro: null, sucesso: true };
+}
+
+/** Primeira etapa da exclusão: manda para o e-mail da conta um código de confirmação. */
+export async function solicitarCodigoExclusaoServico(servicoId: number) {
+  const validacao = await validarExclusaoDeServico(servicoId);
+  if (!validacao.usuario) return { erro: validacao.erro };
+  const { usuario, servico } = validacao;
+
+  const chave = chaveCodigoExclusao(usuario.id, servico.id);
+  const { codigo, aguardarSegundos } = criarCodigo(chave);
+  if (!codigo) {
+    return { erro: `Já enviamos um código há pouco. Aguarde ${aguardarSegundos} segundos para pedir outro.`, aguardando: true };
+  }
+
+  const email = emailCodigoExclusaoServico({ usuarioNome: usuario.nome, servicoNome: servico.nome, codigo });
+  const resultado = await enviarEmail({ to: usuario.email, subject: email.assunto, html: email.html });
+
+  if (!resultado.enviado) {
+    // Sem SMTP em desenvolvimento, o código sai no terminal para dar para testar.
+    if (process.env.NODE_ENV !== 'production') {
+      console.info(`[dev] Código para excluir o serviço ${servico.id}: ${codigo}`);
+      return { erro: null, sucesso: true };
+    }
+    descartarCodigo(chave);
+    return { erro: 'Não foi possível enviar o e-mail agora. O serviço não foi excluído. Tente de novo em instantes.' };
+  }
+
+  return { erro: null, sucesso: true };
+}
+
+/**
+ * Segunda etapa: confere o código e exclui. Disponibilidades e favoritos saem
+ * junto (cascade no schema). Sem revalidatePath de propósito: ele renderizaria
+ * de novo a página do serviço que acabou de sumir, e quem chama já faz uma
+ * navegação completa.
+ */
+export async function excluirServico(servicoId: number, codigo: string) {
+  const validacao = await validarExclusaoDeServico(servicoId);
+  if (!validacao.usuario) return { erro: validacao.erro };
+  const { usuario, servico } = validacao;
+
+  const conferencia = conferirCodigo(chaveCodigoExclusao(usuario.id, servico.id), codigo);
+  if (!conferencia.valido) return { erro: conferencia.erro };
+
+  try {
+    await db.delete(servicos).where(eq(servicos.id, servico.id));
+  } catch (error) {
+    // Um cliente pode ter agendado depois da checagem: a chave estrangeira segura.
+    if (error?.cause?.code === '23503' || error?.code === '23503') {
+      return { erro: ERRO_SERVICO_COM_AGENDAMENTOS };
+    }
+    console.error('Erro ao excluir serviço:', error);
+    return { erro: 'Não foi possível excluir o serviço agora. Peça um novo código e tente de novo.' };
+  }
+
+  return { erro: null, destino: `/prestador/${usuario.slug || usuario.id}` };
+}
+
+/**
+ * Edita um serviço do próprio prestador. O slug não muda junto com o nome, para
+ * não quebrar links já compartilhados. Agendamentos existentes ficam como estão.
+ */
+export async function atualizarServico(_estadoAnterior: unknown, formData: FormData) {
+  const usuario = await getSession();
+  if (!usuario) {
+    redirect('/login');
+  }
+
+  const servicoId = Number(formData.get('servicoId'));
+
+  const [servicoAtual] = await db
+    .select({ prestadorId: servicos.prestadorId, slug: servicos.slug })
+    .from(servicos)
+    .where(eq(servicos.id, servicoId))
+    .limit(1);
+
+  if (!servicoAtual || servicoAtual.prestadorId !== usuario.id) {
+    return { erro: 'Você não pode editar este serviço.' };
+  }
+
+  const validacao = validarCamposServico(formData);
+  if (!validacao.dados) return validacao;
+  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem } = validacao.dados;
+
+  // Foto salva como data URL chega aqui como o endereço curto de /api/imagem
+  // (ver lib/imagemPublica.js): nesse caso a foto não mudou e a coluna fica como está.
+  const fotoSemMudanca = urlImagem?.startsWith(`${CAMINHO_BASE}/api/imagem/`);
+
+  try {
+    await db
+      .update(servicos)
+      .set({
+        categoriaId: await resolverCategoriaId(categoriaIdRaw, novaCategoriaNome),
+        nome,
+        descricao,
+        preco,
+        duracaoEstimada,
+        ...(fotoSemMudanca ? {} : { urlImagem }),
+      })
+      .where(eq(servicos.id, servicoId));
+  } catch (error) {
+    console.error('Erro ao atualizar serviço:', error);
+    return { erro: 'Não foi possível salvar as alterações agora. Seus dados continuam aqui — tente de novo em instantes.' };
+  }
+
+  const destino = `/servicos/${servicoAtual.slug || servicoId}`;
+
+  revalidatePath('/dashboard');
+  revalidatePath('/servicos');
+  revalidatePath(destino);
+
+  redirect(destino);
 }
