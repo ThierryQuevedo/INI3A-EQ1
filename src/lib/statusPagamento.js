@@ -27,6 +27,18 @@ export const STATUS_PAGAMENTO = {
 
 export const ROTULO_METODO = { pix: 'PIX', boleto: 'Boleto', cartao: 'Cartão de crédito' };
 
+/**
+ * O cliente ainda tem o que pagar: horário confirmado, sem cobrança paga ou
+ * encerrada. Abaixo de R$ 1,00 não há cobrança possível (mínimo da AbacatePay).
+ */
+export function aguardaPagamento({ statusAgendamento, statusPagamento, preco }) {
+  return (
+    statusAgendamento === 'confirmado' &&
+    Number(preco) >= 1 &&
+    (!statusPagamento || statusPagamento === 'pendente')
+  );
+}
+
 /** Boleto leva dias para compensar: só aparece se o serviço estiver longe o bastante. */
 export const DIAS_MINIMOS_PARA_BOLETO = 5;
 

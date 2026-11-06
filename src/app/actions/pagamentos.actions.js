@@ -1,9 +1,9 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { and, eq, inArray, lt } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, lt, ne } from 'drizzle-orm';
 import { db } from '@/db';
-import { agendamentos, cobrancas, servicos } from '@/db/schema';
+import { agendamentos, cobrancas, servicos, usuarios } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { criarCobranca, ErroAbacatePay, simularPagamentoPix } from '@/lib/abacatepay';
 import { documentoValido, somenteDigitos } from '@/lib/documentoFiscal';
@@ -13,9 +13,10 @@ import {
   pagamentoRelevanteDoAgendamento,
   precoEmCentavos,
   repetirReembolso,
+  resumirPagamentos,
   sincronizarPagamento,
 } from '@/lib/pagamentos';
-import { boletoDisponivelPara } from '@/lib/statusPagamento';
+import { aguardaPagamento, boletoDisponivelPara } from '@/lib/statusPagamento';
 
 const METODOS = ['pix', 'boleto', 'cartao'];
 const VALOR_MINIMO_CENTAVOS = 100; // Limite da AbacatePay.
@@ -120,6 +121,9 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
 
   const agendamento = await buscarAgendamento(agendamentoId);
   if (!agendamento || agendamento.clienteId !== usuario.id) return { erro: 'Agendamento não encontrado.' };
+  if (agendamento.prestadorId === usuario.id) {
+    return { erro: 'Este serviço é seu, então não há pagamento a fazer pelo app.' };
+  }
   if (agendamento.status !== 'confirmado') {
     return { erro: 'O pagamento só fica disponível enquanto o agendamento está confirmado.' };
   }
@@ -310,6 +314,52 @@ export async function tentarReembolsoAction(agendamentoId) {
   return { erro: 'O reembolso ainda não saiu. Tente de novo mais tarde ou fale com o suporte.' };
 }
 
+/** O que o usuário logado ainda tem a pagar, para o aviso do Início, do painel e da Agenda. */
+export async function listarPagamentosAFazer() {
+  const usuario = await getSession();
+  if (!usuario) return [];
+
+  const confirmados = await db
+    .select({
+      id: agendamentos.id,
+      dataHora: agendamentos.dataHora,
+      servicoNome: servicos.nome,
+      preco: servicos.preco,
+      prestadorNome: usuarios.nome,
+    })
+    .from(agendamentos)
+    .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+    .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
+    .where(
+      and(
+        eq(agendamentos.clienteId, usuario.id),
+        eq(agendamentos.status, 'confirmado'),
+        // O aviso é para o que está por vir: horário passado segue pagável pelo card da Agenda.
+        gte(agendamentos.dataHora, new Date()),
+        // Quem atende não cobra de si mesmo.
+        ne(servicos.prestadorId, usuario.id)
+      )
+    )
+    .orderBy(asc(agendamentos.dataHora));
+
+  if (confirmados.length === 0) return [];
+
+  const resumo = await resumirPagamentos(confirmados.map((a) => a.id));
+
+  return confirmados
+    .filter((a) =>
+      aguardaPagamento({ statusAgendamento: 'confirmado', statusPagamento: resumo.get(a.id)?.status, preco: a.preco })
+    )
+    .map((a) => ({
+      id: a.id,
+      dataHora: a.dataHora.toISOString(),
+      servicoNome: a.servicoNome,
+      prestadorNome: a.prestadorNome,
+      preco: String(a.preco),
+      cobrancaAberta: resumo.get(a.id)?.status === 'pendente',
+    }));
+}
+
 /** Dados iniciais da tela de pagamento. Quem chama já conferiu a sessão. */
 export async function carregarTelaDePagamento(agendamentoId) {
   const usuario = await getSession();
@@ -327,6 +377,7 @@ export async function carregarTelaDePagamento(agendamentoId) {
       dataHora: agendamento.dataHora.toISOString(),
       servicoNome: agendamento.servicoNome,
       valorCentavos: precoEmCentavos(agendamento.preco),
+      proprioServico: agendamento.prestadorId === usuario.id,
     },
     pagamento: paraTela(atual ? await sincronizarPagamento(atual) : null),
     pagador: { nome: usuario.nome, email: usuario.email, telefone: usuario.telefone ?? '' },

@@ -186,6 +186,10 @@ export default function PagamentoCliente({
   let conteudo;
   if (encerrado) {
     conteudo = <ResultadoPagamento pagamento={pagamento} agendamentoId={agendamento.id} />;
+  } else if (agendamento.proprioServico) {
+    conteudo = (
+      <p className="mt-4 text-body text-foreground">Este serviço é seu, então não há pagamento a fazer pelo app.</p>
+    );
   } else if (!podePagar) {
     conteudo = <PagamentoIndisponivel status={agendamento.status} />;
   } else if (!valorMinimoOk) {

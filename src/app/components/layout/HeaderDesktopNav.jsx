@@ -8,17 +8,16 @@ import BadgeNaoLidas from "@/app/components/features/mensagens/BadgeNaoLidas";
 
 export default function HeaderDesktopNav({ usuario, className }) {
   const pathname = usePathname();
-  const ehPrestador = usuario?.tipo === "prestador";
 
   const itens = [
     { href: "/", label: "Início" },
     { href: "/servicos", label: "Buscar profissionais" },
-    ...(ehPrestador
+    ...(usuario
       ? [
           { href: "/agendamentos", label: "Agenda" },
+          { href: "/mensagens", label: "Chat" },
         ]
       : []),
-    ...(usuario ? [{ href: "/mensagens", label: "Chat" }] : []),
   ];
 
   return (

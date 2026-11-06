@@ -82,6 +82,7 @@ Checkout transparente da API v2 com PIX, boleto e cartão, em `/agendamentos/[id
 - `src/app/api/webhooks/abacatepay/route.js` — recebe os eventos `transparent.*`. Valida `webhookSecret` e `X-Webhook-Signature`. Cadastre a URL **com barra final** (`.../api/webhooks/abacatepay/?webhookSecret=...`): a AbacatePay não segue redirecionamentos e `trailingSlash: true` redireciona a URL sem barra.
 - Uma tentativa de cobrança é uma linha em `cobrancas`; um índice parcial único permite só uma tentativa `criando`, `pendente` ou `pago` por agendamento.
 - Cancelar um agendamento pago devolve o valor automaticamente, e um pagamento em duplicidade ou feito após o cancelamento também. Boleto não é reembolsável pela API: fica em `reembolso_falhou` para devolução manual.
+- O aviso "Pagamento pendente" (Início, painel e Agenda) só lista horários futuros; horário passado ainda confirmado segue pagável pelo card da Agenda. Quem agenda o próprio serviço não paga.
 - O valor cai na conta AbacatePay da plataforma: não há repasse automático ao prestador.
 
 ## Estrutura e convenções da aplicação

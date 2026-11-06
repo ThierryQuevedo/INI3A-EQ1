@@ -313,6 +313,7 @@ export async function listarMeusAgendamentos() {
       clienteId: agendamentos.clienteId,
       servicoNome: servicos.nome,
       servicoPreco: servicos.preco,
+      prestadorId: servicos.prestadorId,
       clienteNome: usuarios.nome,
       clienteTelefone: usuarios.telefone,
       prestadorNome: prestadorUsuarios.nome,
@@ -332,13 +333,14 @@ export async function listarMeusAgendamentos() {
     resumirPagamentos(linhas.map((l) => l.id)),
   ]);
 
-  return linhas.map(({ clienteId, clienteTelefone, ...item }) => {
+  return linhas.map(({ clienteId, clienteTelefone, prestadorId, ...item }) => {
     const papel = clienteId === usuario.id ? 'cliente' : 'prestador';
     const cancelamento = motivos.get(item.id);
     const pagamento = resumoPagamentos.get(item.id);
     return {
       ...item,
       papel,
+      proprioServico: clienteId === prestadorId,
       pagamentoStatus: pagamento?.status ?? null,
       pagamentoMetodo: pagamento?.metodo ?? null,
       // O comprovante é do pagador: não vai para o prestador.

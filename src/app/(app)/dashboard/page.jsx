@@ -14,8 +14,11 @@ import { db } from "@/db";
 import { agendamentos, servicos, usuarios } from "@/db/schema";
 import { eq, and, gte, lt } from "drizzle-orm";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
+import { listarPagamentosAFazer } from "@/app/actions/pagamentos.actions";
 import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
 import { buscarMotivosCancelamento } from "@/lib/motivoCancelamento";
+import { resumirPagamentos } from "@/lib/pagamentos";
+import { STATUS_PAGAMENTO } from "@/lib/statusPagamento";
 
 export const dynamic = 'force-dynamic';
 
@@ -36,6 +39,8 @@ function LinhaAgendamento({ ag, mostrarData }) {
   const horarioComecou = new Date(ag.dataHora) <= new Date();
   const podeConcluir = ag.status === 'confirmado' && horarioComecou;
   const podeCancelar = ag.status !== 'cancelado' && ag.status !== 'concluido';
+  const pagamento = STATUS_PAGAMENTO[ag.pagamentoStatus];
+  const IconPagamento = pagamento?.Icon;
 
   return (
     <li className="flex flex-col gap-2 px-4 py-3 @2xl:flex-row @2xl:items-center @2xl:gap-4">
@@ -62,6 +67,12 @@ function LinhaAgendamento({ ag, mostrarData }) {
           {/* rótulo curto: na linha compacta "Aguardando confirmação" empurra as ações */}
           {ag.status === 'pendente' ? 'Pendente' : rotuloStatus(ag.status)}
         </Badge>
+        {pagamento && (
+          <span className={`mr-1 px-2 h-6 inline-flex items-center gap-1 rounded-md text-caption font-semibold whitespace-nowrap ${pagamento.badge}`}>
+            <IconPagamento size={13} aria-hidden="true" />
+            {pagamento.label}
+          </span>
+        )}
         {podeConfirmar && (
           <BotaoAcaoAgendamento
             agendamentoId={ag.id}
@@ -127,8 +138,8 @@ export default async function Dashboard() {
   const usuario = await requireSession();
 
   if (usuario.tipo === 'cliente') {
-    const dadosCliente = await buscarDashboardCliente();
-    return <DashboardCliente usuario={usuario} dados={dadosCliente} />;
+    const [dadosCliente, pagamentosAFazer] = await Promise.all([buscarDashboardCliente(), listarPagamentosAFazer()]);
+    return <DashboardCliente usuario={usuario} dados={dadosCliente} pagamentosAFazer={pagamentosAFazer} />;
   }
 
   const nome = usuario.nome;
@@ -186,12 +197,18 @@ export default async function Dashboard() {
       )),
   ]);
 
-  const motivos = await buscarMotivosCancelamento(
-    [...agendamentosHojeBrutos, ...agendamentosFuturosBrutos].filter((a) => a.status === 'cancelado').map((a) => a.id)
-  );
-  const comMotivo = (a) => ({ ...a, motivoCancelamento: motivos.get(a.id)?.motivo ?? null });
-  const agendamentosHoje = agendamentosHojeBrutos.map(comMotivo);
-  const agendamentosFuturos = agendamentosFuturosBrutos.map(comMotivo);
+  const todosAgendamentos = [...agendamentosHojeBrutos, ...agendamentosFuturosBrutos];
+  const [motivos, resumoPagamentos] = await Promise.all([
+    buscarMotivosCancelamento(todosAgendamentos.filter((a) => a.status === 'cancelado').map((a) => a.id)),
+    resumirPagamentos(todosAgendamentos.map((a) => a.id)),
+  ]);
+  const comDetalhes = (a) => ({
+    ...a,
+    motivoCancelamento: motivos.get(a.id)?.motivo ?? null,
+    pagamentoStatus: resumoPagamentos.get(a.id)?.status ?? null,
+  });
+  const agendamentosHoje = agendamentosHojeBrutos.map(comDetalhes);
+  const agendamentosFuturos = agendamentosFuturosBrutos.map(comDetalhes);
 
   const faturamentoTotal = faturamento.reduce((acc, curr) => acc + Number(curr.preco || 0), 0);
 

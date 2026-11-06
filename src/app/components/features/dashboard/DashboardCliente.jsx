@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import Estatistica from '@/app/components/features/dashboard/Estatistica';
+import AvisoPagamentos from '@/app/components/features/pagamentos/AvisoPagamentos';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { rotuloStatus } from '@/lib/statusAgendamento';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
@@ -75,7 +76,7 @@ function Vazio({ Icon, children }) {
   );
 }
 
-export default function DashboardCliente({ usuario, dados }) {
+export default function DashboardCliente({ usuario, dados, pagamentosAFazer }) {
   const { proximos, historico, avaliacoesPendentes, reputacao, metricas } = dados;
 
   return (
@@ -100,6 +101,8 @@ export default function DashboardCliente({ usuario, dados }) {
           </>
         }
       />
+
+      <AvisoPagamentos pagamentos={pagamentosAFazer} className="mb-6" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <Estatistica Icon={CalendarClock} valor={metricas.ativos} rotulo="Em andamento" />

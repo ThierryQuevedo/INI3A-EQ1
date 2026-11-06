@@ -12,6 +12,8 @@ import { comEstatisticas } from "@/lib/avaliacoes";
 import { getSession } from "@/app/actions/auth.actions";
 import { listarCategorias } from "@/app/actions/servicos.actions";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
+import { listarPagamentosAFazer } from "@/app/actions/pagamentos.actions";
+import AvisoPagamentos from "@/app/components/features/pagamentos/AvisoPagamentos";
 import { calcularProximosHorariosLivres } from "@/app/actions/disponibilidades.actions";
 import { ehHoje } from "@/lib/disponibilidade";
 import PageContainer from "@/app/components/ui/PageContainer";
@@ -100,6 +102,7 @@ export default async function Home() {
   const comHorarioHoje = catalogoComHorario.filter((s) => ehHoje(s.proximoHorario)).slice(0, 10);
 
   const agendamentoProximo = proximoAgendamento?.proximos?.[0] ?? null;
+  const pagamentosAFazer = usuario ? await listarPagamentosAFazer() : [];
 
   return (
     <PageContainer size="xl" className="pt-6 sm:pt-8 pb-12 space-y-10">
@@ -115,6 +118,8 @@ export default async function Home() {
 
         <BuscaHome servicos={indiceBusca} categorias={listaCategorias.map((c) => ({ id: c.id, nome: c.nome }))} />
       </section>
+
+      <AvisoPagamentos pagamentos={pagamentosAFazer} />
 
       {agendamentoProximo && (
         <Link

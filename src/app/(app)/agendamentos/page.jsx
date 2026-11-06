@@ -5,7 +5,9 @@ import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import BotaoAcaoAgendamento from '@/app/components/features/agendamentos/BotaoAcaoAgendamento';
 import BotaoRepetirReembolso from '@/app/components/features/pagamentos/BotaoRepetirReembolso';
-import { STATUS_PAGAMENTO } from '@/lib/statusPagamento';
+import AvisoPagamentos from '@/app/components/features/pagamentos/AvisoPagamentos';
+import { listarPagamentosAFazer } from '@/app/actions/pagamentos.actions';
+import { STATUS_PAGAMENTO, aguardaPagamento } from '@/lib/statusPagamento';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { rotuloStatus, statusBadgeClass, STATUS_AGENDAMENTO } from '@/lib/statusAgendamento';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
@@ -49,13 +51,10 @@ function CardAgendamento({ item, usuarioLogado }) {
   const pagamento = STATUS_PAGAMENTO[item.pagamentoStatus];
   const IconPagamento = pagamento?.Icon;
   const hrefPagamento = `/agendamentos/${item.id}/pagamento`;
-  // Sem cobrança aberta ou paga, o cliente de um horário confirmado ainda pode pagar.
-  // Abaixo de R$ 1,00 não há cobrança possível: é o mínimo da AbacatePay.
   const podePagar =
     ehCliente &&
-    item.status === 'confirmado' &&
-    Number(item.servicoPreco) >= 1 &&
-    (!item.pagamentoStatus || item.pagamentoStatus === 'pendente');
+    !item.proprioServico &&
+    aguardaPagamento({ statusAgendamento: item.status, statusPagamento: item.pagamentoStatus, preco: item.servicoPreco });
   const pago = item.pagamentoStatus === 'pago';
 
   return (
@@ -92,7 +91,7 @@ function CardAgendamento({ item, usuarioLogado }) {
           {/* A-06: o selo "Aguardando confirmação" ganha o que acontece a seguir. */}
           {ehCliente && item.status === 'pendente' && (
             <p className="text-body-sm text-muted-foreground mt-1">
-              O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail.
+              O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail. Depois da confirmação, você poderá pagar aqui.
             </p>
           )}
           {item.pagamentoStatus === 'reembolso_falhou' && (
@@ -136,11 +135,6 @@ function CardAgendamento({ item, usuarioLogado }) {
               <IconPagamento size={13} aria-hidden="true" />
               {pagamento.label}
             </span>
-          )}
-          {podePagar && (
-            <Button asChild size="compacto">
-              <Link href={hrefPagamento}>{item.pagamentoStatus === 'pendente' ? 'Continuar pagamento' : 'Pagar'}</Link>
-            </Button>
           )}
           {ehCliente && pago && (
             <Link
@@ -186,6 +180,18 @@ function CardAgendamento({ item, usuarioLogado }) {
         </div>
       </div>
 
+      {podePagar && (
+        <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-body font-semibold text-foreground">
+            {item.pagamentoStatus === 'pendente' ? 'Pagamento em aberto: ' : 'Falta pagar: '}
+            <span className="tabular-nums whitespace-nowrap">{formatarPreco(item.servicoPreco)}</span>
+          </p>
+          <Button asChild size="lg" className="w-full sm:w-auto">
+            <Link href={hrefPagamento}>{item.pagamentoStatus === 'pendente' ? 'Continuar pagamento' : 'Pagar agora'}</Link>
+          </Button>
+        </div>
+      )}
+
       {ehCliente && item.status === 'concluido' && (
         <div className="mt-4 pt-4 border-t border-border">
           <AvaliacaoServico
@@ -226,7 +232,7 @@ function CardResumo({ label, valor, Icon, cor }) {
 
 export default async function AgendamentosPage() {
   const usuarioLogado = await requireSession();
-  const meusAgendamentos = await listarMeusAgendamentos();
+  const [meusAgendamentos, pagamentosAFazer] = await Promise.all([listarMeusAgendamentos(), listarPagamentosAFazer()]);
 
   const agora = new Date();
 
@@ -255,6 +261,8 @@ export default async function AgendamentosPage() {
           </Button>
         }
       />
+
+      <AvisoPagamentos pagamentos={pagamentosAFazer} className="mb-6" />
 
       {meusAgendamentos.length === 0 ? (
         <Card dashed padding="default" className="shadow-none">
