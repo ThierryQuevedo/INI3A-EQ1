@@ -164,6 +164,7 @@ export async function buscarDashboardCliente() {
       prestadorSlug: usuarios.slug,
       prestadorTelefone: usuarios.telefone,
       prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
+      servicoDesativadoEm: servicos.desativadoEm,
       avaliacaoNota: avaliacoes.notaParaPrestador,
       avaliacaoComentario: avaliacoes.comentarioPrestador,
     })

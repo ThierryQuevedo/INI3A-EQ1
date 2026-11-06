@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { cookies } from "next/headers";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { servicos, usuarios } from "@/db/schema";
 import { getSession } from "@/app/actions/auth.actions";
@@ -32,7 +32,7 @@ async function lerPedidoEmAndamento() {
       .select({ nome: servicos.nome, prestadorNome: usuarios.nome })
       .from(servicos)
       .innerJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
-      .where(eq(servicos.id, servicoId))
+      .where(and(eq(servicos.id, servicoId), isNull(servicos.desativadoEm)))
       .limit(1);
     if (!servico) return null;
 

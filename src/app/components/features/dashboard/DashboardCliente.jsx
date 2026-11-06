@@ -193,11 +193,15 @@ export default function DashboardCliente({ usuario, dados }) {
                       </p>
                     </div>
                     <Badge status={item.status} size="sm" className="max-sm:hidden">{rotuloStatus(item.status)}</Badge>
-                    <Button asChild variant="outline" size="compacto" className="shrink-0">
-                      <Link href={`/agendamentos/novo?servico=${item.servicoId}`}>
-                        <RotateCcw aria-hidden="true" /> Agendar
-                      </Link>
-                    </Button>
+                    {item.servicoDesativadoEm ? (
+                      <Badge variant="neutro" size="sm" className="shrink-0">Indisponível</Badge>
+                    ) : (
+                      <Button asChild variant="outline" size="compacto" className="shrink-0">
+                        <Link href={`/agendamentos/novo?servico=${item.servicoId}`}>
+                          <RotateCcw aria-hidden="true" /> Agendar
+                        </Link>
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>

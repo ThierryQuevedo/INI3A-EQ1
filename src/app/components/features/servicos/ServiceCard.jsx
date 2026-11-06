@@ -27,8 +27,9 @@ export default function ServiceCard({ servico, interativo = true }) {
     totalAvaliacoes = 0,
     proximoHorario,
     favoritoInicial,
+    desativado = false,
   } = servico;
-  const mostrarFavorito = interativo && favoritoInicial !== undefined;
+  const mostrarFavorito = interativo && !desativado && favoritoInicial !== undefined;
 
   const hrefDetalhe = `/servicos/${slug || id}`;
   const classeConteudo = "flex flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card rounded-t-xl";
@@ -132,7 +133,7 @@ export default function ServiceCard({ servico, interativo = true }) {
       {/* A-03 / C-10 / G-07: dois alvos separados (8px). A pílula do próximo
           horário é o atalho: abre a tela de agendar já com dia e hora
           marcados. "Ver horários" abre a mesma tela no primeiro dia com vaga. */}
-      {interativo && (
+      {interativo && !desativado && (
         <div className="mt-auto px-4 pb-4 flex flex-col gap-2">
           {proximoHorario ? (
             <AvailabilityBadge proximoHorario={proximoHorario} servicoId={id} nomeServico={nomeServico} />
