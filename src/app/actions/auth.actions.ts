@@ -15,9 +15,7 @@ import { imagemPublica } from '@/lib/imagemPublica';
 const ERRO_EMAIL_EM_USO = 'Já existe uma conta com este e-mail.';
 const ERRO_TELEFONE_EM_USO = 'Este telefone já está em uso em outra conta.';
 
-// Login e cadastro devolvem `destino` e quem navega é o formulário, com uma
-// carga completa da página (ver lib/useIrAposEntrar.js). Como a página nasce do
-// zero, não há o que revalidar aqui.
+
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
   try {
     const nome = String(formData.get('nome') ?? '').trim();

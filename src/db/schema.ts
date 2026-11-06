@@ -1,4 +1,5 @@
-import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar, doublePrecision } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar, doublePrecision, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
@@ -81,6 +82,46 @@ export const agendamentos = pgTable('agendamentos', {
   dataHora: timestamp('data_hora').notNull(),
   status: text('status').default('pendente').notNull(),
 });
+
+// Cada tentativa de cobrança na AbacatePay é uma linha. Sem cascade: o registro
+// financeiro não pode sumir junto com o agendamento.
+export const cobrancas = pgTable(
+  'cobrancas',
+  {
+    id: serial('id').primaryKey(),
+    agendamentoId: integer('agendamento_id')
+      .notNull()
+      .references(() => agendamentos.id),
+    // Fica vazio entre reservar a tentativa e a AbacatePay responder.
+    provedorId: text('provedor_id').unique(),
+    metodo: text('metodo').notNull(),
+    // Valores em lib/statusPagamento.js.
+    status: text('status').default('criando').notNull(),
+    valorCentavos: integer('valor_centavos').notNull(),
+    taxaCentavos: integer('taxa_centavos'),
+    pixCopiaECola: text('pix_copia_e_cola'),
+    pixQrCode: text('pix_qr_code'),
+    boletoLinhaDigitavel: text('boleto_linha_digitavel'),
+    boletoUrl: text('boleto_url'),
+    comprovanteUrl: text('comprovante_url'),
+    cartaoBandeira: text('cartao_bandeira'),
+    cartaoFinal: text('cartao_final'),
+    modoTeste: boolean('modo_teste'),
+    erro: text('erro'),
+    expiraEm: timestamp('expira_em'),
+    pagoEm: timestamp('pago_em'),
+    reembolsadoEm: timestamp('reembolsado_em'),
+    sincronizadoEm: timestamp('sincronizado_em'),
+    criadoEm: timestamp('criado_em').defaultNow().notNull(),
+    atualizadoEm: timestamp('atualizado_em').defaultNow().notNull(),
+  },
+  (tabela) => [
+    // Duas abas ou dois cliques não conseguem abrir duas cobranças do mesmo agendamento.
+    uniqueIndex('cobrancas_uma_ativa_por_agendamento')
+      .on(tabela.agendamentoId)
+      .where(sql`${tabela.status} in ('criando', 'pendente', 'pago')`),
+  ]
+);
 
 export const avaliacoes = pgTable('avaliacoes', {
   id: serial('id').primaryKey(),

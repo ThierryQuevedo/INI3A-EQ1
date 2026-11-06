@@ -21,6 +21,9 @@ import {
   emailNovaAvaliacao,
   emailNovaMensagem,
   emailNovoAgendamentoPrestador,
+  emailPagamentoConfirmadoCliente,
+  emailPagamentoConfirmadoPrestador,
+  emailPagamentoReembolsado,
   emailServicoConcluido,
 } from './emails/templates.js';
 
@@ -202,6 +205,44 @@ export async function notificarServicoConcluido(agendamentoId) {
       emailDestino: dados.clienteEmail,
       tipo: 'servico_concluido',
       template: emailServicoConcluido(dados),
+    });
+  });
+}
+
+/** Pagamento recebido: comprovante para o cliente e aviso para o prestador. */
+export async function notificarPagamentoConfirmado(agendamentoId) {
+  await comProtecao('notificarPagamentoConfirmado', async () => {
+    const dados = await dadosDoAgendamento(agendamentoId);
+    if (!dados) return;
+
+    await Promise.all([
+      registrarEEnviar({
+        usuarioId: dados.clienteId,
+        emailDestino: dados.clienteEmail,
+        tipo: 'pagamento_confirmado',
+        template: emailPagamentoConfirmadoCliente(dados),
+      }),
+      registrarEEnviar({
+        usuarioId: dados.prestadorId,
+        emailDestino: dados.prestadorEmail,
+        tipo: 'pagamento_recebido',
+        template: emailPagamentoConfirmadoPrestador(dados),
+      }),
+    ]);
+  });
+}
+
+/** Valor devolvido: avisa o cliente. */
+export async function notificarPagamentoReembolsado(agendamentoId) {
+  await comProtecao('notificarPagamentoReembolsado', async () => {
+    const dados = await dadosDoAgendamento(agendamentoId);
+    if (!dados) return;
+
+    await registrarEEnviar({
+      usuarioId: dados.clienteId,
+      emailDestino: dados.clienteEmail,
+      tipo: 'pagamento_reembolsado',
+      template: emailPagamentoReembolsado(dados),
     });
   });
 }

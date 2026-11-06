@@ -4,6 +4,8 @@ import { requireSession } from '@/app/actions/auth.actions';
 import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import BotaoAcaoAgendamento from '@/app/components/features/agendamentos/BotaoAcaoAgendamento';
+import BotaoRepetirReembolso from '@/app/components/features/pagamentos/BotaoRepetirReembolso';
+import { STATUS_PAGAMENTO } from '@/lib/statusPagamento';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { rotuloStatus, statusBadgeClass, STATUS_AGENDAMENTO } from '@/lib/statusAgendamento';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
@@ -44,6 +46,17 @@ function CardAgendamento({ item, usuarioLogado }) {
   // O papel é de cada agendamento, não da conta: prestador também agenda serviços.
   const ehCliente = item.papel === 'cliente';
   const horarioComecou = new Date(item.dataHora) <= new Date();
+  const pagamento = STATUS_PAGAMENTO[item.pagamentoStatus];
+  const IconPagamento = pagamento?.Icon;
+  const hrefPagamento = `/agendamentos/${item.id}/pagamento`;
+  // Sem cobrança aberta ou paga, o cliente de um horário confirmado ainda pode pagar.
+  // Abaixo de R$ 1,00 não há cobrança possível: é o mínimo da AbacatePay.
+  const podePagar =
+    ehCliente &&
+    item.status === 'confirmado' &&
+    Number(item.servicoPreco) >= 1 &&
+    (!item.pagamentoStatus || item.pagamentoStatus === 'pendente');
+  const pago = item.pagamentoStatus === 'pago';
 
   return (
     <Card padding="default" interactive id={`pedido-${item.id}`}>
@@ -82,6 +95,13 @@ function CardAgendamento({ item, usuarioLogado }) {
               O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail.
             </p>
           )}
+          {item.pagamentoStatus === 'reembolso_falhou' && (
+            <p className="text-body-sm text-foreground mt-1">
+              {ehCliente
+                ? 'O valor pago ainda não foi devolvido. Fale com o suporte se a nova tentativa não resolver.'
+                : 'O valor pago pelo cliente ainda não foi devolvido.'}
+            </p>
+          )}
           {item.status === 'cancelado' && (
             <>
               {item.motivoCancelamento && (
@@ -111,6 +131,28 @@ function CardAgendamento({ item, usuarioLogado }) {
             <Icon size={13} aria-hidden="true" />
             {rotuloStatus(item.status)}
           </span>
+          {pagamento && (
+            <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-md text-caption font-semibold ${pagamento.badge}`}>
+              <IconPagamento size={13} aria-hidden="true" />
+              {pagamento.label}
+            </span>
+          )}
+          {podePagar && (
+            <Button asChild size="compacto">
+              <Link href={hrefPagamento}>{item.pagamentoStatus === 'pendente' ? 'Continuar pagamento' : 'Pagar'}</Link>
+            </Button>
+          )}
+          {ehCliente && pago && (
+            <Link
+              href={hrefPagamento}
+              className="relative area-toque text-body-sm font-semibold text-primary underline underline-offset-4 hover:text-primary-hover"
+            >
+              Ver pagamento
+            </Link>
+          )}
+          {item.pagamentoStatus === 'reembolso_falhou' && item.pagamentoMetodo !== 'boleto' && (
+            <BotaoRepetirReembolso agendamentoId={item.id} />
+          )}
           {!ehCliente && item.status === 'confirmado' && (
             horarioComecou ? (
               <BotaoAcaoAgendamento
@@ -132,7 +174,7 @@ function CardAgendamento({ item, usuarioLogado }) {
               titulo="Cancelar agendamento?"
               descricao={
                 item.status === 'confirmado'
-                  ? 'Este horário já estava confirmado. O motivo será enviado para a outra pessoa. Essa ação não pode ser desfeita.'
+                  ? `Este horário já estava confirmado. O motivo será enviado para a outra pessoa.${pago ? ' O valor pago será devolvido integralmente ao cliente.' : ''} Essa ação não pode ser desfeita.`
                   : 'Essa ação não pode ser desfeita.'
               }
               pedirMotivo

@@ -14,6 +14,7 @@ import {
   notificarServicoConcluido,
 } from '@/lib/notificacoes';
 import { buscarMotivosCancelamento, textoDoMotivo } from '@/lib/motivoCancelamento';
+import { encerrarPagamentosComAviso, resumirPagamentos } from '@/lib/pagamentos';
 
 // `usuarios` entra duas vezes no join (cliente e prestador).
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_agenda');
@@ -268,6 +269,13 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
 
   if (!atualizou) return { erro: 'Este agendamento acabou de mudar. Atualize a página e confira.' };
 
+  // O cancelamento já valeu: uma falha na devolução não pode desfazê-lo. Ela
+  // fica registrada como `reembolso_falhou`, com nova tentativa na agenda.
+  const { aviso, reembolsoFalhou } =
+    status === 'cancelado'
+      ? await encerrarPagamentosComAviso(agendamentoId, motivoLimpo)
+      : { aviso: null, reembolsoFalhou: false };
+
   switch (status) {
     case 'confirmado':
       after(() => notificarAgendamentoConfirmado(agendamentoId));
@@ -285,7 +293,7 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
   revalidatePath('/dashboard');
   revalidatePath('/agendamentos');
   revalidatePath('/mensagens');
-  return { erro: null, sucesso: true };
+  return { erro: null, sucesso: true, aviso, reembolsoFalhou };
 }
 
 /**
@@ -319,16 +327,22 @@ export async function listarMeusAgendamentos() {
     .where(or(eq(servicos.prestadorId, usuario.id), eq(agendamentos.clienteId, usuario.id)))
     .orderBy(asc(agendamentos.dataHora));
 
-  const motivos = await buscarMotivosCancelamento(
-    linhas.filter((l) => l.status === 'cancelado').map((l) => l.id)
-  );
+  const [motivos, resumoPagamentos] = await Promise.all([
+    buscarMotivosCancelamento(linhas.filter((l) => l.status === 'cancelado').map((l) => l.id)),
+    resumirPagamentos(linhas.map((l) => l.id)),
+  ]);
 
   return linhas.map(({ clienteId, clienteTelefone, ...item }) => {
     const papel = clienteId === usuario.id ? 'cliente' : 'prestador';
     const cancelamento = motivos.get(item.id);
+    const pagamento = resumoPagamentos.get(item.id);
     return {
       ...item,
       papel,
+      pagamentoStatus: pagamento?.status ?? null,
+      pagamentoMetodo: pagamento?.metodo ?? null,
+      // O comprovante é do pagador: não vai para o prestador.
+      pagamentoComprovanteUrl: papel === 'cliente' ? pagamento?.comprovanteUrl ?? null : null,
       clienteTelefone: papel === 'prestador' ? clienteTelefone : null,
       motivoCancelamento: cancelamento?.motivo ?? null,
       motivoFoiMeu: cancelamento?.remetenteId === usuario.id,

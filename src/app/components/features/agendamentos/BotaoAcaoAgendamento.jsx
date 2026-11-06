@@ -49,7 +49,8 @@ export default function BotaoAcaoAgendamento({
         toast.error(resultado.erro);
       } else {
         setMotivo("");
-        toast.success("Agendamento atualizado.");
+        if (resultado?.reembolsoFalhou) toast.error(resultado.aviso);
+        else toast.success(resultado?.aviso ?? "Agendamento atualizado.");
       }
     } catch {
       toast.error("Não foi possível atualizar agora. Tente de novo em instantes.");

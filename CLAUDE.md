@@ -32,7 +32,7 @@ npm run db:fresh   # drizzle-kit migrate + seed
 
 Não há framework de testes configurado no projeto — não existe comando de teste.
 
-As variáveis de ambiente ficam em `src/.env` (fora do versionamento). As lidas pelo código são: `DATABASE_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URL`, `SITE_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
+As variáveis de ambiente ficam em `src/.env` (fora do versionamento). As lidas pelo código são: `DATABASE_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URL`, `SITE_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `API_KEY_ABACATEPAY`, `ABACATEPAY_WEBHOOK_SECRET`, `ABACATEPAY_PUBLIC_KEY` (opcional: sem ela, a opção de cartão não aparece), `ABACATEPAY_API_URL` (opcional: troca a URL da API para testes).
 
 Os scripts de seed rodam com `node --experimental-strip-types --env-file=.env`; por isso `db/seed.js` importa `./index.ts` com a extensão `.ts` explícita.
 
@@ -72,6 +72,17 @@ Pontos que costumam confundir:
 - `prestadores` é 1:1 com `usuarios` e sua **chave primária é `usuario_id`**. Logo, `servicos.prestadorId` é o id do *usuário*, não um id próprio de prestador; o código compara os dois diretamente (ver `src/app/actions/servicos.actions.ts`).
 - `agendamentos.status` é texto livre; os valores em uso são `'pendente'` e `'concluido'` (`src/app/actions/agendamentos.actions.ts`). Concluir um agendamento é o que habilita o fluxo de avaliação.
 - `db/seed.js` só insere as quatro categorias padrão e faz `insert` puro — rodar de novo duplica as linhas.
+
+## Pagamentos (AbacatePay)
+
+Checkout transparente da API v2 com PIX, boleto e cartão, em `/agendamentos/[id]/pagamento`. O cliente paga depois que o prestador confirma; pagar pelo app não é obrigatório para concluir o serviço.
+
+- `src/lib/abacatepay.js` — cliente HTTP e validação do webhook. Só no servidor.
+- `src/lib/pagamentos.js` — regras e transições de status; webhook, consulta periódica e cancelamento passam por aqui.
+- `src/app/api/webhooks/abacatepay/route.js` — recebe os eventos `transparent.*`. Valida `webhookSecret` e `X-Webhook-Signature`. Cadastre a URL **com barra final** (`.../api/webhooks/abacatepay/?webhookSecret=...`): a AbacatePay não segue redirecionamentos e `trailingSlash: true` redireciona a URL sem barra.
+- Uma tentativa de cobrança é uma linha em `cobrancas`; um índice parcial único permite só uma tentativa `criando`, `pendente` ou `pago` por agendamento.
+- Cancelar um agendamento pago devolve o valor automaticamente, e um pagamento em duplicidade ou feito após o cancelamento também. Boleto não é reembolsável pela API: fica em `reembolso_falhou` para devolução manual.
+- O valor cai na conta AbacatePay da plataforma: não há repasse automático ao prestador.
 
 ## Estrutura e convenções da aplicação
 

@@ -120,7 +120,7 @@ export default function PedidoEnviado({ servico, agendamento }) {
         <ol className="mt-3 space-y-3 text-body-sm text-foreground">
           {[
             `${servico.prestadorNome} recebeu o seu pedido.`,
-            'Quando confirmar, você recebe um aviso aqui no app e no seu e-mail.',
+            'Quando confirmar, você recebe um aviso aqui no app e no seu e-mail, e já pode pagar por PIX, cartão ou boleto.',
             'Se não puder atender, o pedido é cancelado e você também é avisado. Aí é só escolher outro horário.',
           ].map((texto, i) => (
             <li key={i} className="flex gap-3">
