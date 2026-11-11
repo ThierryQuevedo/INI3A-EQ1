@@ -24,9 +24,7 @@ import { Card } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 
-// Fuso fixo de Brasília: o componente é renderizado primeiro no servidor (que
-// pode estar em UTC) e depois no navegador; com o fuso de cada um, as horas
-// sairiam diferentes e o React acusaria erro de hidratação.
+// fuso de brasilia para evitar erro de hidratacao
 function formatarData(data) {
   const relativo = diaRelativo(partesNoFuso(data).dia);
   if (relativo) return relativo;

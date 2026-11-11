@@ -5,7 +5,6 @@ import TelaStatus from "@/app/components/ui/TelaStatus";
 
 export const metadata = { title: "Página não encontrada" };
 
-// Rota inexistente, ou notFound() de uma página (serviço, perfil ou conversa que não existe).
 export default function NaoEncontrada() {
   return (
     <TelaStatus

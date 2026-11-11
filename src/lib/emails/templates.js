@@ -1,17 +1,17 @@
 import { layoutEmail, escapar } from './layout.js';
 import { FUSO } from '../formatoData.js';
 
-// Precisa acompanhar o `basePath` de next.config.mjs.
+// precisa acompanhar lib caminhobase
 const BASE_PATH = '/26-marcaai';
 
-/** Monta uma URL absoluta para uma rota interna, já com o basePath. */
+// url absoluta com basepath
 export function linkApp(rota) {
   const base = (process.env.SITE_URL || 'http://localhost:3000').replace(/\/+$/, '');
   const raiz = base.endsWith(BASE_PATH) ? base : `${base}${BASE_PATH}`;
   return `${raiz}${rota}`;
 }
 
-/** "segunda-feira, 15 de setembro de 2026 às 14:30", sempre no horário de Brasília (o servidor pode estar em UTC). */
+// data por extenso no horario de brasilia
 export function formatarDataHora(data) {
   return new Date(data).toLocaleString('pt-BR', {
     timeZone: FUSO,
@@ -29,12 +29,7 @@ function estrelas(nota) {
   return '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n));
 }
 
-// Cada template devolve o mesmo formato:
-//   assunto  → linha de assunto do e-mail
-//   titulo   → título curto, guardado em `notificacoes.titulo`
-//   mensagem → versão em texto puro, guardada em `notificacoes.mensagem`
-//   link     → para onde a notificação leva
-//   html     → corpo do e-mail
+// cada template devolve assunto titulo mensagem link e html
 
 export function emailNovoAgendamentoPrestador({ prestadorNome, clienteNome, servicoNome, dataHora }) {
   const quando = formatarDataHora(dataHora);

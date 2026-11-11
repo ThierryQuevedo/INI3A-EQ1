@@ -11,10 +11,10 @@ const DIAS_SEMANA_LABEL = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 export default function Calendario({
   mes,
   ano,
-  diasInfo = {},       // { [numeroDoDia]: { disponivel: bool, vagas: number } }
-  diaSelecionado,       // Date | null
-  onSelectDia,          // (data: Date) => void
-  onMesChange,          // (novoMes: number, novoAno: number) => void
+  diasInfo = {},       // vagas por dia
+  diaSelecionado,
+  onSelectDia,
+  onMesChange,
 }) {
   const hoje = new Date();
   const diasNoMes = new Date(ano, mes + 1, 0).getDate();

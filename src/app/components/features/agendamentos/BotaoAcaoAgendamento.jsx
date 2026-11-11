@@ -8,17 +8,7 @@ import FormField from "@/app/components/ui/FormField";
 import { atualizarStatusAgendamento } from "@/app/actions/agendamentos.actions";
 import { useToast } from "@/app/components/ui/ToastProvider";
 
-/**
- * Botão único para confirmar/concluir/cancelar um agendamento — substitui
- * BotaoStatusConfirm e BotaoCancelarAgendamento (3 padrões de confirmação
- * diferentes que coexistiam no app).
- *
- * `aparencia` escolhe o estilo pelo primitivo Button: "principal" para a ação
- * esperada (confirmar/concluir), "perigo" para cancelar (discreto, sem fundo).
- *
- * `pedirMotivo` mostra um campo de texto no modal; com `motivoObrigatorio`, a
- * ação só libera depois de preenchido. O motivo vai para o chat e para o aviso.
- */
+// confirmar concluir ou cancelar agendamento
 const APARENCIAS = {
   principal: { variant: "default" },
   perigo: { variant: "ghost-destructive" },

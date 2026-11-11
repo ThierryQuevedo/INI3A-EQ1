@@ -12,21 +12,15 @@ import { notificarNovaMensagem } from '@/lib/notificacoes';
 
 const STATUS_ENCERRADO = ['concluido', 'cancelado'];
 
-// `usuarios` entra duas vezes no join (cliente e prestador), então o segundo
-// lado precisa de um alias — mesmo padrão usado em src/lib/notificacoes.js.
+// usuarios entra duas vezes no join
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_mensagens');
 
-// Uma conta de prestador também pode agendar serviços de outros profissionais:
-// as conversas dela são as dos dois lados, seja qual for `usuarios.tipo`.
+// prestador tambem agenda entao lista os dois lados
 function filtroConversasDoUsuario(usuarioId) {
   return or(eq(servicos.prestadorId, usuarioId), eq(agendamentos.clienteId, usuarioId));
 }
 
-/**
- * Resolve um agendamento para o usuário logado: confirma que ele é o cliente
- * ou o prestador envolvido e devolve os dados do outro lado da conversa.
- * Retorna `null` quando o agendamento não existe ou o usuário não participa dele.
- */
+// confere se participa e devolve o outro lado
 async function obterContextoAgendamento(agendamentoId: number, usuarioId: number) {
   const [linha] = await db
     .select({
@@ -66,7 +60,7 @@ async function obterContextoAgendamento(agendamentoId: number, usuarioId: number
   };
 }
 
-/** Lista as conversas do usuário logado (uma por agendamento), com prévia e não lidas. */
+// conversas do usuario logado
 export async function listarConversas() {
   const usuario = await getSession();
   if (!usuario) return [];
@@ -136,7 +130,7 @@ export async function listarConversas() {
   return conversas;
 }
 
-/** Mensagens de uma conversa (ordenadas do mais antigo pro mais novo). `apósId` busca só as novas. */
+// mensagens em ordem e aposid busca so as novas
 export async function listarMensagens(agendamentoId: number, apósId?: number) {
   const usuario = await getSession();
   if (!usuario) return { erro: 'Não autenticado.' };
@@ -163,7 +157,6 @@ export async function listarMensagens(agendamentoId: number, apósId?: number) {
   };
 }
 
-/** Envia uma mensagem nova, se a conversa ainda estiver aberta. */
 export async function enviarMensagem({ agendamentoId, texto }: { agendamentoId: number; texto: string }) {
   const usuario = await getSession();
   if (!usuario) return { erro: 'Não autenticado.' };
@@ -184,8 +177,7 @@ export async function enviarMensagem({ agendamentoId, texto }: { agendamentoId: 
     })
     .returning();
 
-  // Só a primeira mensagem ainda não lida gera aviso: uma sequência de mensagens
-  // seguidas não vira uma sequência de e-mails.
+  // so a primeira nao lida gera aviso
   const [anteriorNaoLida] = await db
     .select({ id: mensagens.id })
     .from(mensagens)
@@ -211,7 +203,7 @@ export async function enviarMensagem({ agendamentoId, texto }: { agendamentoId: 
   return { erro: null, mensagem: nova };
 }
 
-/** Marca como lidas todas as mensagens do outro lado numa conversa. */
+// marca como lidas as do outro lado
 export async function marcarComoLidas(agendamentoId: number) {
   const usuario = await getSession();
   if (!usuario) return;
@@ -233,7 +225,7 @@ export async function marcarComoLidas(agendamentoId: number) {
   revalidatePath('/mensagens');
 }
 
-/** Total de mensagens não lidas do usuário logado, somando todas as conversas — usado no badge. */
+// total de nao lidas
 export async function contarNaoLidas() {
   const usuario = await getSession();
   if (!usuario) return 0;

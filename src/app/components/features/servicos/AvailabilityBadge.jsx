@@ -3,22 +3,14 @@ import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { partesNoFuso, formatarDiaCurto, formatarHora } from "@/lib/formatoData";
 
-/** Link do atalho: abre a tela de agendar já com dia e hora marcados (A-03). */
+// abre a tela de agendar com dia e hora
 export function hrefAtalhoHorario(servicoId, proximoHorario) {
   const { dia, hora } = partesNoFuso(proximoHorario);
   const params = new URLSearchParams({ servico: String(servicoId), data: dia, hora });
   return `/agendamentos/novo/?${params}`;
 }
 
-/**
- * Próximo horário livre do serviço (ISO de calcularProximosHorariosLivres),
- * no fuso de Brasília: "Hoje, 14h30" / "Sex, 30 de out, 9h".
- *
- * Com `servicoId` vira o ATALHO (A-03 / C-10 / G-07): um link de 48px que
- * abre a tela de agendar com dia e horário já marcados — só falta "Marcar
- * horário". Hora e dia nunca quebram no meio (G-09). Sem `servicoId`,
- * mostra só o texto.
- */
+// proximo horario livre no fuso de brasilia
 export default function AvailabilityBadge({ proximoHorario, servicoId, nomeServico, className }) {
   if (!proximoHorario) return null;
   const data = new Date(proximoHorario);
@@ -39,9 +31,7 @@ export default function AvailabilityBadge({ proximoHorario, servicoId, nomeServi
   }
 
   return (
-    // Sem aria-label: o nome do link é o próprio texto, com o contexto antes só
-    // para leitor de tela. Assim quem usa comando de voz ("clicar em Hoje, 14h")
-    // acha o link pelo que vê (WCAG 2.5.3).
+    // sem aria label para o comando de voz achar o link
     <Link
       href={hrefAtalhoHorario(servicoId, data)}
       className={cn(

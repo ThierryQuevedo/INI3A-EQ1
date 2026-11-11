@@ -14,7 +14,7 @@ export const metadata = {
   title: 'Escolha o horário',
 };
 
-/** Só aceita um id inteiro positivo; qualquer outra coisa vira null. */
+// so aceita id inteiro positivo
 function lerServicoId(valor) {
   if (typeof valor !== 'string' || !/^\d+$/.test(valor)) return null;
   const id = Number(valor);
@@ -40,16 +40,11 @@ function ServicoIndisponivel() {
   );
 }
 
-/**
- * A-01 + A-02: a sessão é conferida no servidor ANTES de desenhar qualquer
- * coisa (acabou a tela branca do redirecionamento no cliente) e os dados
- * chegam prontos, em paralelo, para o componente cliente.
- */
 export default async function AgendarPage({ searchParams }) {
   const params = await searchParams;
   const servicoId = lerServicoId(params?.servico);
 
-  // Sem ?servico= (ou com lixo), não há o que agendar: volta ao catálogo.
+  // sem servico valido volta ao catalogo
   if (!servicoId) redirect('/servicos');
 
   const data = ehChaveDiaValida(params?.data) ? params.data : null;
@@ -57,7 +52,7 @@ export default async function AgendarPage({ searchParams }) {
 
   const usuario = await getSession();
   if (!usuario) {
-    // O destino leva dia e hora: depois do login a pessoa volta com tudo marcado (A-08).
+    // depois do login volta com dia e hora marcados
     const destino = new URLSearchParams({ servico: String(servicoId) });
     if (data) destino.set('data', data);
     if (hora) destino.set('hora', hora);

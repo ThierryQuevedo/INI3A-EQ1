@@ -1,6 +1,6 @@
 import { FUSO } from "./formatoData.js";
 
-/** "agora" / "5 min" / "3 h" / "2 d" / dd/mm — usado em listas de notificações. */
+// tempo relativo para notificacoes
 export function formatarTempoRelativo(data) {
   const diffMs = Date.now() - new Date(data).getTime();
   const min = Math.floor(diffMs / 60000);

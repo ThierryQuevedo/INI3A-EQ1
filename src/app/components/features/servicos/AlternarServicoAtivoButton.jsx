@@ -8,7 +8,7 @@ import { Button } from "@/app/components/ui/button";
 import { useToast } from "@/app/components/ui/ToastProvider";
 import { alterarServicoAtivo } from "@/app/actions/servicos.actions";
 
-/** Tira o serviço do ar ou coloca de volta. É reversível, então não pede código. */
+// reversivel entao nao pede codigo
 export default function AlternarServicoAtivoButton({ servicoId, desativado, className }) {
   const [aberto, setAberto] = useState(false);
   const router = useRouter();

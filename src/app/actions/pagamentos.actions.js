@@ -19,15 +19,15 @@ import {
 import { aguardaPagamento, boletoDisponivelPara } from '@/lib/statusPagamento';
 
 const METODOS = ['pix', 'boleto', 'cartao'];
-const VALOR_MINIMO_CENTAVOS = 100; // Limite da AbacatePay.
+const VALOR_MINIMO_CENTAVOS = 100; // limite da abacatepay
 const PIX_EXPIRA_EM_SEGUNDOS = 60 * 60;
 const DIAS_VENCIMENTO_BOLETO = 3;
-// Depois disso, uma tentativa sem resposta deixa de bloquear novas tentativas.
+// depois disso a tentativa parada nao bloqueia
 const CRIACAO_TRAVADA_MS = 10 * 60 * 1000;
 
 const SESSAO_EXPIRADA = { erro: 'Sua sessão expirou. Entre de novo para continuar.', codigo: 'sessao' };
 
-/** O que pode ir para o navegador. Nunca envia taxa, erro interno ou id de pagamento. */
+// so o que pode ir ao navegador
 function paraTela(p) {
   if (!p) return null;
   return {
@@ -73,7 +73,7 @@ async function buscarAgendamento(agendamentoId) {
   return agendamento ?? null;
 }
 
-/** Monta o `customer`. O CPF só atravessa esta função: não é gravado no banco. */
+// cpf nao e gravado
 function montarPagador(metodo, usuario, pagador) {
   if (metodo === 'pix') return { cliente: undefined };
 
@@ -108,11 +108,7 @@ function dadosDaCobranca(cobranca) {
   };
 }
 
-/**
- * Inicia o pagamento de um agendamento confirmado. O valor vem sempre do banco,
- * nunca do navegador. A tentativa é reservada antes de chamar a AbacatePay:
- * o índice único impede abrir duas cobranças com dois cliques ou duas abas.
- */
+// reserva a tentativa antes da api para evitar cobranca dupla
 export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, token }) {
   const usuario = await getSession();
   if (!usuario) return SESSAO_EXPIRADA;
@@ -141,7 +137,7 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
   const { cliente, erro: erroPagador } = montarPagador(metodo, usuario, pagador);
   if (erroPagador) return { erro: erroPagador };
 
-  // Trata uma tentativa que já exista antes de abrir outra.
+  // trata a tentativa existente antes de abrir outra
   await db
     .update(cobrancas)
     .set({ status: 'falhou', erro: 'Criação sem resposta.', atualizadoEm: new Date() })
@@ -168,7 +164,7 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
       const venceu = atual.expiraEm && atual.expiraEm <= new Date();
       if (atual.metodo === metodo && !venceu) return { erro: null, sucesso: true, pagamento: paraTela(atual) };
 
-      // Troca de método ou cobrança vencida. Se a antiga ainda for paga, o valor é devolvido.
+      // troca de metodo ou cobranca vencida
       await db
         .update(cobrancas)
         .set({ status: 'cancelado', atualizadoEm: new Date() })
@@ -178,9 +174,7 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
     }
   }
 
-  // Data vinda daqui, não do defaultNow(): a coluna não tem fuso, e o defaultNow()
-  // grava a hora local do banco. Comparada com um Date, ela pareceria horas mais
-  // velha, a trava de 10 minutos cairia e um cartão sem resposta poderia ser cobrado de novo.
+  // data gerada aqui pois defaultnow grava a hora local do banco
   const agora = new Date();
   const [reserva] = await db
     .insert(cobrancas)
@@ -206,8 +200,7 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
   } catch (erro) {
     console.error(`[pagamentos] criação do pagamento ${reserva.id} falhou: ${erro?.message ?? erro}`);
 
-    // Cartão sem resposta pode ter sido aprovado: a linha continua em `criando`,
-    // o que bloqueia uma segunda cobrança até o webhook responder (via metadata).
+    // cartao sem resposta fica criando ate o webhook
     if (metodo === 'cartao' && erro instanceof ErroAbacatePay && erro.incerto) {
       return {
         erro: 'Não recebemos a resposta da operadora. Não pague de novo agora: confira seu extrato ou volte em alguns minutos.',
@@ -228,9 +221,7 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
     };
   }
 
-  // Só sai de `criando` se ninguém mexeu na linha enquanto a API respondia (ex.:
-  // agendamento cancelado). Os dados são gravados de qualquer forma, para um
-  // pagamento tardio ainda ser reconhecido e devolvido.
+  // so sai de criando se a linha nao mudou
   await db.update(cobrancas).set(dadosDaCobranca(cobranca)).where(eq(cobrancas.id, reserva.id));
   await db
     .update(cobrancas)
@@ -249,7 +240,7 @@ export async function iniciarPagamentoAction({ agendamentoId, metodo, pagador, t
   return { erro: null, sucesso: true, pagamento: paraTela(final) };
 }
 
-/** Consulta periódica da tela de pagamento. Só fala com a AbacatePay se ainda estiver em aberto. */
+// consulta periodica
 export async function consultarPagamentoAction(agendamentoId) {
   const usuario = await getSession();
   if (!usuario) return SESSAO_EXPIRADA;
@@ -266,7 +257,7 @@ export async function consultarPagamentoAction(agendamentoId) {
   return { erro: null, pagamento: paraTela(novo) };
 }
 
-/** Botão de teste: só aparece e só funciona em cobrança criada com chave de sandbox. */
+// so funciona em sandbox
 export async function simularPagamentoAction(agendamentoId) {
   const usuario = await getSession();
   if (!usuario) return SESSAO_EXPIRADA;
@@ -297,7 +288,7 @@ export async function simularPagamentoAction(agendamentoId) {
   return { erro: null, sucesso: true };
 }
 
-/** Nova tentativa de devolução, disponível para os dois lados do agendamento e para o admin. */
+// nova tentativa de devolucao
 export async function tentarReembolsoAction(agendamentoId) {
   const usuario = await getSession();
   if (!usuario) return SESSAO_EXPIRADA;
@@ -314,7 +305,7 @@ export async function tentarReembolsoAction(agendamentoId) {
   return { erro: 'O reembolso ainda não saiu. Tente de novo mais tarde ou fale com o suporte.' };
 }
 
-/** O que o usuário logado ainda tem a pagar, para o aviso do Início, do painel e da Agenda. */
+// o que falta pagar
 export async function listarPagamentosAFazer() {
   const usuario = await getSession();
   if (!usuario) return [];
@@ -334,9 +325,9 @@ export async function listarPagamentosAFazer() {
       and(
         eq(agendamentos.clienteId, usuario.id),
         eq(agendamentos.status, 'confirmado'),
-        // O aviso é para o que está por vir: horário passado segue pagável pelo card da Agenda.
+        // so horarios futuros
         gte(agendamentos.dataHora, new Date()),
-        // Quem atende não cobra de si mesmo.
+        // quem agenda o proprio servico nao paga
         ne(servicos.prestadorId, usuario.id)
       )
     )
@@ -360,7 +351,7 @@ export async function listarPagamentosAFazer() {
     }));
 }
 
-/** Dados iniciais da tela de pagamento. Quem chama já conferiu a sessão. */
+// dados iniciais da tela de pagamento
 export async function carregarTelaDePagamento(agendamentoId) {
   const usuario = await getSession();
   if (!usuario) return null;
@@ -382,7 +373,7 @@ export async function carregarTelaDePagamento(agendamentoId) {
     pagamento: paraTela(atual ? await sincronizarPagamento(atual) : null),
     pagador: { nome: usuario.nome, email: usuario.email, telefone: usuario.telefone ?? '' },
     boletoDisponivel: boletoDisponivelPara(agendamento.dataHora),
-    // Só existe quando a loja tem cartão liberado. Sem ela, a opção não aparece.
+    // sem chave publica nao tem cartao
     chavePublicaCartao: process.env.ABACATEPAY_PUBLIC_KEY || null,
   };
 }

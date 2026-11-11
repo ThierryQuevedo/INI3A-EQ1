@@ -6,11 +6,7 @@ import { formatarQuando } from '@/lib/formatoData';
 
 const MAXIMO_NA_LISTA = 3;
 
-/**
- * Aviso do topo do Início, do painel e da Agenda: mostra o que falta pagar, com
- * o botão a um clique. Não aparece quando não há nada a pagar. Usa a cor
- * principal: na direção de design, o laranja é só do ato de marcar.
- */
+// o que falta pagar sem usar laranja
 export default function AvisoPagamentos({ pagamentos, className = '' }) {
   if (!pagamentos?.length) return null;
 

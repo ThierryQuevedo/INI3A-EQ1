@@ -32,7 +32,7 @@ export async function avaliarServico({
     return { erro: 'A nota deve ser um número inteiro entre 1 e 5.' };
   }
 
-  // 'ja_avaliado' não bloqueia: reenviar atualiza a avaliação existente.
+  // ja avaliado nao bloqueia e reenviar atualiza
   const { motivo } = await verificarPodeAvaliar(agendamentoId, usuario.id);
   if (motivo && motivo !== 'ja_avaliado') return { erro: ERROS_AVALIACAO[motivo] };
 
@@ -57,7 +57,6 @@ export async function avaliarServico({
     });
   }
 
-  // Vale tanto para uma avaliação nova quanto para uma edição.
   after(() =>
     notificarNovaAvaliacao(Number(agendamentoId), {
       nota: notaNumero,

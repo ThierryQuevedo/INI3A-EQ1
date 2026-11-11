@@ -3,11 +3,7 @@ import { db } from '@/db';
 import { agendamentos, avaliacoes, servicos, usuarios } from '@/db/schema';
 import { imagemPublica } from './imagemPublica.js';
 
-/*
- ao_encontrado — o agendamento não existe;
- nao_autorizado' — o agendamento é de outro cliente;
- nao_concluido  — o serviço ainda não foi concluído;
-ja_avaliado    — já existe nota para o prestador (vem em `avaliacaoExistente`).*/
+// motivos nao_encontrado nao_autorizado nao_concluido ja_avaliado
 
 export async function verificarPodeAvaliar(agendamentoId, usuarioId) {
   const id = Number(agendamentoId);

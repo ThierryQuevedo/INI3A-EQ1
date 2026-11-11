@@ -195,10 +195,7 @@ export default function UserBannerUpload({
         </div>
       )}
 
-      {/* Clicar ou arrastar na área toda é atalho de mouse. Para teclado e leitor
-          de tela, quem faz isso são os botões "Adicionar/Alterar capa" e "Remover"
-          lá dentro: um role="button" em volta deles seria um controle dentro de
-          outro, e o leitor de tela não anunciaria os de dentro. */}
+      {/* clique e arraste sao atalhos de mouse e o teclado usa os botoes */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -211,7 +208,7 @@ export default function UserBannerUpload({
         }`}
       >
         {imagemExibida ? (
-          // <img> de propósito: durante o upload a imagem é a prévia local (blob:), que o next/image não carrega.
+          // img pois a previa local e blob
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imagemExibida}

@@ -40,8 +40,7 @@ export default async function EditarServicoPage({ params }) {
 
   const categoriasPadrao = await listarCategorias();
 
-  // Serviço em categoria criada em "Outro": ela fica na lista para não ser
-  // trocada sem querer ao salvar outro campo.
+  // categoria de outro entra na lista
   const categorias = categoriasPadrao.some((c) => c.id === servico.categoriaId)
     ? categoriasPadrao
     : [...categoriasPadrao, { id: servico.categoriaId, nome: servico.categoriaNome }];

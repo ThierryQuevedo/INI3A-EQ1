@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 
 const FORMATOS_PERMITIDOS = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 const EXTENSOES_PERMITIDAS = ['.jpg', '.jpeg', '.png', '.webp'];
-const LIMITE_TAMANHO_BYTES = 5 * 1024 * 1024; // 5MB
+const LIMITE_TAMANHO_BYTES = 5 * 1024 * 1024; // 5mb
 
 export async function POST(request) {
   try {
@@ -32,7 +32,6 @@ export async function POST(request) {
       if (body?.dataUrl) {
         const url = body.dataUrl;
 
-        // Persistência opcional via JSON
         if (tipo || salvarNoBanco) {
           await persistirNoBanco({ tipo, servicoId, url });
         }
@@ -60,7 +59,6 @@ export async function POST(request) {
       );
     }
 
-    // 1. Validação de formato (MIME type e extensão)
     const nomeArquivo = (file.name || '').toLowerCase();
     const extensaoValida = EXTENSOES_PERMITIDAS.some((ext) => nomeArquivo.endsWith(ext));
     const tipoValido = FORMATOS_PERMITIDOS.includes(file.type);
@@ -75,7 +73,6 @@ export async function POST(request) {
       );
     }
 
-    // 2. Validação de tamanho (máximo 5MB)
     if (file.size > LIMITE_TAMANHO_BYTES) {
       const tamanhoMB = (file.size / (1024 * 1024)).toFixed(1);
       return Response.json(
@@ -87,13 +84,11 @@ export async function POST(request) {
       );
     }
 
-    // 3. Conversão para Base64 Data URL
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const mimeType = file.type || 'image/jpeg';
     const dataUrl = `data:${mimeType};base64,${buffer.toString('base64')}`;
 
-    // 4. Integração com o banco de dados
     let salvoNoBanco = false;
     if (tipo || salvarNoBanco) {
       salvoNoBanco = await persistirNoBanco({ tipo, servicoId, url: dataUrl });
@@ -144,7 +139,7 @@ async function persistirNoBanco({ tipo, servicoId, url }) {
     }
 
     if (tipo === 'servico' && servicoId) {
-      // Só o dono do serviço pode trocar a foto dele.
+      // so o dono troca a foto
       const atualizados = await db
         .update(servicos)
         .set({ urlImagem: url })

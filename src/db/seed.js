@@ -1,7 +1,4 @@
-// src/db/seed.js
-// Abre a própria conexão em vez de importar ./index.ts: o index importa './schema'
-// sem extensão (é o que o Next espera), e o Node com --experimental-strip-types
-// não resolve import sem extensão.
+// abre a propria conexao pois o node nao resolve o import sem extensao
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { categorias } from "./schema.ts";
@@ -17,7 +14,7 @@ async function main() {
 
   console.log("Populando o banco de dados com categorias padrão...");
 
-  // categorias.nome é único: rodar de novo não duplica nem quebra.
+  // nome e unico entao nao duplica
   const inseridas = await db
     .insert(categorias)
     .values(CATEGORIAS_PADRAO.map((nome) => ({ nome })))

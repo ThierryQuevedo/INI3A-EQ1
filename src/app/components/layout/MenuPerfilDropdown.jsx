@@ -22,8 +22,7 @@ export default function PerfilDropdown({ user }) {
                 setAberto(false);
             }
         }
-        // Esc fecha e devolve o foco ao botão — senão quem navega por teclado
-        // fica com o foco num item que acabou de sumir.
+        // esc fecha e devolve o foco ao botao
         function handleKeyDown(event) {
             if (event.key !== "Escape") return;
             setAberto((estavaAberto) => {

@@ -29,7 +29,7 @@ export const dynamic = 'force-dynamic';
 
 const LIMITE_PROXIMOS = 8;
 
-// Fuso fixo de Brasília (lib/formatoData.js): o servidor pode rodar em UTC.
+// fuso de brasilia pois o servidor pode estar em utc
 function formatarHora(data) {
   return partesNoFuso(data).hora;
 }
@@ -38,7 +38,6 @@ function formatarData(data) {
   return new Date(data).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: FUSO });
 }
 
-/** Uma linha por agendamento: hora | cliente e serviço | status + ações. */
 function LinhaAgendamento({ ag, mostrarData }) {
   const podeConfirmar = ag.status === 'pendente';
   const horarioComecou = new Date(ag.dataHora) <= new Date();
@@ -69,7 +68,7 @@ function LinhaAgendamento({ ag, mostrarData }) {
 
       <div className="flex items-center gap-1.5 flex-wrap @2xl:flex-nowrap @2xl:justify-end @md:pl-[6.25rem] @2xl:pl-0">
         <Badge status={ag.status} size="sm" className="mr-1">
-          {/* rótulo curto: na linha compacta "Aguardando confirmação" empurra as ações */}
+          {/* rotulo curto para nao empurrar as acoes */}
           {ag.status === 'pendente' ? 'Pendente' : rotuloStatus(ag.status)}
         </Badge>
         {pagamento && (
@@ -139,7 +138,6 @@ function ListaAgendamentos({ itens, mostrarData, IconeVazio, textoVazio }) {
   );
 }
 
-/** Atalho para os serviços do prestador: antes só dava para achá-los pelo perfil público. */
 function MeusServicos({ itens }) {
   return (
     <section aria-labelledby="titulo-servicos" className="mt-8">
@@ -200,8 +198,7 @@ export default async function Dashboard({ searchParams }) {
   const nome = usuario.nome;
   const prestadorId = usuario.id;
 
-  // Meia-noite de hoje e de amanhã em Brasília, como instantes: no fuso da
-  // máquina, entre 21h e meia-noite o "hoje" já seria o dia seguinte.
+  // meia noite de hoje e amanha em brasilia
   const diaHoje = hojeNoFuso();
   const hoje = instanteNoFuso(diaHoje, '00:00');
   const amanha = instanteNoFuso(somarDias(diaHoje, 1), '00:00');

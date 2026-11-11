@@ -22,8 +22,7 @@ export const metadata = { title: 'Sua agenda' };
 
 export const dynamic = 'force-dynamic';
 
-// Sempre no fuso de Brasília (lib/formatoData.js): esta página é renderizada no
-// servidor, que pode rodar em UTC — com o fuso da máquina, 09:00 viraria 12:00.
+// fuso de brasilia pois o servidor pode estar em utc
 function formatarData(data) {
   const relativo = diaRelativo(partesNoFuso(data).dia);
   if (relativo) return relativo;
@@ -34,7 +33,6 @@ function formatarHora(data) {
   return partesNoFuso(data).hora;
 }
 
-// Card individual de agendamento
 function CardAgendamento({ item, usuarioLogado }) {
   const { Icon = CalendarPlus } = STATUS_AGENDAMENTO[item.status?.toLowerCase()] || {};
   const dataLabel = formatarData(item.dataHora);
@@ -42,7 +40,7 @@ function CardAgendamento({ item, usuarioLogado }) {
   const dataTag = destaque
     ? dataLabel
     : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: FUSO });
-  // O papel é de cada agendamento, não da conta: prestador também agenda serviços.
+  // papel e por agendamento pois prestador tambem agenda
   const ehCliente = item.papel === 'cliente';
   const horarioComecou = new Date(item.dataHora) <= new Date();
   const pagamento = STATUS_PAGAMENTO[item.pagamentoStatus];
@@ -58,7 +56,7 @@ function CardAgendamento({ item, usuarioLogado }) {
     <Card padding="default" interactive id={`pedido-${item.id}`} className="min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
         <div className="flex items-center gap-4 min-w-0 flex-1">
-        {/* bg-info/10 e não /15: com /15 o texto azul ficava em 4,39:1 no tema claro (mínimo 4,5:1). */}
+        {/* com 15 o contraste nao passava */}
         <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/10' : 'bg-secondary'}`}>
           <p className={`text-body-sm font-bold ${destaque ? 'text-info' : 'text-primary'}`}>
             {formatarHora(item.dataHora)}
@@ -86,7 +84,6 @@ function CardAgendamento({ item, usuarioLogado }) {
               {item.clienteNome}{item.clienteTelefone ? ` · ${item.clienteTelefone}` : ''}
             </p>
           )}
-          {/* A-06: o selo "Aguardando confirmação" ganha o que acontece a seguir. */}
           {ehCliente && item.status === 'pendente' && (
             <p className="text-body-sm text-muted-foreground mt-1">
               O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail. Depois da confirmação, você poderá pagar aqui.
@@ -200,7 +197,7 @@ function CardAgendamento({ item, usuarioLogado }) {
       )}
 
       {ehCliente && item.status === 'concluido' && (
-        // A própria AvaliacaoServico desenha a divisória de cima.
+        // a avaliacao ja desenha a divisoria
         <div className="mt-1">
           <AvaliacaoServico
             agendamentoId={item.id}
@@ -238,7 +235,6 @@ function CardAgendamento({ item, usuarioLogado }) {
   );
 }
 
-// Cartão de contagem por status, no resumo do topo
 function CardResumo({ label, valor, Icon, cor }) {
   return (
     <Card padding="sm" className="flex items-center gap-3">
@@ -303,7 +299,6 @@ export default async function AgendamentosPage() {
         </Card>
       ) : (
         <>
-          {/* Resumo rápido */}
           <div className="grid grid-cols-3 gap-3 mb-8">
             <CardResumo
               label="Próximos"
@@ -325,7 +320,6 @@ export default async function AgendamentosPage() {
             />
           </div>
 
-          {/* Próximos agendamentos */}
           <section className="mb-8">
             <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
               <CalendarClock size={19} className="text-primary" aria-hidden="true" />
@@ -347,7 +341,6 @@ export default async function AgendamentosPage() {
             )}
           </section>
 
-          {/* Histórico */}
           {historico.length > 0 && (
             <section>
               <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">

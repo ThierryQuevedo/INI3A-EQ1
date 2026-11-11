@@ -13,7 +13,7 @@ export const metadata = {
   title: 'Pagamento',
 };
 
-/** A mesma tela para agendamento inexistente e de outra pessoa: não revela qual é o caso. */
+// mesma tela para inexistente e de outra pessoa
 function PagamentoNaoEncontrado() {
   return (
     <PageContainer size="sm" className="py-12 sm:py-16">
@@ -39,11 +39,11 @@ export default async function PagamentoPage({ params }) {
 
   const usuario = await getSession();
   if (!usuario) {
-    // O link do e-mail traz a pessoa até aqui: depois do login, ela volta para esta tela.
+    // depois do login volta para ca
     redirect(`/api/auth/entrar/?proximo=${encodeURIComponent(`/agendamentos/${id}/pagamento/`)}`);
   }
 
-  // Devolve null também quando o agendamento é de outro cliente.
+  // null tambem quando e de outro cliente
   const dados = await carregarTelaDePagamento(id);
   if (!dados) return <PagamentoNaoEncontrado />;
 

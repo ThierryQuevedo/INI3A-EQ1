@@ -3,14 +3,7 @@ import { cn } from "@/lib/utils";
 
 const TRACINHOS = Array.from({ length: 12 }, (_, i) => i);
 
-/**
- * C-09 / F-07: placeholder para quando não há foto. Em vez do bloco cinza
- * "morto", usa o azul claro da marca (bg-secondary, que no escuro vira
- * azul-900) com o ícone da categoria no centro de um mostrador com os
- * tracinhos do relógio da logo — discreto, sem gradiente nem peso de
- * imagem. O ícone padrão é uma foto neutra (não `ImageOff`, que lê como
- * "erro ao carregar").
- */
+// placeholder sem foto com icone da categoria
 export default function PlaceholderImage({ className, icon: Icon = ImageIcon, label = "Sem imagem" }) {
   return (
     <div

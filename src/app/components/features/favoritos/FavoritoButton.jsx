@@ -7,11 +7,7 @@ import { cn } from "@/lib/utils";
 import { alternarFavoritoServico, alternarFavoritoPrestador } from "@/app/actions/favoritos.actions";
 import { useToast } from "@/app/components/ui/ToastProvider";
 
-/**
- * Coração de favoritar, usado tanto sobreposto num card (`variant="overlay"`)
- * quanto como botão avulso num cabeçalho de perfil (`variant="standalone"`).
- * Atualização otimista; se o usuário não estiver logado, manda pro login.
- */
+// coracao de favoritar otimista
 export default function FavoritoButton({ tipo, alvoId, favoritoInicial = false, variant = "overlay", className }) {
   const [favorito, setFavorito] = useState(favoritoInicial);
   const [pending, startTransition] = useTransition();

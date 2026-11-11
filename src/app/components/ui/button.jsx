@@ -16,7 +16,7 @@ const buttonVariants = cva(
           "border border-input bg-transparent hover:bg-muted",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        // Laranja: SÓ o ato de marcar horário (regra D1, máx. 1 por tela).
+        // laranja so para marcar horario
         marcar: "bg-cta text-cta-foreground shadow-soft hover:bg-cta-hover",
         ghost: "hover:bg-muted",
         "ghost-destructive": "text-destructive hover:bg-destructive/10",
@@ -24,7 +24,7 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-11 px-5 py-2",
-        // Compactos com mouse; 44px em tela de toque (alvo mínimo do projeto).
+        // compacto no mouse e 44px no toque
         sm: "h-10 pointer-coarse:h-11 px-4 text-caption",
         compacto: "h-9 pointer-coarse:h-11 px-3 text-caption",
         lg: "h-12 px-8 text-body",

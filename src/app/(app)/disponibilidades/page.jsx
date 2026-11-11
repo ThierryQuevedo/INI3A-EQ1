@@ -65,14 +65,13 @@ export default function DisponibilidadePage() {
   const [erro, setErro] = useState(null);
   const [diasProcessando, setDiasProcessando] = useState(() => new Set());
   const [errosPorDia, setErrosPorDia] = useState({});
-  const [confirmacao, setConfirmacao] = useState(null); // { tipo: 'dia' | 'horario', dia, range?, ranges? }
+  const [confirmacao, setConfirmacao] = useState(null); // tipo dia ou horario
 
   const disponibilidadesRef = useRef(disponibilidades);
   useEffect(() => {
     disponibilidadesRef.current = disponibilidades;
   }, [disponibilidades]);
 
-  // Carrega o prestador logado e a lista de serviços dele
   useEffect(() => {
     let montado = true;
     async function inicializar() {
@@ -105,7 +104,6 @@ export default function DisponibilidadePage() {
     return () => { montado = false; };
   }, [router]);
 
-  // Sempre que o serviço selecionado mudar, recarrega a agenda daquele serviço
   useEffect(() => {
     if (prestadorId == null || servicoSelecionadoId == null) return;
     let montado = true;
@@ -183,8 +181,7 @@ export default function DisponibilidadePage() {
       fim = minutosParaHHMM(Math.min(inicioMin + 60, 1439));
     }
 
-    // Otimista: insere o intervalo já na UI (o Switch/linha aparecem e animam na hora)
-    // e desfaz se o servidor recusar — evita que a animação só aconteça depois do round-trip.
+    // otimista e desfaz se o servidor recusar
     const idTemporario = `tmp-${Date.now()}`;
     const otimista = { id: idTemporario, diaSemana: dia.valor, servicoId: servicoSelecionadoId, horaInicio: inicio, horaFim: fim };
 
@@ -272,8 +269,7 @@ export default function DisponibilidadePage() {
     const ids = tipo === 'horario' ? [confirmacao.range.id] : confirmacao.ranges.map((r) => r.id);
     const mensagemSucesso = tipo === 'horario' ? 'Horário removido.' : `Horários de ${dia.nome} removidos.`;
 
-    // Otimista: some da tela (e o Switch já anima pra desligado) assim que o usuário
-    // confirma, em vez de só depois do round-trip — restaura se o servidor recusar.
+    // otimista e desfaz se o servidor recusar
     const removidos = disponibilidadesRef.current.filter((d) => ids.includes(d.id));
 
     marcarProcessando(dia.valor, true);
@@ -306,7 +302,6 @@ export default function DisponibilidadePage() {
     </PageContainer>
   );
 
-  // Prestador sem nenhum serviço cadastrado ainda
   if (servicos.length === 0) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -315,6 +310,8 @@ export default function DisponibilidadePage() {
             icon={Briefcase}
             title="Nenhum serviço cadastrado"
             description="Cadastre um serviço primeiro para poder configurar a disponibilidade dele."
+            actionLabel="Cadastrar serviço"
+            actionHref="/servicos/novo"
           />
         </Card>
       </div>
@@ -351,7 +348,7 @@ export default function DisponibilidadePage() {
         <div role="alert" className="mb-4 bg-destructive/10 border border-destructive/30 text-destructive text-body-sm font-semibold rounded-lg px-4 py-3 shadow-soft">{erro}</div>
       )}
 
-      {/* Seletor de serviço — cada serviço tem sua própria agenda */}
+      {/* cada servico tem agenda propria */}
       <Card padding="sm" className="mb-5">
         <label className="text-caption font-semibold text-muted-foreground flex items-center gap-1.5 mb-2">
           <Briefcase width={13} height={13} aria-hidden="true" /> Serviço

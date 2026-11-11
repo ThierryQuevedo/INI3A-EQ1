@@ -1,16 +1,8 @@
-/**
- * Serviço de Upload de Imagens do lado do cliente (Pure JavaScript)
- */
 
 export const FORMATOS_ACEITOS = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 export const EXTENSOES_ACEITAS = ['.jpg', '.jpeg', '.png', '.webp'];
 
-/**
- * Valida apenas o tipo do arquivo. Sem limite de tamanho: a imagem é
- * comprimida no navegador antes do upload, então o peso original não importa.
- * @param {File} file
- * @returns {{ valido: boolean, erro: string | null }}
- */
+// valida so o tipo do arquivo
 export function validarArquivo(file) {
   if (!file) {
     return { valido: false, erro: 'Nenhum arquivo selecionado.' };
@@ -30,19 +22,11 @@ export function validarArquivo(file) {
   return { valido: true, erro: null };
 }
 
-/**
- * @param {File} file
- * @returns {string}
- */
 export function gerarPreviewLocal(file) {
   if (!file) return '';
   return URL.createObjectURL(file);
 }
 
-/**
- * @param {File} file
- * @returns {Promise<string>}
- */
 export function lerArquivoComoDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -52,13 +36,7 @@ export function lerArquivoComoDataUrl(file) {
   });
 }
 
-/**
- * Redimensiona e converte a imagem para um formato mais leve (WebP por padrão)
- * inteiramente no navegador, antes do upload.
- * @param {File} file
- * @param {{ maxDimensao?: number, qualidade?: number, formato?: string }} opcoes
- * @returns {Promise<File>}
- */
+// reduz e converte a imagem no navegador
 export function comprimirImagem(file, opcoes = {}) {
   const { maxDimensao = 1600, qualidade = 0.82, formato = 'image/webp' } = opcoes;
 
@@ -99,11 +77,6 @@ export function comprimirImagem(file, opcoes = {}) {
   });
 }
 
-/**
- * @param {File} file
- * @param {{ tipo?: 'avatar'|'banner'|'servico', servicoId?: string|number, salvarNoBanco?: boolean }} options
- * @returns {Promise<{ success: boolean, url: string, name: string, size: number, salvoNoBanco?: boolean, error?: string }>}
- */
 export async function fazerUploadImagem(file, options = {}) {
   const validacao = validarArquivo(file);
 

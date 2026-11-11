@@ -1,9 +1,7 @@
 import { clsx } from "clsx"
 import { extendTailwindMerge } from "tailwind-merge"
 
-// A escala tipográfica própria (globals.css) precisa ser registrada como
-// font-size; sem isso o tailwind-merge trata `text-caption` como cor e o
-// descarta quando a mesma lista tem `text-primary`, `text-foreground` etc.
+// registra a escala tipografica no tailwind merge
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {

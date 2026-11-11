@@ -8,20 +8,7 @@ import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { formatarDuracao } from '@/app/components/ui/DurationTag';
 import { formatarDiaCurto, formatarHora } from '@/lib/formatoData';
 
-/**
- * A-07 / D-03 / F-03 / F-10 / G-03 / G-05: revisão do pedido.
- *
- * Celular: rodapé compacto preso à borda de baixo (BottomNav fica oculta
- * nesta rota), com dia, hora, serviço, preço, "Alterar" e o ÚNICO botão
- * laranja da tela. Entra por CSS (.barra-revisao em globals.css). A altura
- * é medida e vira --altura-barra: o html ganha scroll-padding-bottom (o
- * foco nunca fica atrás da barra) e o body ganha o mesmo espaço no fim.
- * Se a barra passar de 40% da altura da tela (fonte grande, tela baixa),
- * vira estática no fim da página.
- *
- * Desktop: painel lateral fixo ao rolar, sempre visível; sem horário
- * escolhido, o botão fica desativado DE VERDADE e neutro, com orientação.
- */
+// barra de revisao fixa no celular e painel no desktop
 export default function BarraRevisao({
   servico,
   dia,
@@ -77,7 +64,7 @@ export default function BarraRevisao({
         'bg-card border-t border-border shadow-elevated px-4 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]',
         temSelecao ? 'barra-revisao' : 'max-md:hidden',
         estatica && 'barra-revisao--estatica max-md:mt-8 max-md:rounded-xl max-md:border max-md:shadow-none',
-        // desktop: painel lateral
+        // desktop
         'md:sticky md:top-24 md:rounded-xl md:border md:p-6 md:shadow-soft'
       )}
     >
@@ -134,7 +121,6 @@ export default function BarraRevisao({
         </div>
       </dl>
 
-      {/* A-09: o erro aparece junto do botão que o causou, com saída clara. */}
       <div role="alert">
         {erro && (
           <p className="mt-3 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-body-sm text-foreground">
@@ -153,8 +139,7 @@ export default function BarraRevisao({
         aria-describedby={temSelecao ? 'nota-expectativa' : 'orientacao-revisao'}
         className={cn(
           'w-full mt-3 md:mt-5 min-h-14 h-auto py-3 text-body font-bold whitespace-normal',
-          // desativado por estar enviando continua laranja (é o mesmo ato);
-          // desativado por falta de escolha ou de rede fica neutro.
+          // enviando segue laranja e sem escolha fica neutro
           enviando && 'disabled:opacity-80'
         )}
       >
@@ -171,7 +156,6 @@ export default function BarraRevisao({
         </p>
       )}
 
-      {/* F-10: nota de expectativa junto do botão (texto igual ao da tela final, A-06). */}
       <p id="nota-expectativa" className="mt-2 md:mt-3 flex gap-2 text-caption md:text-body-sm text-muted-foreground">
         <Clock3 size={16} className="mt-0.5 shrink-0 max-md:hidden" aria-hidden="true" />
         <span className="md:hidden">O profissional confirma e você recebe o aviso no app e por e-mail.</span>

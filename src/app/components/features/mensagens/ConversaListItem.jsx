@@ -3,7 +3,7 @@ import Avatar from "@/app/components/ui/Avatar";
 import { cn } from "@/lib/utils";
 import { partesNoFuso } from "@/lib/formatoData";
 
-// Fuso fixo de Brasília (o servidor pode rodar em UTC).
+// fuso de brasilia pois o servidor pode estar em utc
 function formatarHora(data) {
   return partesNoFuso(data).hora;
 }

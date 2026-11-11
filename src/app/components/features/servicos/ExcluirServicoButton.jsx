@@ -10,10 +10,7 @@ import { useToast } from "@/app/components/ui/ToastProvider";
 import { excluirServico, solicitarCodigoExclusaoServico } from "@/app/actions/servicos.actions";
 import { CAMINHO_BASE } from "@/lib/caminhoBase";
 
-/**
- * Exclusão em duas etapas: a pessoa pede um código, recebe no e-mail da conta e
- * digita aqui. Só então o serviço é apagado; a regra inteira fica no servidor.
- */
+// exclusao em duas etapas com codigo por email
 export default function ExcluirServicoButton({ servicoId, servicoNome, emailMascarado, className }) {
   const [aberto, setAberto] = useState(false);
   const [etapa, setEtapa] = useState("pedir");
@@ -34,8 +31,7 @@ export default function ExcluirServicoButton({ servicoId, servicoNome, emailMasc
     }
   }
 
-  // Abrir de novo logo depois de fechar cai no intervalo de reenvio: o código
-  // anterior continua valendo, então a pessoa segue para a etapa de digitar.
+  // reabrir logo depois reaproveita o codigo
   async function pedirCodigo() {
     const resultado = await solicitarCodigoExclusaoServico(servicoId);
     if (resultado.erro && !resultado.aguardando) {

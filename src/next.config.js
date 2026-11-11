@@ -2,9 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import { CAMINHO_BASE } from './lib/caminhoBase.js';
 
-// Fixa a raiz do Turbopack nesta pasta: o servidor de produção tem um
-// package-lock.json residual um nível acima (fora do repo), o que faz o
-// Next inferir a raiz errada e quebrar a resolução dos imports "@/...".
+// fixa a raiz do turbopack
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const nextConfig = {
@@ -32,7 +30,7 @@ const nextConfig = {
     ],
   },
   reactCompiler: true,
-  // Libera forbidden() e o app/forbidden.jsx (tela 403 personalizada).
+  // libera forbidden
   experimental: {
     authInterrupts: true,
   },

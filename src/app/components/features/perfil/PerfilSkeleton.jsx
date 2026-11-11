@@ -2,7 +2,6 @@ import ProgressBar from "@/app/components/ui/ProgressBar";
 import Skeleton from "@/app/components/ui/Skeleton";
 import PageContainer from "@/app/components/ui/PageContainer";
 
-/** Esqueleto dos perfis públicos: coluna de resumo + conteúdo em grid. */
 export default function PerfilSkeleton({ comServicos = true }) {
   return (
     <PageContainer size="xl" className="py-6 sm:py-8">

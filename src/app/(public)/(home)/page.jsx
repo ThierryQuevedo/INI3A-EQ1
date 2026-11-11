@@ -72,8 +72,7 @@ export default async function Home() {
       .limit(24),
     listarCategorias(),
     usuario && usuario.tipo === "cliente" ? buscarDashboardCliente() : null,
-    // Índice leve para o preview da busca (fuzzy search no cliente): só os
-    // campos que a lista de sugestões mostra, sem descrição nem horários.
+    // indice leve para as sugestoes
     db
       .select({
         id: servicos.id,
@@ -111,8 +110,6 @@ export default async function Home() {
 
   return (
     <PageContainer size="xl" className="pt-6 sm:pt-8 pb-12 space-y-10">
-      {/* Topo compacto: título curto + busca enxuta, para os serviços
-          aparecerem já na primeira dobra (a busca completa vive em /servicos). */}
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-h5 sm:text-h4 font-bold text-foreground">Encontre um profissional e agende na hora.</h1>
@@ -182,7 +179,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* O catálogo completo não fica na home: um CTA leva à página de catálogo. */}
       <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-primary text-primary-foreground p-6 sm:p-8">
         <div>
           <h2 className="text-h5 font-bold">Não achou o que procurava?</h2>

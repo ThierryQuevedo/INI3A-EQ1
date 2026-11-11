@@ -7,7 +7,7 @@ import { Button } from '@/app/components/ui/button';
 import { useToast } from '@/app/components/ui/ToastProvider';
 import { formatarHora } from '@/lib/formatoData';
 
-/** PIX aberto: QR Code, copia e cola e, só em cobrança de teste, o botão de simular. */
+// pix aberto
 export default function PixAberto({ pagamento, agendamentoId, onTrocarMetodo }) {
   const toast = useToast();
   const [copiado, setCopiado] = useState(false);
@@ -49,8 +49,8 @@ export default function PixAberto({ pagamento, agendamentoId, onTrocarMetodo }) 
       </ol>
 
       {pagamento.pixQrCode && (
-        // Imagem em base64 vinda da cobrança: o next/image não agrega nada aqui.
-        // O fundo branco mantém o QR Code legível também no tema escuro.
+        // imagem em base64 da cobranca
+        // fundo branco mantem o qr legivel no escuro
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={pagamento.pixQrCode}

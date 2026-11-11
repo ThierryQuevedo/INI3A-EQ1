@@ -9,17 +9,7 @@ function prefereMovimentoReduzido() {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-/**
- * A-04 / F-02 / C-08 / C-07 / G-06: os próximos 14 dias numa faixa.
- *
- * - Rádio NATIVO (padrão APG Radio Group de graça): um ponto de Tab para o
- *   grupo, setas mudam a seleção, dias sem vaga ficam `disabled` e o leitor
- *   de tela anuncia "Sexta, 30 de outubro, 9 vagas, 3 de 14".
- * - Dia sem vaga continua visível e ESCRITO ("Sem vagas"), não some.
- * - Selecionado = cor + borda + check, sem mudar de tamanho.
- * - Rolagem horizontal visível + "Mais dias ›" (quem não percebe que dá
- *   para arrastar tem um botão) + "Ver outro mês" para além de 14 dias.
- */
+// faixa dos proximos 14 dias com radios nativos
 export default function FaixaDias({
   dias,
   diaSelecionado,
@@ -32,8 +22,7 @@ export default function FaixaDias({
   const faixaRef = useRef(null);
   const jaRolou = useRef(false);
 
-  // Leva o dia escolhido para o centro da faixa SEM rolar a página na vertical
-  // (scrollIntoView rolaria as duas direções). Primeira vez: sem animação.
+  // centraliza o dia sem rolar na vertical
   useEffect(() => {
     const faixa = faixaRef.current;
     if (!faixa || !diaSelecionado) return;
@@ -60,8 +49,7 @@ export default function FaixaDias({
 
   return (
     <fieldset ref={refGrupo} tabIndex={-1} className="min-w-0 focus:outline-none">
-      {/* legend precisa ser o 1º filho do fieldset para nomear o grupo;
-          o float põe o botão "Mais dias" na mesma linha. */}
+      {/* legend precisa ser o primeiro filho do fieldset */}
       <legend className="float-left min-h-toque flex items-center text-body-sm font-semibold text-muted-foreground">
         Próximos 14 dias
       </legend>

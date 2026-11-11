@@ -2,10 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { agendamentos } from '@/db/schema';
 
-/**
- * Serviço com qualquer agendamento, de qualquer status, não pode ser excluído:
- * o histórico dos clientes e as avaliações dependem dele.
- */
+// servico com agendamento nao e excluido
 export async function servicoTemAgendamentos(servicoId) {
   const [agendamento] = await db
     .select({ id: agendamentos.id })
@@ -16,7 +13,7 @@ export async function servicoTemAgendamentos(servicoId) {
   return !!agendamento;
 }
 
-/** "maria@gmail.com" → "m***@gmail.com": mostra para onde o código vai sem expor o endereço. */
+// mascara o email
 export function mascararEmail(email) {
   const [local, dominio] = String(email ?? '').split('@');
   return dominio ? `${local.charAt(0)}***@${dominio}` : '';

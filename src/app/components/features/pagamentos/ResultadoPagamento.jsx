@@ -15,7 +15,7 @@ const TEXTOS = {
   em_disputa: 'Este pagamento foi contestado junto ao banco. Fale com o suporte para acompanhar.',
 };
 
-/** Fim do fluxo: o foco vai para o resultado, avisando também quem usa leitor de tela. */
+// foco no resultado para o leitor de tela
 export default function ResultadoPagamento({ pagamento, agendamentoId }) {
   const refTitulo = useRef(null);
 

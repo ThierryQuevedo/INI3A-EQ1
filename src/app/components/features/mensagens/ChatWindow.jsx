@@ -11,10 +11,7 @@ import { useToast } from "@/app/components/ui/ToastProvider";
 
 const INTERVALO_POLLING_MS = 3000;
 
-/**
- * Janela de uma conversa. Busca mensagens novas por polling (não há
- * WebSocket/SSE no projeto) e envia mensagens de forma otimista.
- */
+// conversa com polling e envio otimista
 export default function ChatWindow({
   agendamentoId,
   usuarioLogadoId,
@@ -74,8 +71,7 @@ export default function ChatWindow({
   }
 
   return (
-    // data-tela-cheia: o globals.css esconde o rodapé do site nesta tela, senão
-    // ele entra abaixo do chat e a página inteira passa a rolar.
+    // data tela cheia esconde o rodape
     <div data-tela-cheia className="flex flex-col h-[calc(100dvh-8rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-4rem)]">
       <div className="border-b border-border bg-card shrink-0">
       <div className="max-w-4xl mx-auto w-full flex items-center gap-3 px-4 py-3">

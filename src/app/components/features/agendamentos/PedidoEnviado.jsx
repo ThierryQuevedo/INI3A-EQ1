@@ -42,13 +42,7 @@ function gerarIcsDataUri({ titulo, inicio, fim, detalhes }) {
 const classeAcaoSecundaria =
   'w-full inline-flex items-center justify-center gap-2 min-h-toque px-4 py-2 rounded-lg border border-input bg-card text-body-sm font-semibold text-foreground hover:bg-muted active:scale-[0.97] transition duracao-rapida cursor-pointer';
 
-/**
- * A-06 / D-05 / F-10: tela final HONESTA. O pedido nasce `pendente`, então
- * nada de "confirmado" nem check verde: relógio, "Pedido enviado" e o que
- * acontece agora (o prestador confirma no painel; o cliente recebe
- * notificação no app e e-mail — lib/notificacoes.js). Sem prazo inventado,
- * sem bounce, sem vibração. O foco vai para o título ao montar.
- */
+// pedido nasce pendente entao mostra pedido enviado
 export default function PedidoEnviado({ servico, agendamento }) {
   const refTitulo = useRef(null);
 

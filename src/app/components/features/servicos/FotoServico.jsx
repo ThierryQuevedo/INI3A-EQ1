@@ -11,11 +11,7 @@ import { validarArquivo, fazerUploadImagem } from "@/lib/uploadService";
 import { salvarImagemServico } from "@/app/actions/imagem.actions";
 import { getCategoryIcon } from "./CategoryIcon";
 
-/**
- * Imagem de destaque da página do serviço. Para o prestador dono do serviço,
- * mostra "Alterar foto": recorta em 1:1 (mesmo formato do cadastro), envia e
- * persiste via salvarImagemServico, que valida a posse no servidor.
- */
+// foto de destaque do servico
 export default function FotoServico({ servicoId, urlImagem, nome, categoria, podeEditar = false }) {
   const [url, setUrl] = useState(urlImagem || "");
   const [cropSrc, setCropSrc] = useState(null);

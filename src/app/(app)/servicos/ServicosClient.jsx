@@ -24,7 +24,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
         comHorarioHoje: searchParams.get('hoje') === '1',
     }));
     const [posicao, setPosicao] = useState(null);
-    const [statusLocalizacao, setStatusLocalizacao] = useState('idle'); // idle | buscando | pronta | erro
+    const [statusLocalizacao, setStatusLocalizacao] = useState('idle'); // idle buscando pronta erro
 
     const ativarPertoDeMim = useCallback(() => {
         if (typeof navigator === 'undefined' || !navigator.geolocation) {

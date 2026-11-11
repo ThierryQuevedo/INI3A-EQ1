@@ -40,7 +40,7 @@ export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
       return { erro: erroSenha, errosCampos: { senha: erroSenha } };
     }
 
-    // Sempre na mesma máscara: é ela que a coluna única compara.
+    // sempre na mesma mascara pois a coluna unica compara texto
     const telefone = formatarTelefone(digitosTelefone);
 
     const [emailExistente] = await db
@@ -83,8 +83,7 @@ export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
     const proximo = await consumirProximo();
     return { erro: null, destino: proximo ?? destinoPadrao(tipo) };
   } catch (error) {
-    // Dois envios simultâneos podem passar pelas consultas acima e bater na
-    // restrição única do banco: é dado repetido, não falha do servidor.
+    // envio duplo bate na restricao unica e nao e erro
     if (error?.cause?.code === '23505' || error?.code === '23505') {
       return { erro: 'Este e-mail ou telefone já está em uso em outra conta.' };
     }
@@ -111,8 +110,7 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
     const usuario = resultado[0];
     const senhaValida = usuario ? await bcrypt.compare(String(senha), usuario.senha) : false;
 
-    // Mesma mensagem para e-mail inexistente e senha errada: não confirma a quem
-    // tenta adivinhar se aquele e-mail tem conta. Aparece uma vez só (na faixa do formulário).
+    // mesma mensagem para nao revelar se a conta existe
     if (!senhaValida) {
       return { erro: 'E-mail ou senha incorretos.' };
     }
@@ -127,11 +125,7 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
   }
 }
 
-/**
- * Último passo de quem criou a conta pelo Google: a conta nasce como cliente e
- * aqui a pessoa diz se também vai oferecer serviços. Depois disso, continua de
- * onde parou (ex.: o agendamento que estava marcando antes de entrar).
- */
+// ultimo passo do cadastro google
 export async function concluirCadastroGoogle(estadoAnterior: unknown, formData: FormData) {
   const usuario = await requireSession();
   const virarPrestador = formData.get('tipo') === 'prestador';
@@ -207,8 +201,7 @@ export async function getSession() {
     return usuario;
 
   } catch (error) {
-    // cookies() lança um sinal interno do Next ao renderizar páginas estáticas no build
-    // (/sobre, /termos, /suporte); ele precisa subir, senão vira log de erro falso.
+    // deixa subir o sinal do next no build
     unstable_rethrow(error);
     console.error("Erro em getSession:", error);
     return null;
@@ -255,8 +248,7 @@ export async function atualizarEmail(estadoAnterior: unknown, formData: FormData
     redirect('/login');
   }
 
-  // Mesma normalização do cadastro: sem ela, "Ana@x.com" passaria pela
-  // checagem de "já em uso" de "ana@x.com" e o login ficaria ambíguo.
+  // mesma normalizacao do cadastro
   const emailNormalizado = normalizarEmail(formData.get('email'));
   if (!emailValido(emailNormalizado)) {
     return { erro: 'Informe um e-mail válido.' };
@@ -285,7 +277,7 @@ export async function atualizarTelefone(estadoAnterior: unknown, formData: FormD
     redirect('/login');
   }
 
-  // Sempre na mesma máscara do cadastro: é ela que a checagem de "já em uso" compara.
+  // mesma mascara do cadastro
   const telefone = formData.get('telefone');
   if (!telefoneValido(telefone)) {
     return { erro: 'Informe um telefone válido, com DDD. Ex: (11) 91234-5678' };

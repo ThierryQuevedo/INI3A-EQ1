@@ -4,8 +4,7 @@ import { processarEventoWebhook } from '@/lib/pagamentos';
 
 export const dynamic = 'force-dynamic';
 
-// A AbacatePay reenvia em 5xx, 408 e 429, e desiste em outros 4xx.
-// A URL leva o secret: nada aqui pode registrar a URL no log.
+// a url leva o secret entao nao logar
 export async function POST(request) {
   const segredo = process.env.ABACATEPAY_WEBHOOK_SECRET;
   if (!segredo) {

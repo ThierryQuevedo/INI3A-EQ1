@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import BadgeNaoLidas from "@/app/components/features/mensagens/BadgeNaoLidas";
 
 
-/** Telas do prestador dentro de /servicos (criar e editar) não são a busca. */
+// criar e editar nao contam como busca
 function estaAtivo(href, pathname) {
   if (!pathname) return false;
   if (href === "/") return pathname === "/";

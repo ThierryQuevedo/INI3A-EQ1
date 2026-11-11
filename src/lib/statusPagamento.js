@@ -1,17 +1,16 @@
 import { Clock3, CheckCircle2, RotateCcw, AlertTriangle, XCircle } from 'lucide-react';
 
-// Sem dependência de servidor: este arquivo também é usado por componentes cliente.
-//
-//  criando          tentativa reservada, esperando a resposta da AbacatePay
-//  pendente         cobrança aberta, esperando o pagamento
-//  pago             dinheiro recebido
-//  expirado         o PIX ou o boleto venceu sem pagamento
-//  falhou           recusada, ou não foi possível criar
-//  cancelado        abandonada (troca de método ou agendamento cancelado)
-//  reembolsando     devolução em andamento
-//  reembolsado      dinheiro devolvido
-//  reembolso_falhou a devolução não saiu e precisa de nova tentativa ou do suporte
-//  em_disputa       chargeback aberto; a API não reembolsa neste estado
+// sem dependencia de servidor
+// criando esperando a abacatepay
+// pendente cobranca aberta
+// pago dinheiro recebido
+// expirado venceu sem pagamento
+// falhou recusada ou nao criada
+// cancelado abandonada
+// reembolsando devolucao em andamento
+// reembolsado dinheiro devolvido
+// reembolso_falhou precisa de nova tentativa
+// em_disputa chargeback aberto
 export const STATUS_PAGAMENTO = {
   criando: { label: 'Processando pagamento', badge: 'bg-warning/15 text-warning', Icon: Clock3 },
   pendente: { label: 'Aguardando pagamento', badge: 'bg-warning/15 text-warning', Icon: Clock3 },
@@ -27,10 +26,7 @@ export const STATUS_PAGAMENTO = {
 
 export const ROTULO_METODO = { pix: 'PIX', boleto: 'Boleto', cartao: 'Cartão de crédito' };
 
-/**
- * O cliente ainda tem o que pagar: horário confirmado, sem cobrança paga ou
- * encerrada. Abaixo de R$ 1,00 não há cobrança possível (mínimo da AbacatePay).
- */
+// ainda tem o que pagar
 export function aguardaPagamento({ statusAgendamento, statusPagamento, preco }) {
   return (
     statusAgendamento === 'confirmado' &&
@@ -39,7 +35,7 @@ export function aguardaPagamento({ statusAgendamento, statusPagamento, preco }) 
   );
 }
 
-/** Boleto leva dias para compensar: só aparece se o serviço estiver longe o bastante. */
+// boleto so se o servico estiver longe
 export const DIAS_MINIMOS_PARA_BOLETO = 5;
 
 export function boletoDisponivelPara(dataHora, agora = new Date()) {

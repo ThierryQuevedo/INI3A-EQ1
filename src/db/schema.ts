@@ -54,7 +54,7 @@ export const servicos = pgTable('servicos', {
   descricao: text('descricao'),
   preco: decimal('preco', { precision: 10, scale: 2 }).notNull(),
   duracaoEstimada: integer('duracao_estimada').notNull(),
-  // Preenchido = desativado pelo prestador: fora da busca e de novos agendamentos.
+  // preenchido quer dizer desativado
   desativadoEm: timestamp('desativado_em'),
 });
 
@@ -83,8 +83,7 @@ export const agendamentos = pgTable('agendamentos', {
   status: text('status').default('pendente').notNull(),
 });
 
-// Cada tentativa de cobrança na AbacatePay é uma linha. Sem cascade: o registro
-// financeiro não pode sumir junto com o agendamento.
+// uma linha por tentativa sem cascade
 export const cobrancas = pgTable(
   'cobrancas',
   {
@@ -92,10 +91,10 @@ export const cobrancas = pgTable(
     agendamentoId: integer('agendamento_id')
       .notNull()
       .references(() => agendamentos.id),
-    // Fica vazio entre reservar a tentativa e a AbacatePay responder.
+    // vazio ate a abacatepay responder
     provedorId: text('provedor_id').unique(),
     metodo: text('metodo').notNull(),
-    // Valores em lib/statusPagamento.js.
+    // valores em lib statuspagamento
     status: text('status').default('criando').notNull(),
     valorCentavos: integer('valor_centavos').notNull(),
     taxaCentavos: integer('taxa_centavos'),
@@ -116,7 +115,7 @@ export const cobrancas = pgTable(
     atualizadoEm: timestamp('atualizado_em').defaultNow().notNull(),
   },
   (tabela) => [
-    // Duas abas ou dois cliques não conseguem abrir duas cobranças do mesmo agendamento.
+    // impede duas cobrancas ativas
     uniqueIndex('cobrancas_uma_ativa_por_agendamento')
       .on(tabela.agendamentoId)
       .where(sql`${tabela.status} in ('criando', 'pendente', 'pago')`),
@@ -153,7 +152,7 @@ export const favoritos = pgTable('favoritos', {
   usuarioId: integer('usuario_id')
     .notNull()
     .references(() => usuarios.id, { onDelete: 'cascade' }),
-  // Exatamente um dos dois é preenchido: favorito de serviço ou de prestador.
+  // so um dos dois e preenchido
   servicoId: integer('servico_id').references(() => servicos.id, { onDelete: 'cascade' }),
   prestadorId: integer('prestador_id').references(() => usuarios.id, { onDelete: 'cascade' }),
   criadoEm: timestamp('criado_em').defaultNow().notNull(),

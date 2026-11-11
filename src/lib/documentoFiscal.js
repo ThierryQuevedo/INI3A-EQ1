@@ -1,4 +1,4 @@
-// Validação de CPF e CNPJ pelos dígitos verificadores.
+// valida cpf e cnpj
 
 export function somenteDigitos(valor) {
   return String(valor ?? '').replace(/\D/g, '');
@@ -30,7 +30,7 @@ export function documentoValido(valor) {
   return somenteDigitos(valor).length > 11 ? cnpjValido(valor) : cpfValido(valor);
 }
 
-/** Máscara progressiva: CPF até 11 dígitos, CNPJ a partir do 12º. */
+// mascara de cpf ou cnpj
 export function formatarDocumento(valor) {
   const d = somenteDigitos(valor).slice(0, 14);
   if (d.length <= 11) {

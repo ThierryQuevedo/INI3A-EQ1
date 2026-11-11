@@ -4,12 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useToast } from "@/app/components/ui/ToastProvider";
 
-/**
- * Mostra um toast de sucesso depois de um redirect de server action
- * (ex.: `/dashboard?servico=criado`) e tira o parâmetro da URL, para o aviso
- * não voltar ao recarregar a página. A página decide a mensagem; sem mensagem, não faz nada.
- * `tipo="erro"` mostra o toast de erro (ex.: exclusão recusada no admin).
- */
+// toast apos redirect que limpa o parametro da url
 export default function ToastDeRetorno({ mensagem, tipo = "sucesso" }) {
   const toast = useToast();
   const router = useRouter();

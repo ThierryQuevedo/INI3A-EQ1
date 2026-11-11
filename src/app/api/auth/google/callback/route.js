@@ -23,7 +23,7 @@ function redirecionarComErro(baseUrl) {
 }
 
 export async function GET(request) {
-  // SITE_URL pode vir com ou sem o basePath; sem ele o redirect cairia fora da aplicação.
+  // site_url pode vir com ou sem basepath
   const origem = (process.env.SITE_URL || request.nextUrl.origin).replace(/\/+$/, '');
   const baseUrl = origem.endsWith(CAMINHO_BASE) ? origem : `${origem}${CAMINHO_BASE}`;
 
@@ -68,7 +68,7 @@ export async function GET(request) {
       .where(filtroEmail(email))
       .limit(1);
 
-    // E-mail já cadastrado é login normal; e-mail novo é cadastro.
+    // email existente faz login e novo faz cadastro
     if (existente) {
       await criarSessao(existente.id);
       revalidatePath('/', 'layout');
@@ -98,7 +98,7 @@ export async function GET(request) {
     await criarSessao(novo.id);
     revalidatePath('/', 'layout');
 
-    // O destino guardado (cookie de "próximo") só é consumido depois da pergunta.
+    // destino so e consumido depois da escolha
     cookieStore.set(COMPLETAR_CADASTRO_COOKIE, '1', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

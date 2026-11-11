@@ -18,23 +18,16 @@ import { Button } from "@/app/components/ui/button";
 
 const estadoInicial = { erro: null, errosCampos: {} };
 
-/**
- * A-08: quando a pessoa chega aqui vindo de "Agendar"/atalho de horário,
- * `pedido` traz o que ela estava marcando (lido no servidor do cookie de
- * destino, sem consumi-lo). O pedido — com dia e hora — é preservado: o
- * login (e-mail ou Google) e o cadastro voltam para a tela de agendar.
- * Google primeiro (não exige lembrar senha); e-mail logo abaixo.
- */
+// pedido e o agendamento em andamento
 export default function LoginForm({ pedido = null, destinoSessao = null }) {
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [state, formAction, isPending] = useActionState(login, estadoInicial);
   const destino = state?.destino ?? destinoSessao;
   useIrAposEntrar(destino);
-  // A navegação leva um instante: o botão segue ocupado até a página trocar.
+  // botao segue ocupado ate navegar
   const entrando = isPending || !!destino;
 
-  // Estados locais para os valores e validação do cliente
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [errosLocais, setErrosLocais] = useState({});
@@ -42,7 +35,6 @@ export default function LoginForm({ pedido = null, destinoSessao = null }) {
   const erroGoogle = searchParams.get("erro") === "google";
   const mensagemErro = state?.erro || (erroGoogle ? "Falha ao autenticar com o Google." : null);
 
-  // Unifica os erros do cliente (errosLocais) e do servidor (state)
   const erroEmail = errosLocais.email || state?.errosCampos?.email;
   const erroSenha = errosLocais.senha || state?.errosCampos?.senha;
 
@@ -65,10 +57,7 @@ export default function LoginForm({ pedido = null, destinoSessao = null }) {
     return Object.keys(novosErros).length === 0;
   };
 
-  // Valida o que está de fato no formulário: o preenchimento automático do
-  // navegador (que uma guia anônima não tem) nem sempre avisa o estado do React.
-  // O envio é manual porque, quando o React executa a `action` do <form>, ele
-  // reseta os campos a cada tentativa.
+  // le o form direto por causa do autopreenchimento
   const handleSubmit = (e) => {
     e.preventDefault();
     const dados = new FormData(e.currentTarget);

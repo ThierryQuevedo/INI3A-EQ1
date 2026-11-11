@@ -11,8 +11,7 @@ export default function DiaCalendario({
 
   let classes = "relative w-full aspect-square rounded-lg flex flex-col items-center justify-center text-body-lg sm:text-h6 font-bold transition ";
 
-  // C-07: selecionado por cor + borda (sem scale: o tamanho não muda).
-  // Disponível com borda de controle (3:1), porque é tocável (G-07).
+  // selecionado muda cor e borda sem mudar tamanho
   if (selecionado) {
     classes += "bg-primary border border-primary text-primary-foreground";
   } else if (desabilitado) {

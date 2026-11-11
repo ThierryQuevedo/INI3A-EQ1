@@ -7,20 +7,13 @@ import { X } from "lucide-react";
 const SELETOR_FOCAVEL =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-/**
- * Sheet genérico (mobile) com arrastar-para-fechar, via framer-motion.
- * Usado para filtros no mobile e outros fluxos que precisem de um painel inferior.
- *
- * Como é modal (aria-modal), ele mesmo cuida do foco: leva o foco para dentro
- * ao abrir, prende o Tab no painel e devolve o foco a quem abriu ao fechar.
- * O arrasto só começa pela alça — no corpo, o gesto vertical é da rolagem.
- */
+// painel inferior com arrastar para fechar
 export default function BottomSheet({ open, onClose, title, children }) {
   const refPainel = useRef(null);
   const refOnClose = useRef(onClose);
   const idTitulo = useId();
   const controlesArrasto = useDragControls();
-  // Sem o MotionConfig global: o próprio sheet respeita "reduzir movimento".
+  // respeita reduzir movimento
   const reduzMovimento = useReducedMotion();
 
   useEffect(() => {
@@ -32,7 +25,7 @@ export default function BottomSheet({ open, onClose, title, children }) {
 
     const focoAnterior = document.activeElement;
     const overflowAnterior = document.documentElement.style.overflow;
-    // Trava a rolagem do fundo enquanto o sheet está aberto.
+    // trava a rolagem do fundo
     document.documentElement.style.overflow = "hidden";
     refPainel.current?.focus();
 
@@ -52,7 +45,7 @@ export default function BottomSheet({ open, onClose, title, children }) {
       }
       const primeiro = focaveis[0];
       const ultimo = focaveis[focaveis.length - 1];
-      // Foco no próprio painel (logo após abrir) conta como "fora da lista".
+      // foco no painel conta como fora da lista
       const dentro =
         refPainel.current.contains(document.activeElement) && document.activeElement !== refPainel.current;
 
@@ -107,7 +100,7 @@ export default function BottomSheet({ open, onClose, title, children }) {
               if (info.offset.y > 120 || info.velocity.y > 600) onClose?.();
             }}
           >
-            {/* Alça: única área que inicia o arrasto. Alta o bastante para o polegar. */}
+            {/* unica area que inicia o arrasto */}
             <div
               className="flex justify-center items-center h-6 shrink-0 touch-none cursor-grab active:cursor-grabbing"
               onPointerDown={(e) => controlesArrasto.start(e)}

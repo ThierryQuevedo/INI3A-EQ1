@@ -13,7 +13,7 @@ import { Button } from '@/app/components/ui/button';
 
 export const metadata = { title: 'Categorias · Admin' };
 
-// Retorno das actions: elas redirecionam com ?aviso= e o toast explica.
+// toast apos o redirect
 const AVISOS = {
     criada: { tipo: 'sucesso', mensagem: 'Categoria adicionada.' },
     duplicada: { tipo: 'erro', mensagem: 'Já existe uma categoria com esse nome.' },
@@ -29,7 +29,7 @@ export default async function page({ searchParams }){
     const listaCategorias = await db.select().from(categorias);
     async function criarCategoria(formData) {
         'use server';
-        // A action é um endpoint próprio: checar de novo, não basta a página ter checado.
+        // actions sao publicas entao confere de novo
         await requireAdmin();
         const nome = String(formData.get('nome') ?? '').trim().slice(0, 60);
         if(!nome) return;

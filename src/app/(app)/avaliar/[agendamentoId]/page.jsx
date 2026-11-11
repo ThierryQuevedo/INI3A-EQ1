@@ -16,13 +16,13 @@ export const dynamic = 'force-dynamic';
 
 export const metadata = { title: 'Avaliar serviço' };
 
-// Destino do link "Avaliar serviço" do e-mail de serviço concluído.
+// destino do link avaliar do email
 export default async function AvaliarServicoPage({ params }) {
   const { agendamentoId } = await params;
 
   const usuario = await getSession();
   if (!usuario) {
-    // O destino vai para um cookie no route handler; o /login fica sem query string.
+    // destino vai num cookie
     redirect(`/api/auth/entrar/?proximo=${encodeURIComponent(`/avaliar/${agendamentoId}/`)}`);
   }
 

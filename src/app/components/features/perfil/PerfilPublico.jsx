@@ -5,14 +5,10 @@ import Avatar from "@/app/components/ui/Avatar";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
 import { Card } from "@/app/components/ui/card";
 
-/**
- * Peças compartilhadas dos perfis públicos (/prestador/[slug] e
- * /cliente/[slug]): banner baixo, coluna de resumo que acompanha a rolagem
- * e cartão compacto de avaliação.
- */
+// pecas comuns aos perfis publicos
 
 export function PerfilBanner({ urlBanner, fallbackHref }) {
-  // Sem banner próprio não desenhamos uma faixa vazia: só o "Voltar".
+  // sem banner so o voltar
   if (!urlBanner) {
     return (
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
@@ -30,7 +26,6 @@ export function PerfilBanner({ urlBanner, fallbackHref }) {
   );
 }
 
-/** Coluna de identidade: avatar, nome, nota, ações, números e bio. */
 export function PerfilResumo({ usuario, eyebrow, detalhe, nota, totalAvaliacoes, rotuloAvaliacoes, acoes, estatisticas, biografia }) {
   return (
     <Card className="lg:sticky lg:top-20">
@@ -81,7 +76,6 @@ export function PerfilResumo({ usuario, eyebrow, detalhe, nota, totalAvaliacoes,
   );
 }
 
-/** Avaliação compacta, pensada para grid de 2 colunas. */
 export function CardAvaliacao({ nome, urlImagem, href, nota, contexto, comentario }) {
   const classeNome = "block text-body-sm font-semibold text-foreground truncate";
   return (

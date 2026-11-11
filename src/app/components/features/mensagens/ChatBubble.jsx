@@ -1,8 +1,7 @@
 import { cn } from "@/lib/utils";
 import { partesNoFuso } from "@/lib/formatoData";
 
-// Fuso fixo de Brasília: com o fuso de cada máquina, o servidor (UTC) e o
-// navegador formatavam horas diferentes e o React acusava erro de hidratação.
+// fuso de brasilia para evitar erro de hidratacao
 function formatarHora(data) {
   return partesNoFuso(data).hora;
 }
@@ -22,7 +21,7 @@ export default function ChatBubble({ mensagem, deMim }) {
         <p
           className={cn(
             "text-caption mt-1",
-            // /85 e não /70: com 70% a hora ficava em 4,06:1 sobre o azul (mínimo 4,5:1).
+            // com 70 a hora perdia contraste
             deMim ? "text-primary-foreground/85" : "text-muted-foreground"
           )}
         >

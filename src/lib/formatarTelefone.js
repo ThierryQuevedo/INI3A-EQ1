@@ -2,7 +2,7 @@ export function desformatarTelefone(valor) {
   return String(valor || '').replace(/\D/g, '').slice(0, 11);
 }
 
-/** Aplica máscara (XX) XXXX-XXXX (fixo) ou (XX) XXXXX-XXXX (celular) enquanto o usuário digita. */
+// mascara de telefone
 export function formatarTelefone(valor) {
   const digitos = desformatarTelefone(valor);
   if (digitos.length === 0) return '';

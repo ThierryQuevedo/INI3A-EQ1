@@ -1,8 +1,6 @@
-// Separa os slugs de serviço repetidos: o serviço mais antigo fica com o slug
-// (as URLs já divulgadas continuam valendo) e os demais ganham o id no final.
-//
-//   npm run db:slugs:servicos              mostra o que mudaria, sem gravar
-//   npm run db:slugs:servicos -- --aplicar grava as mudanças
+// separa slugs de servico repetidos
+// npm run db:slugs:servicos mostra o que mudaria
+// npm run db:slugs:servicos -- --aplicar grava
 import postgres from 'postgres';
 
 const connectionString = process.env.DATABASE_URL;

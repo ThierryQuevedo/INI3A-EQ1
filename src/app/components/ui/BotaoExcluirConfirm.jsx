@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import ConfirmDialog from "./ConfirmDialog";
 
-/** Para usar dentro de um <form action={...}> com um input hidden de id. */
+// usar dentro de um form com input hidden de id
 export default function BotaoExcluirConfirm({ mensagem = "Tem certeza que deseja excluir?", children = "Excluir" }) {
   const [aberto, setAberto] = useState(false);
   const botaoRef = useRef(null);

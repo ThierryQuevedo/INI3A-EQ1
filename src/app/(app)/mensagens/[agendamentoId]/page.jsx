@@ -12,7 +12,7 @@ export default async function ConversaPage({ params }) {
   const { agendamentoId } = await params;
 
   const resultado = await listarMensagens(Number(agendamentoId));
-  // Inexistente ou de outra pessoa: a mesma tela 404, para não revelar qual é o caso.
+  // inexistente ou de outra pessoa da 404
   if (resultado.erro) {
     notFound();
   }

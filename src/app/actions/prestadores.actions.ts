@@ -15,7 +15,7 @@ import { comEstatisticas } from '@/lib/avaliacoes';
 import { getSession } from '@/app/actions/auth.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
 
-// `incluirDesativados` é só para o próprio prestador ver os serviços que tirou do ar.
+// incluirdesativados so para o proprio prestador
 export async function buscarPerfilPrestador(
   identificador: string | number,
   { incluirDesativados = false } = {}
@@ -33,7 +33,7 @@ export async function buscarPerfilPrestador(
       slug: usuarios.slug,
       nome: usuarios.nome,
       email: usuarios.email,
-      // Sem telefone: o perfil é público e o número não deve sair para visitantes.
+      // sem telefone pois o perfil e publico
       urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
       criadoEm: usuarios.criadoEm,
@@ -166,7 +166,6 @@ export async function atualizarLocalizacaoPrestador(dados: {
   return { erro: null, sucesso: true };
 }
 
-/** Wrapper no formato useActionState (estadoAnterior, formData), usado por CampoEditavel em /configuracoes. */
 export async function atualizarEnderecoTextoAction(estadoAnterior: unknown, formData: FormData) {
   const enderecoTexto = formData.get('enderecoTexto');
   return atualizarLocalizacaoPrestador({ enderecoTexto: enderecoTexto ? String(enderecoTexto) : null });

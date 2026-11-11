@@ -5,7 +5,7 @@ import { SlidersHorizontal, Check, MapPin } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import dynamic from "next/dynamic";
 
-// Só abre no celular, por toque: carrega o sheet (e o framer-motion) sob demanda.
+// carrega o sheet sob demanda so no celular
 const BottomSheet = dynamic(() => import("@/app/components/ui/BottomSheet"), { ssr: false });
 import FaixaPreco from "./FaixaPreco";
 import { cn } from "@/lib/utils";
@@ -158,7 +158,7 @@ function CamposFiltro({
   );
 }
 
-/** Sheet no mobile, sidebar fixa no desktop — substitui MenuFiltros.jsx. */
+// sheet no celular e sidebar no desktop
 export default function FilterDrawer({
   filtros,
   onChange,
@@ -199,8 +199,7 @@ export default function FilterDrawer({
         </BottomSheet>
       </div>
 
-      {/* Sticky abaixo do header (h-16): acompanha a rolagem da lista em vez
-          de deixar uma coluna vazia; rola por dentro se não couber na tela. */}
+      {/* sticky abaixo do header */}
       <aside className="max-lg:hidden lg:block lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto w-72 shrink-0 bg-card border border-border rounded-xl p-5 h-fit">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-body-lg text-foreground">Filtros</h2>

@@ -5,7 +5,7 @@ import { Check, Copy, ExternalLink } from 'lucide-react';
 import { Button } from '@/app/components/ui/button';
 import { useToast } from '@/app/components/ui/ToastProvider';
 
-/** Boleto aberto: linha digitável e link para a página de impressão da AbacatePay. */
+// boleto aberto
 export default function BoletoAberto({ pagamento, onTrocarMetodo }) {
   const toast = useToast();
   const [copiado, setCopiado] = useState(false);

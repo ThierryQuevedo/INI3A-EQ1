@@ -3,7 +3,7 @@ import { db } from '@/db';
 import { usuarios } from '@/db/schema';
 import { gerarSlug } from './slug.js';
 
-/** E-mail é comparado sem diferenciar maiúsculas: "Ana@x.com" e "ana@x.com" são a mesma conta. */
+// email sem diferenciar maiusculas
 export function normalizarEmail(valor) {
   return String(valor ?? '').trim().toLowerCase();
 }
@@ -12,7 +12,7 @@ export function filtroEmail(email) {
   return sql`lower(${usuarios.email}) = ${normalizarEmail(email)}`;
 }
 
-/** Slug livre para a URL do perfil: `ana-silva`, `ana-silva-2`, `ana-silva-3`… */
+// slug livre
 export async function gerarSlugUnicoDeUsuario(nome) {
   const base = gerarSlug(String(nome ?? '')) || 'usuario';
   let candidato = base;
@@ -28,7 +28,7 @@ export async function gerarSlugUnicoDeUsuario(nome) {
   }
 }
 
-/** Para onde vai quem acabou de entrar, quando não há um destino guardado. */
+// destino padrao apos entrar
 export function destinoPadrao(tipo) {
   return tipo === 'prestador' ? '/dashboard' : '/';
 }

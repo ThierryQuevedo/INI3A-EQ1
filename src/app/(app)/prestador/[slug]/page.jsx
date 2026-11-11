@@ -119,7 +119,6 @@ export default async function PerfilPrestador({ params }) {
             acoes={
               <>
                 <Button asChild variant="marcar" className="flex-1">
-                  {/* <Link> respeita o basePath e não recarrega a página inteira (A-01). */}
                   <Link href={primeiroServico ? `/agendamentos/novo/?servico=${primeiroServico.id}` : '#servicos'}>
                     <CalendarDays aria-hidden="true" /> Agendar
                   </Link>

@@ -7,7 +7,6 @@ import { getSession } from "@/app/actions/auth.actions";
 const f = createUploadthing();
 
 export const ourFileRouter = {
-    // --- FOTO DE PERFIL ---
     profilePicture: f({
         image: {
             maxFileSize: "4MB",
@@ -42,7 +41,6 @@ export const ourFileRouter = {
         }
     }),
 
-    // --- BANNER ---
     bannerImage: f({
         image: {
             maxFileSize: "8MB",

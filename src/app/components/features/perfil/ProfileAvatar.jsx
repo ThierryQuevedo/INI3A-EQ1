@@ -108,7 +108,6 @@ export default function ProfileAvatar({
     }
   }
 
-  // Drag & Drop
   function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -187,7 +186,7 @@ export default function ProfileAvatar({
           }`}
         >
           {imagemExibida ? (
-            // <img> de propósito: durante o upload a imagem é a prévia local (blob:), que o next/image não carrega.
+            // img pois a previa local e blob
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imagemExibida}

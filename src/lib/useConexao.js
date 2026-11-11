@@ -2,10 +2,7 @@
 
 import { useSyncExternalStore } from 'react';
 
-// A-09: estado de conexão do navegador (eventos online/offline).
-// `navigator.onLine === false` é certeza de que não há rede; `true` pode ser
-// falso positivo (Wi-Fi sem internet) — por isso o envio também tem tempo
-// limite e mensagem de demora. No servidor, assume conectado.
+// estado de conexao do navegador
 
 function assinar(callback) {
   window.addEventListener('online', callback);

@@ -4,11 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-/**
- * Combobox/select personalizado — o <select> nativo delega a lista de opções
- * ao SO, que nem sempre respeita o tema claro/escuro do app (opções quase
- * invisíveis em alguns navegadores). Este componente controla 100% do estilo.
- */
+// select proprio que segue o tema
 export default function Combobox({
   value,
   onChange,
@@ -86,10 +82,9 @@ export default function Combobox({
         onKeyDown={aberto ? aoTeclarNaLista : aoTeclarNoGatilho}
         aria-haspopup="listbox"
         aria-expanded={aberto}
-        // O nome inclui o texto visível ("Categoria: Selecione uma categoria"):
-        // só "Categoria" esconderia de quem usa comando de voz o que está escrito no botão (WCAG 2.5.3).
+        // nome inclui o texto visivel
         aria-label={ariaLabel ? `${ariaLabel}: ${selecionado ? selecionado.label : placeholder}` : undefined}
-        // aria-invalid não vale para role=button: o erro chega pelo aria-describedby.
+        // o erro chega pelo aria describedby
         data-invalido={ariaInvalid ? "" : undefined}
         aria-describedby={ariaDescribedBy}
         className="h-10 w-full rounded-lg border border-input data-[invalido]:border-destructive bg-card px-3 text-body-sm font-semibold text-foreground flex items-center justify-between gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer transition-colors"

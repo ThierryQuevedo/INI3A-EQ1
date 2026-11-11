@@ -118,8 +118,6 @@ export default async function DetalheServico({ params, searchParams }) {
       <ToastDeRetorno mensagem={ehDono && retorno === 'editado' ? 'Alterações salvas.' : null} />
       <BotaoVoltar fallbackHref="/servicos" className="mb-4" />
 
-      {/* Cabeçalho: foto + identidade do serviço numa faixa só, sem card nem
-          banner placeholder — a informação principal fica na primeira dobra. */}
       <header className="flex items-start gap-4 sm:gap-6">
         <div className="w-28 sm:w-44 lg:w-52 shrink-0">
           <FotoServico
@@ -173,8 +171,7 @@ export default async function DetalheServico({ params, searchParams }) {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_20rem] gap-6 lg:gap-8 mt-8 items-start">
-        {/* Coluna lateral: no mobile sobe para logo após o cabeçalho, para o
-            "Agendar" ficar visível sem rolar; no desktop acompanha a rolagem. */}
+        {/* no mobile sobe e no desktop fica fixa */}
         <aside className="order-first lg:order-none lg:col-start-2 lg:row-start-1 lg:sticky lg:top-20 space-y-4">
           <Card padding="sm" className="sm:p-5">
             <div className="flex items-end justify-between gap-3">

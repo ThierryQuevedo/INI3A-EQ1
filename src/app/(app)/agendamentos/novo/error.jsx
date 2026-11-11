@@ -2,7 +2,6 @@
 
 import TelaErro from '@/app/components/ui/TelaErro';
 
-// A-09: falha ao abrir os horários (banco fora, conexão caiu no meio).
 export default function ErroAgendar({ error, reset }) {
   return (
     <TelaErro

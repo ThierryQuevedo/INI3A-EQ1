@@ -16,11 +16,7 @@ const MENSAGENS_ERRO = {
 };
 const MENSAGEM_PADRAO = 'Não foi possível processar o pagamento com este cartão. Confira os dados ou use outra forma de pagamento.';
 
-/**
- * Número e CVV ficam no iframe seguro do abacatepay.js e nunca passam pelo Marca Aí.
- * O token é de uso único e vale 60 segundos: por isso é gerado só no clique em
- * pagar, e cada nova tentativa gera outro.
- */
+// cartao fica no iframe e o token e gerado no clique
 export default function FormularioCartao({
   chavePublica,
   valorCentavos,

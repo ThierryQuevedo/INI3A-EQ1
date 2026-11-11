@@ -3,9 +3,7 @@
 import "./globals.css";
 import { CAMINHO_BASE } from "@/lib/caminhoBase";
 
-// Último recurso: só aparece quando o próprio layout raiz falha. Substitui o
-// <html> inteiro, então não usa tema, fontes nem componentes do app — só HTML
-// simples e as classes do globals.css, para continuar funcionando mesmo assim.
+// so aparece quando o layout raiz falha
 export default function ErroGlobal({ reset }) {
   return (
     <html lang="pt-BR">
@@ -24,7 +22,7 @@ export default function ErroGlobal({ reset }) {
             >
               Tentar de novo
             </button>
-            {/* <a> e não <Link>: o roteador do Next pode ser justamente o que falhou. */}
+            {/* a e nao link pois o roteador pode ter falhado */}
             <a href={`${CAMINHO_BASE}/`} className="h-12 px-6 rounded-lg border border-border inline-flex items-center justify-center font-semibold">
               Ir para o início
             </a>

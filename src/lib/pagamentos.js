@@ -1,10 +1,4 @@
-// Regras de pagamento do Marca Aí. Webhook, consulta periódica e cancelamento
-// passam todos por aqui, então o resultado não depende de quem chegou primeiro.
-//
-// Toda mudança de status é condicional ao status anterior: um webhook repetido
-// ou uma corrida com a consulta periódica não produzem efeito duas vezes. Isso
-// cobre também o reenvio manual pelo painel da AbacatePay, que gera outro `id`
-// de evento e por isso escaparia de um controle baseado só nesse `id`.
+// regras de pagamento e cada mudanca depende do status anterior
 import { after } from 'next/server';
 import { and, desc, eq, inArray, isNull, lt, ne, or, sql } from 'drizzle-orm';
 import { db } from '@/db';
@@ -23,13 +17,13 @@ const STATUS_DO_PROVEDOR = {
   UNDER_DISPUTE: 'em_disputa',
 };
 
-// Já houve dinheiro nestes estados: um novo aviso de pagamento não altera nada.
+// ja houve dinheiro nesses estados
 const STATUS_LIQUIDADOS = ['pago', 'reembolsando', 'reembolsado', 'reembolso_falhou', 'em_disputa'];
 
 const INTERVALO_SINCRONIA_MS = 5000;
 const REEMBOLSO_TRAVADO_MS = 5 * 60 * 1000;
 
-/** Prioridade para escolher a tentativa que representa o agendamento na tela. */
+// prioridade da tentativa mostrada
 const PRIORIDADE = ['em_disputa', 'reembolso_falhou', 'reembolsando', 'pago', 'reembolsado', 'pendente', 'criando'];
 
 export function precoEmCentavos(preco) {
@@ -57,12 +51,12 @@ function maisRelevante(linhas) {
   return null;
 }
 
-/** A tentativa que representa o agendamento, ou null se nenhuma estiver em aberto ou paga. */
+// tentativa que representa o agendamento
 export async function pagamentoRelevanteDoAgendamento(agendamentoId) {
   return maisRelevante(await listarPagamentosDoAgendamento(agendamentoId));
 }
 
-/** Status de pagamento de vários agendamentos, para a agenda. Sem QR Code ou dados da cobrança. */
+// status de varios agendamentos
 export async function resumirPagamentos(agendamentoIds) {
   const resumo = new Map();
   if (agendamentoIds.length === 0) return resumo;
@@ -91,13 +85,7 @@ export async function resumirPagamentos(agendamentoIds) {
   return resumo;
 }
 
-/**
- * Registra o pagamento. O primeiro a pagar vale. Se o agendamento já foi
- * cancelado, ou se outra cobrança dele já foi paga (ex.: o cliente abriu um PIX,
- * trocou para boleto e pagou os dois), o valor volta automaticamente.
- *
- * Trava a linha do agendamento para não correr junto com um cancelamento.
- */
+// registra o pagamento e devolve se cancelado ou duplicado
 export async function confirmarPagamento(pagamentoId, { comprovanteUrl } = {}) {
   const resultado = await db.transaction(async (tx) => {
     const [atual] = await tx
@@ -136,7 +124,7 @@ export async function confirmarPagamento(pagamentoId, { comprovanteUrl } = {}) {
       };
     }
 
-    // Libera o índice de "um ativo por agendamento" antes de marcar como pago.
+    // libera o indice antes de marcar pago
     await tx
       .update(cobrancas)
       .set({ status: 'cancelado', atualizadoEm: agora })
@@ -158,7 +146,7 @@ export async function confirmarPagamento(pagamentoId, { comprovanteUrl } = {}) {
   }
 }
 
-/** Fala com a AbacatePay. Quem chama já deixou a linha em `reembolsando`. */
+// linha ja esta em reembolsando
 async function executarReembolso(pagamentoId, motivo) {
   const pagamento = await buscarPorId(pagamentoId);
   if (!pagamento) return false;
@@ -180,7 +168,7 @@ async function executarReembolso(pagamentoId, motivo) {
   try {
     await reembolsarCobranca(pagamento.provedorId, motivo);
   } catch (erro) {
-    // Repetir um reembolso que já saiu responde 400 com esta mensagem.
+    // reembolso repetido responde 400
     if (!/j[aá] foi reembolsada/i.test(erro?.message ?? '')) return falhar(erro?.message ?? erro);
   }
 
@@ -199,7 +187,7 @@ async function marcarReembolsado(pagamentoId) {
   if (linhas.length > 0) after(() => notificarPagamentoReembolsado(linhas[0].agendamentoId));
 }
 
-/** Atualiza a linha conforme o status informado pela AbacatePay (webhook ou consulta). */
+// atualiza conforme o status da abacatepay
 export async function aplicarStatusDoProvedor(pagamento, statusProvedor, { comprovanteUrl } = {}) {
   const novo = STATUS_DO_PROVEDOR[statusProvedor];
   if (!novo) {
@@ -234,11 +222,7 @@ export async function aplicarStatusDoProvedor(pagamento, statusProvedor, { compr
   }
 }
 
-/**
- * Pergunta à AbacatePay como está a cobrança. É a reserva para o webhook não
- * entregue, e o caminho em desenvolvimento, onde o webhook não alcança o localhost.
- * Uma falha aqui só adia a resposta: a próxima consulta tenta de novo.
- */
+// consulta a cobranca como reserva do webhook
 export async function sincronizarPagamento(pagamento) {
   if (!pagamento.provedorId || !['pendente', 'criando'].includes(pagamento.status)) return pagamento;
 
@@ -256,13 +240,7 @@ export async function sincronizarPagamento(pagamento) {
   return (await buscarPorId(pagamento.id)) ?? pagamento;
 }
 
-/**
- * Chamado depois que o agendamento vira `cancelado`: encerra cobranças abertas e
- * devolve o que já foi pago. Se um pagamento chegar depois disto,
- * `confirmarPagamento` enxerga o cancelamento e devolve também.
- *
- * Devolve `'reembolsado'`, `'reembolso_falhou'` ou null quando não havia pagamento.
- */
+// encerra cobrancas e devolve o pago apos cancelar
 export async function encerrarPagamentosDoAgendamento(agendamentoId, motivo) {
   const agora = new Date();
   await db
@@ -284,7 +262,7 @@ export async function encerrarPagamentosDoAgendamento(agendamentoId, motivo) {
   return resultados.every(Boolean) ? 'reembolsado' : 'reembolso_falhou';
 }
 
-/** Versão para a tela de cancelamento: nunca lança e devolve o texto a mostrar. */
+// nunca lanca e devolve o texto
 export async function encerrarPagamentosComAviso(agendamentoId, motivo) {
   let reembolso;
   try {
@@ -306,7 +284,7 @@ export async function encerrarPagamentosComAviso(agendamentoId, motivo) {
   return { aviso: null, reembolsoFalhou: false };
 }
 
-/** Nova tentativa de uma devolução que falhou ou ficou travada por uma queda do servidor. */
+// nova tentativa de devolucao
 export async function repetirReembolso(agendamentoId) {
   const limite = new Date(Date.now() - REEMBOLSO_TRAVADO_MS);
   const linhas = await db
@@ -331,11 +309,7 @@ export async function repetirReembolso(agendamentoId) {
 
 const EVENTOS_TRATADOS = ['transparent.completed', 'transparent.refunded', 'transparent.disputed'];
 
-/**
- * Processa um evento já autenticado pela rota. Valor e ambiente são conferidos
- * contra o que foi gravado na criação: um evento de teste não quita cobrança real.
- * Só lança em falha temporária (banco fora do ar), para a AbacatePay reenviar.
- */
+// evento ja autenticado e so lanca em falha temporaria
 export async function processarEventoWebhook(evento) {
   if (!EVENTOS_TRATADOS.includes(evento?.event)) return;
 
@@ -366,11 +340,7 @@ export async function processarEventoWebhook(evento) {
   await aplicarStatusDoProvedor(pagamento, cobranca.status, { comprovanteUrl: cobranca.receiptUrl });
 }
 
-/**
- * Procura pelo id da cobrança e, se não achar, pela metadata: o cartão pode ser
- * aprovado e avisar antes de a resposta da criação ser gravada, e um timeout na
- * criação deixa a linha sem id. Nesse caso o id é preenchido aqui.
- */
+// busca pelo id ou pela metadata
 async function localizarPagamentoDoEvento(cobranca) {
   const [porId] = await db.select().from(cobrancas).where(eq(cobrancas.provedorId, cobranca.id)).limit(1);
   if (porId) return porId;

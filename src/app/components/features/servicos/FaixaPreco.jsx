@@ -3,14 +3,10 @@
 import { useId, useState } from "react";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
 
-/** Topo da barra. No topo o máximo fica "sem limite": serviços acima de R$ 5.000 continuam aparecendo. */
+// no topo o maximo vira sem limite
 export const PRECO_TETO = 5000;
 
-/**
- * Posições da barra. Em escala linear de 0 a 5.000, os preços comuns (R$ 30–300)
- * ocupavam só o começo da barra; com degraus progressivos, R$ 0–200 fica com ~40%
- * da barra, R$ 200–1.000 com ~30% e R$ 1.000–5.000 com ~30%, sempre em valores redondos.
- */
+// degraus progressivos para os precos comuns nao ficarem espremidos
 function gerarDegraus() {
   const degraus = [];
   for (let v = 0; v < 200; v += 10) degraus.push(v);
@@ -21,7 +17,7 @@ function gerarDegraus() {
 const DEGRAUS = gerarDegraus();
 const ULTIMO = DEGRAUS.length - 1;
 
-/** Posição na barra para um valor que pode ter sido digitado fora dos degraus. */
+// posicao de valor fora dos degraus
 function indiceAbaixo(valor) {
   return Math.max(0, DEGRAUS.findLastIndex((d) => d <= valor));
 }
@@ -34,7 +30,7 @@ function limitar(valor, minimo, maximo) {
   return Math.min(Math.max(valor, minimo), maximo);
 }
 
-/** "1.500,50" / "1500" / "R$ 80" → número; vazio ou inválido → null. */
+// converte texto em numero ou null
 function lerValor(texto) {
   const limpo = String(texto).replace(/[^\d,.]/g, "").replace(/\./g, "").replace(",", ".");
   if (!limpo) return null;
@@ -42,11 +38,7 @@ function lerValor(texto) {
   return Number.isFinite(numero) ? numero : null;
 }
 
-/**
- * Campo numérico com rascunho local: o filtro só muda ao sair do campo ou apertar Enter,
- * para não "pular" o valor enquanto a pessoa ainda digita (ex.: 1 → 15 → 150).
- * Quem usa passa `key` com o valor atual, para o rascunho reiniciar quando a barra muda.
- */
+// rascunho local que so aplica ao sair ou com enter
 function CampoPreco({ id, rotulo, valor, placeholder, onConfirmar }) {
   const [rascunho, setRascunho] = useState(valor == null ? "" : String(valor));
 
@@ -79,10 +71,7 @@ function CampoPreco({ id, rotulo, valor, placeholder, onConfirmar }) {
   );
 }
 
-/**
- * Faixa de preço com dois controles (mínimo e máximo) de R$ 0 a R$ 5.000, mais campos
- * para digitar o valor exato. `min`/`max` null = sem limite naquele lado.
- */
+// faixa de preco de 0 a 5000
 export default function FaixaPreco({ min, max, onChange }) {
   const id = useId();
   const valorMin = min ?? 0;
@@ -102,8 +91,7 @@ export default function FaixaPreco({ min, max, onChange }) {
   const posMax = indiceAcima(valorMax);
   const pct = (i) => (i / ULTIMO) * 100;
   const rotuloMax = max == null ? `${formatarPreco(PRECO_TETO)}+` : formatarPreco(valorMax);
-  // Com os dois controles colados na metade de cima da barra, o de mínimo precisa
-  // ficar por cima, senão não dá para puxá-lo de volta.
+  // minimo fica por cima para dar para puxar
   const minPorCima = posMin > ULTIMO / 2;
 
   return (

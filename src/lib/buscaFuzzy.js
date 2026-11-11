@@ -1,18 +1,4 @@
-/*
- * Busca aproximada (fuzzy) sem dependência externa.
- *
- * Tolera acento ("cabeleireiro" acha "Cabeleireiro"), maiúsculas, erro de
- * digitação ("manicuri", "barbaria") e palavras fora de ordem ("silva
- * corte"). Devolve uma nota de 0 a 1 e os índices dos caracteres casados no
- * texto ORIGINAL, para o realce na interface.
- *
- * Estratégia, da mais forte para a mais fraca:
- *   1. o termo inteiro aparece como trecho do texto (bônus se começa palavra);
- *   2. cada palavra do termo casa com uma palavra do texto, por prefixo ou
- *      com poucos erros de digitação (distância de Levenshtein);
- *   3. as letras do termo aparecem em ordem no texto (subsequência), com
- *      penalidade pelos buracos.
- */
+// busca aproximada sem dependencia externa
 
 const MARCAS_ACENTO = /[̀-ͯ]/g;
 
@@ -20,15 +6,12 @@ function normalizarChar(c) {
   return c.normalize('NFD').replace(MARCAS_ACENTO, '').toLowerCase();
 }
 
-/** Texto sem acento e em minúsculas. */
+// sem acento e minusculo
 export function normalizar(texto) {
   return String(texto ?? '').normalize('NFD').replace(MARCAS_ACENTO, '').toLowerCase();
 }
 
-/**
- * Normaliza mantendo o mapa índice-normalizado → índice-original, para
- * realçar o texto que o usuário vê (com acentos).
- */
+// mapeia indice normalizado para o original
 function normalizarComMapa(texto) {
   const original = String(texto ?? '');
   let normal = '';
@@ -60,7 +43,7 @@ function levenshtein(a, b, limite) {
   return anterior[b.length];
 }
 
-/** Quantos erros de digitação aceitar numa palavra deste tamanho. */
+// erros aceitos por tamanho de palavra
 function errosPermitidos(tamanho) {
   if (tamanho <= 3) return 0;
   if (tamanho <= 6) return 1;
@@ -81,17 +64,14 @@ function intervalo(inicio, fim) {
   return r;
 }
 
-/**
- * Compara um termo já normalizado com um texto.
- * @returns {{ nota: number, indices: number[] } | null}
- */
+// compara termo normalizado com um texto
 export function compararFuzzy(termoNormal, texto) {
   const termo = termoNormal.trim();
   if (!termo || !texto) return null;
   const { normal, mapa } = normalizarComMapa(texto);
   const paraOriginal = (indices) => [...new Set(indices.map((i) => mapa[i]))];
 
-  // 1. Trecho exato.
+  // 1 trecho exato
   const pos = normal.indexOf(termo);
   if (pos !== -1) {
     const inicioDePalavra = pos === 0 || !/[a-z0-9]/.test(normal[pos - 1]);
@@ -99,7 +79,7 @@ export function compararFuzzy(termoNormal, texto) {
     return { nota, indices: paraOriginal(intervalo(pos, pos + termo.length)) };
   }
 
-  // 2. Palavra a palavra, com prefixo ou tolerância a erro.
+  // 2 palavra a palavra
   const tokens = termo.split(/\s+/).filter(Boolean);
   const palavras = palavrasComPosicao(normal);
   let soma = 0;
@@ -116,8 +96,7 @@ export function compararFuzzy(termoNormal, texto) {
       } else {
         const limite = errosPermitidos(token.length);
         if (limite === 0) continue;
-        // Compara com a palavra inteira e com o prefixo do mesmo tamanho
-        // (quem ainda está digitando "manicu" deve achar "manicure").
+        // compara com a palavra e com o prefixo
         const prefixo = p.texto.slice(0, token.length);
         const dPrefixo = levenshtein(token, prefixo, limite);
         const dInteira = levenshtein(token, p.texto, limite);
@@ -139,8 +118,7 @@ export function compararFuzzy(termoNormal, texto) {
     return { nota: soma / tokens.length, indices: paraOriginal(indices) };
   }
 
-  // 3. Subsequência (letras em ordem). Só para termos curtos o bastante
-  //    para não virar ruído, e exigindo que o primeiro caractere case.
+  // 3 subsequencia para termos curtos
   const compacto = termo.replace(/\s+/g, '');
   if (compacto.length < 2 || compacto.length > 12) return null;
   const achados = [];
@@ -158,11 +136,7 @@ export function compararFuzzy(termoNormal, texto) {
   return { nota: 0.25 + densidade * 0.3, indices: paraOriginal(achados) };
 }
 
-/**
- * Busca em uma lista. `campos` é [{ chave, peso }]; a nota final de cada
- * item é a maior nota ponderada entre os campos.
- * @returns {Array<{ item, nota, realces: Record<string, number[]> }>}
- */
+// busca em lista com peso por campo
 export function buscarFuzzy(lista, termo, campos, { limite = 5, notaMinima = 0.3 } = {}) {
   const termoNormal = normalizar(termo).trim();
   if (!termoNormal) return [];

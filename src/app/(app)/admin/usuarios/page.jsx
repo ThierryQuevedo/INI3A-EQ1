@@ -12,7 +12,7 @@ import { FUSO } from '@/lib/formatoData';
 
 export const metadata = { title: 'Usuários · Admin' };
 
-// Retorno da exclusão: a action redireciona com ?aviso= e o toast explica.
+// toast apos o redirect
 const AVISOS = {
     excluido: { tipo: 'sucesso', mensagem: 'Usuário excluído.' },
     vinculado: {
@@ -25,7 +25,7 @@ const AVISOS = {
 export default async function page({ searchParams }) {
     await requireAdmin();
     const aviso = AVISOS[(await searchParams)?.aviso];
-    // Só as colunas da tabela: select() trazia hash de senha e as fotos em base64 de todos.
+    // so as colunas da tabela sem senha nem fotos
     const listaUsuarios = await db
         .select({
             id: usuarios.id,
@@ -39,7 +39,7 @@ export default async function page({ searchParams }) {
 
     async function deleteUser(formData) {
         'use server';
-        // A action é um endpoint próprio: checar de novo, não basta a página ter checado.
+        // actions sao publicas entao confere de novo
         const admin = await requireAdmin();
         const id = Number(formData.get('id'));
         if (!id) return;
@@ -49,8 +49,7 @@ export default async function page({ searchParams }) {
         try {
             await db.delete(usuarios).where(eq(usuarios.id, id));
         } catch (erro) {
-            // Agendamentos não são apagados em cascata (são histórico dos dois
-            // lados): a chave estrangeira recusa, e o admin recebe o motivo.
+            // agendamento sem cascade entao a fk recusa
             if (erro?.cause?.code !== '23503' && erro?.code !== '23503') throw erro;
             resultado = 'vinculado';
         }
@@ -64,7 +63,7 @@ export default async function page({ searchParams }) {
             <ToastDeRetorno mensagem={aviso?.mensagem} tipo={aviso?.tipo} />
             <PageHeader eyebrow="Administração" title="Usuários" />
 
-            {/* relative: o rótulo sr-only (absolute) da coluna Ações precisa ficar preso aqui, senão alarga a página */}
+            {/* relative segura o sr only da coluna acoes */}
             <Card padding="none" className="relative overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>

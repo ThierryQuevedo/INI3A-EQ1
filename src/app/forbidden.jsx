@@ -5,8 +5,7 @@ import TelaStatus from "@/app/components/ui/TelaStatus";
 
 export const metadata = { title: "Acesso restrito" };
 
-// forbidden() de uma página: a pessoa está logada, mas a página é de outra
-// conta (ex.: editar o serviço de outro prestador) ou exige administrador.
+// logado mas sem acesso
 export default function AcessoRestrito() {
   return (
     <TelaStatus

@@ -58,7 +58,6 @@ function OpcaoMetodo({ valor, selecionado, onSelecionar, Icon, titulo, descricao
   );
 }
 
-/** Tela sem cobrança possível: o agendamento ainda não foi confirmado, ou já foi encerrado. */
 function PagamentoIndisponivel({ status }) {
   const texto =
     status === 'pendente'
@@ -98,8 +97,7 @@ export default function PagamentoCliente({
   const metodoAtual = pagamento?.metodo ?? null;
   const emAberto = statusAtual === 'pendente' || statusAtual === 'criando';
 
-  // Consulta periódica enquanto a cobrança está aberta. Em produção o webhook
-  // costuma chegar antes; no localhost, é por aqui que o pagamento aparece.
+  // consulta periodica pois no localhost o webhook nao chega
   useEffect(() => {
     if (!emAberto) return undefined;
 
@@ -119,7 +117,7 @@ export default function PagamentoCliente({
           router.refresh();
         }
       } catch {
-        // Sem conexão: a próxima rodada tenta de novo.
+        // sem conexao tenta na proxima rodada
       }
     }, intervalo);
 
@@ -135,7 +133,7 @@ export default function PagamentoCliente({
     return false;
   }
 
-  /** Falha na rede não é recusa: para o cartão, a tela manda não repetir na hora. */
+  // falha de rede nao e recusa
   async function iniciar(token) {
     if (enviandoRef.current) return;
     enviandoRef.current = true;

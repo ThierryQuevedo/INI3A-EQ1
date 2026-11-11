@@ -5,17 +5,14 @@ import { MapPin } from "lucide-react";
 import CarrosselServicos from "./CarrosselServicos";
 import { haversineKm } from "@/lib/geo";
 
-/**
- * Pede permissão de localização ao navegador; se negada/indisponível, a seção
- * simplesmente não aparece (degrada graciosamente, sem erro visível ao usuário).
- */
+// sem localizacao a secao nao aparece
 function temGeolocalizacao() {
   return typeof navigator !== "undefined" && !!navigator.geolocation;
 }
 
 export default function SecaoPertoDeVoce({ catalogo }) {
   const [posicao, setPosicao] = useState(null);
-  // já resolvido sincronamente quando o navegador nem suporta geolocalização
+  // pronto quando nao ha geolocalizacao
   const [pronto, setPronto] = useState(() => !temGeolocalizacao());
 
   useEffect(() => {

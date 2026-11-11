@@ -2,15 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import logotipo from "../../../public/images/Identidade visual marca ai/logotipo.png";
 
-/**
- * Tela dos erros 4xx (404, 403). Numa rota inexistente ela aparece sozinha,
- * sem Header: traz o próprio logo e ocupa a tela toda. Quando uma página
- * logada chama notFound()/forbidden(), o layout do grupo continua em volta
- * com o Header — aí o logo daqui sairia repetido e some ([body:has(header)]).
- */
+// tela dos erros 404 e 403
 export default function TelaStatus({ codigo, Icone, titulo, children, acoes }) {
   return (
-    // <section> e não <main>: dentro do AppShell já existe o <main id="main-content">.
+    // section pois o appshell ja tem o main
     <section
       aria-labelledby="titulo-status"
       className="min-h-dvh [body:has(header)_&]:min-h-[70dvh] flex flex-col items-center justify-center gap-6 px-4 py-12 text-center"

@@ -20,7 +20,7 @@ const ITENS_PRESTADOR = [
   { href: "/mensagens", label: "Chat", Icon: MessageCircle },
 ];
 
-/** Navegação principal no mobile (<md). Substitui o menu hambúrguer. */
+// navegacao principal no celular
 export default function BottomNav({ usuario }) {
   const pathname = usePathname();
   const ehPrestador = usuario?.tipo === "prestador";
@@ -30,9 +30,7 @@ export default function BottomNav({ usuario }) {
     { href: usuario ? "/configuracoes" : "/login", label: "Perfil", Icon: User },
   ];
 
-  // A-07: a tela de agendar é um fluxo de tarefa — o rodapé de revisão com
-  // "Marcar horário" ocupa a borda de baixo, ao alcance do polegar. O
-  // "Voltar" do topo continua lá (Nielsen #3).
+  // na tela de agendar a borda e do rodape
   if (pathname?.startsWith("/agendamentos/novo")) return null;
 
   return (

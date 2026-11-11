@@ -23,11 +23,7 @@ const badgeVariants = cva(
   }
 );
 
-/**
- * Etiqueta passiva (status, contagem, categoria). Não é botão: nunca
- * recebe onClick. Passe `status` para usar as cores de agendamento de
- * lib/statusAgendamento.js no lugar de `variant`.
- */
+// etiqueta sem onclick
 export function Badge({ className, variant, size, status, children, ...props }) {
   return (
     <span

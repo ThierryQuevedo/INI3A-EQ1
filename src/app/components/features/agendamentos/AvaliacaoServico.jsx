@@ -5,11 +5,7 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import { avaliarCliente, avaliarServico } from "@/app/actions/avaliacoes.actions";
 
-/**
- * Avaliação depois do serviço concluído, nos dois sentidos: `alvo="prestador"`
- * (padrão) é o cliente avaliando o serviço; `alvo="cliente"` é o prestador
- * avaliando o cliente — a nota aparece no perfil público do cliente.
- */
+// avaliacao depois do servico concluido
 export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, variante = "card", alvo = "prestador", nomeCliente }) {
   const naPagina = variante === "pagina";
   const avaliandoCliente = alvo === "cliente";

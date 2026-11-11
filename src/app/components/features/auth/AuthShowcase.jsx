@@ -19,12 +19,7 @@ const FUNCIONALIDADES = [
   },
 ];
 
-/**
- * Painel exibido ao lado dos formulários de login/cadastro em telas largas
- * (lg+). Superfície sólida dos tokens semânticos — nada de gradiente ou
- * textura — para conversar com o formulário em vez de competir com ele.
- * Em telas estreitas o form ocupa a tela toda sozinho.
- */
+// painel ao lado do login em telas largas
 export default function AuthShowcase({ title, className }) {
   return (
     <aside
