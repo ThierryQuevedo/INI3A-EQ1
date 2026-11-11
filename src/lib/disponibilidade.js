@@ -69,6 +69,13 @@ function intervalosOcupados(agendados, diaChave) {
 }
 
 // horarios livres de um dia
+// o jsdoc abaixo tipa os parametros para o type check do next build (sem ele, agendados vira never[])
+/**
+ * @param {{ dia?: string, data?: Date | string, duracaoEstimada: number | string,
+ *   disponibilidades: Array<{ diaSemana: number, horaInicio: string, horaFim: string }>,
+ *   agendados?: Array<{ dataHora: string | Date, status: string, duracao?: number }>,
+ *   agora?: Date }} dados
+ */
 export function calcularSlotsLivresDoDia({ dia, data, duracaoEstimada, disponibilidades, agendados = [], agora = new Date() }) {
   const diaChave = paraChaveDia(dia ?? data);
   const { dia: hoje, hora: horaAgora } = partesNoFuso(agora);
