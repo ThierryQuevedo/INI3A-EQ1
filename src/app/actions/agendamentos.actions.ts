@@ -15,6 +15,8 @@ import {
 } from '@/lib/notificacoes';
 import { buscarMotivosCancelamento, textoDoMotivo } from '@/lib/motivoCancelamento';
 import { encerrarPagamentosComAviso, resumirPagamentos } from '@/lib/pagamentos';
+import { calcularSlotsLivresDoDia } from '@/lib/disponibilidade';
+import { partesNoFuso } from '@/lib/formatoData';
 
 // `usuarios` entra duas vezes no join (cliente e prestador).
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_agenda');
@@ -50,7 +52,7 @@ export async function confirmarAgendamentoAction({
   }
 
   const [servicoExistente] = await db
-    .select({ id: servicos.id, prestadorId: servicos.prestadorId })
+    .select({ id: servicos.id, prestadorId: servicos.prestadorId, duracaoEstimada: servicos.duracaoEstimada })
     .from(servicos)
     .where(and(eq(servicos.id, Number(servicoId)), isNull(servicos.desativadoEm)))
     .limit(1);
@@ -90,6 +92,37 @@ export async function confirmarAgendamentoAction({
       };
     }
     return { erro: 'Este horário acabou de ser preenchido. Escolha outro.', codigo: 'ocupado' };
+  }
+
+  // A tela só oferece horários livres, mas a action pode ser chamada direto.
+  // O servidor confere com a MESMA regra da grade: dentro da disponibilidade do
+  // serviço e sem sobrepor (pela duração) outro agendamento do prestador.
+  const [listaDisponibilidades, ocupacao] = await Promise.all([
+    db
+      .select({
+        diaSemana: disponibilidades.diaSemana,
+        horaInicio: disponibilidades.horaInicio,
+        horaFim: disponibilidades.horaFim,
+      })
+      .from(disponibilidades)
+      .where(
+        and(
+          eq(disponibilidades.prestadorId, servicoExistente.prestadorId),
+          eq(disponibilidades.servicoId, servicoExistente.id)
+        )
+      ),
+    listarOcupacaoDoPrestador(servicoExistente.prestadorId),
+  ]);
+  const { dia, hora } = partesNoFuso(agendamentoDate);
+  const livres = calcularSlotsLivresDoDia({
+    dia,
+    duracaoEstimada: servicoExistente.duracaoEstimada,
+    disponibilidades: listaDisponibilidades,
+    agendados: ocupacao,
+  });
+  const instanteExato = agendamentoDate.getUTCSeconds() === 0 && agendamentoDate.getUTCMilliseconds() === 0;
+  if (!instanteExato || !livres.includes(hora)) {
+    return { erro: 'Este horário não está mais disponível. Escolha outro.', codigo: 'ocupado' };
   }
 
   const [novo] = await db
@@ -319,6 +352,8 @@ export async function listarMeusAgendamentos() {
       prestadorNome: prestadorUsuarios.nome,
       avaliacaoNota: avaliacoes.notaParaPrestador,
       avaliacaoComentario: avaliacoes.comentarioPrestador,
+      avaliacaoClienteNota: avaliacoes.notaParaCliente,
+      avaliacaoClienteComentario: avaliacoes.comentarioCliente,
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))

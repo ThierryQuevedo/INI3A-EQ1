@@ -25,7 +25,6 @@ export async function buscarPerfilCliente(identificador) {
       id: usuarios.id,
       slug: usuarios.slug,
       nome: usuarios.nome,
-      email: usuarios.email,
       telefone: usuarios.telefone,
       urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
@@ -39,6 +38,21 @@ export async function buscarPerfilCliente(identificador) {
   if (!dadosUsuario) return null;
 
   const clienteId = dadosUsuario.id;
+
+  // O telefone só sai para o próprio cliente e para quem já atende ou atendeu
+  // ele (o mesmo critério da Agenda). Qualquer outra pessoa logada não o recebe.
+  const visitante = await getSession();
+  let podeVerTelefone = visitante?.id === clienteId;
+  if (!podeVerTelefone && visitante) {
+    const [vinculo] = await db
+      .select({ id: agendamentos.id })
+      .from(agendamentos)
+      .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
+      .where(and(eq(agendamentos.clienteId, clienteId), eq(servicos.prestadorId, visitante.id)))
+      .limit(1);
+    podeVerTelefone = !!vinculo;
+  }
+  if (!podeVerTelefone) dadosUsuario.telefone = null;
 
   // Estatísticas de avaliações recebidas pelo cliente (feitas pelos prestadores)
   const [estatAvaliacoes] = await db

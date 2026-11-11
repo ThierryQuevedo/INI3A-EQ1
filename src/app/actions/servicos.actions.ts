@@ -43,30 +43,6 @@ function chaveCodigoExclusao(usuarioId, servicoId) {
   return `excluir-servico:${usuarioId}:${servicoId}`;
 }
 
-export async function buscarServico(id: number) {
-  const [servico] = await db
-    .select()
-    .from(servicos)
-    .where(eq(servicos.id, Number(id)))
-    .limit(1);
-
-  return servico ?? null;
-}
-
-export async function buscarServicoPorSlug(slug: string) {
-  const [servico] = await db
-    .select()
-    .from(servicos)
-    .where(eq(servicos.slug, slug))
-    .limit(1);
-
-  return servico ?? null;
-}
-
-export async function listarServicos() {
-  return await db.select().from(servicos);
-}
-
 /** Só as categorias do sistema: as criadas em "Outro" não entram em filtros nem em listas. */
 export async function listarCategorias() {
   return await db
@@ -214,7 +190,8 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
   revalidatePath('/servicos');
 
   // Fora do try: redirect() funciona lançando um sinal interno do Next.
-  redirect('/dashboard');
+  // ?servico=criado faz o Painel mostrar o aviso de sucesso (ToastDeRetorno).
+  redirect('/dashboard?servico=criado');
 }
 
 /**
@@ -354,5 +331,5 @@ export async function atualizarServico(_estadoAnterior: unknown, formData: FormD
   revalidatePath('/servicos');
   revalidatePath(destino);
 
-  redirect(destino);
+  redirect(`${destino}?servico=editado`);
 }

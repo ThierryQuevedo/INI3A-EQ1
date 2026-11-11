@@ -6,12 +6,23 @@ import { cn } from "@/lib/utils";
 import BadgeNaoLidas from "@/app/components/features/mensagens/BadgeNaoLidas";
 
 
+/** Telas do prestador dentro de /servicos (criar e editar) não são a busca. */
+function estaAtivo(href, pathname) {
+  if (!pathname) return false;
+  if (href === "/") return pathname === "/";
+  if (href === "/servicos") {
+    const telaDoPrestador = pathname.startsWith("/servicos/novo") || /\/editar\/?$/.test(pathname);
+    return pathname.startsWith(href) && !telaDoPrestador;
+  }
+  return pathname.startsWith(href);
+}
+
 export default function HeaderDesktopNav({ usuario, className }) {
   const pathname = usePathname();
 
   const itens = [
     { href: "/", label: "Início" },
-    { href: "/servicos", label: "Buscar profissionais" },
+    { href: "/servicos", label: "Buscar profissionais", labelCurto: "Buscar" },
     ...(usuario
       ? [
           { href: "/agendamentos", label: "Agenda" },
@@ -22,20 +33,27 @@ export default function HeaderDesktopNav({ usuario, className }) {
 
   return (
     <nav aria-label="Navegação principal" className={cn("items-center gap-1", className)}>
-      {itens.map(({ href, label }) => {
-        const ativo = href === "/" ? pathname === "/" : pathname?.startsWith(href);
+      {itens.map(({ href, label, labelCurto }) => {
+        const ativo = estaAtivo(href, pathname);
         return (
           <Link
             key={href}
             href={href}
             aria-current={ativo ? "page" : undefined}
             className={cn(
-              "relative px-3.5 h-11 inline-flex items-center rounded-lg text-body-sm font-semibold transition-colors",
+              "relative px-3.5 h-11 inline-flex items-center whitespace-nowrap rounded-lg text-body-sm font-semibold transition-colors",
               ativo ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
-            {label}
-            {href === "/mensagens" && <BadgeNaoLidas className="top-1 right-1" />}
+            {labelCurto ? (
+              <>
+                <span className="xl:hidden">{labelCurto}</span>
+                <span className="max-xl:hidden">{label}</span>
+              </>
+            ) : (
+              label
+            )}
+            {href === "/mensagens" && <BadgeNaoLidas className="static ml-1.5 ring-0" />}
           </Link>
         );
       })}

@@ -1,4 +1,5 @@
 import { layoutEmail, escapar } from './layout.js';
+import { FUSO } from '../formatoData.js';
 
 // Precisa acompanhar o `basePath` de next.config.mjs.
 const BASE_PATH = '/26-marcaai';
@@ -10,9 +11,10 @@ export function linkApp(rota) {
   return `${raiz}${rota}`;
 }
 
-/** "segunda-feira, 15 de setembro de 2026 às 14:30" */
+/** "segunda-feira, 15 de setembro de 2026 às 14:30", sempre no horário de Brasília (o servidor pode estar em UTC). */
 export function formatarDataHora(data) {
   return new Date(data).toLocaleString('pt-BR', {
+    timeZone: FUSO,
     weekday: 'long',
     day: '2-digit',
     month: 'long',

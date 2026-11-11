@@ -16,8 +16,13 @@ import { listarPagamentosAFazer } from "@/app/actions/pagamentos.actions";
 import AvisoPagamentos from "@/app/components/features/pagamentos/AvisoPagamentos";
 import { calcularProximosHorariosLivres } from "@/app/actions/disponibilidades.actions";
 import { ehHoje } from "@/lib/disponibilidade";
+import { FUSO, partesNoFuso } from "@/lib/formatoData";
 import PageContainer from "@/app/components/ui/PageContainer";
 import { imagemPublica } from '@/lib/imagemPublica';
+
+export const metadata = {
+  title: { absolute: 'Marca Aí: encontre um profissional e agende na hora' },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -133,8 +138,8 @@ export default async function Home() {
             <span className="block text-caption font-semibold opacity-80">Seu próximo agendamento</span>
             <span className="block text-body-sm font-semibold truncate">
               {agendamentoProximo.servicoNome} com {agendamentoProximo.prestadorNome} ·{" "}
-              {new Date(agendamentoProximo.dataHora).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })} às{" "}
-              {new Date(agendamentoProximo.dataHora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+              {new Date(agendamentoProximo.dataHora).toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: FUSO })} às{" "}
+              {partesNoFuso(agendamentoProximo.dataHora).hora}
             </span>
           </span>
           <ChevronRight size={18} className="shrink-0 opacity-70" aria-hidden="true" />

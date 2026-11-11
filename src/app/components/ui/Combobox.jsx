@@ -86,7 +86,9 @@ export default function Combobox({
         onKeyDown={aberto ? aoTeclarNaLista : aoTeclarNoGatilho}
         aria-haspopup="listbox"
         aria-expanded={aberto}
-        aria-label={ariaLabel}
+        // O nome inclui o texto visível ("Categoria: Selecione uma categoria"):
+        // só "Categoria" esconderia de quem usa comando de voz o que está escrito no botão (WCAG 2.5.3).
+        aria-label={ariaLabel ? `${ariaLabel}: ${selecionado ? selecionado.label : placeholder}` : undefined}
         // aria-invalid não vale para role=button: o erro chega pelo aria-describedby.
         data-invalido={ariaInvalid ? "" : undefined}
         aria-describedby={ariaDescribedBy}

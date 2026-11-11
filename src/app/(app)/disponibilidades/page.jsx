@@ -256,6 +256,7 @@ export default function DisponibilidadePage() {
         return;
       }
       setDisponibilidades((prev) => prev.map((d) => (d.id === range.id ? normalizarBloco(resultado) : d)));
+      toast.success('Horário atualizado.');
     } catch {
       setDisponibilidades(anterior);
       definirErroDia(dia.valor, 'Erro ao atualizar horário.');

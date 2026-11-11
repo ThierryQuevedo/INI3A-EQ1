@@ -1,4 +1,4 @@
-import { notFound, redirect } from 'next/navigation';
+import { forbidden, notFound } from 'next/navigation';
 import { eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { categorias as tabelaCategorias, servicos } from '@/db/schema';
@@ -36,7 +36,7 @@ export default async function EditarServicoPage({ params }) {
     .limit(1);
 
   if (!servico) notFound();
-  if (servico.prestadorId !== usuario.id) redirect(`/servicos/${slug}`);
+  if (servico.prestadorId !== usuario.id) forbidden();
 
   const categoriasPadrao = await listarCategorias();
 

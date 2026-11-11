@@ -29,7 +29,7 @@ export default function Header({ usuario }) {
                             {usuario.tipo === "prestador" && (
                                 <Link
                                     href="/dashboard"
-                                    className="max-md:hidden md:flex items-center gap-2 text-body-sm font-semibold bg-secondary hover:bg-secondary/70 text-secondary-foreground px-4 h-11 rounded-lg transition-colors"
+                                    className="max-md:hidden md:flex items-center gap-2 whitespace-nowrap text-body-sm font-semibold bg-secondary hover:bg-secondary/70 text-secondary-foreground px-4 h-11 rounded-lg transition-colors"
                                 >
                                     <LayoutDashboard size={16} aria-hidden="true" />
                                     Painel
@@ -38,9 +38,10 @@ export default function Header({ usuario }) {
 
                             <Link
                                 href="/configuracoes"
-                                className="text-body-sm font-medium text-muted-foreground hover:text-foreground transition-colors max-lg:hidden lg:inline"
+                                title={usuario.nome}
+                                className="text-body-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap max-xl:hidden xl:inline"
                             >
-                                Olá, <span className="text-foreground font-semibold">{usuario.nome}</span>
+                                Olá, <span className="text-foreground font-semibold inline-block max-w-32 truncate align-bottom">{usuario.nome.split(' ')[0]}</span>
                             </Link>
 
                             <NotificacoesDropdown />

@@ -6,6 +6,8 @@ import PageContainer, { PageHeader } from "@/app/components/ui/PageContainer";
 import { Card } from "@/app/components/ui/card";
 import EmptyState from "@/app/components/ui/EmptyState";
 
+export const metadata = { title: 'Mensagens' };
+
 export const dynamic = "force-dynamic";
 
 export default async function MensagensPage() {
@@ -32,7 +34,7 @@ export default async function MensagensPage() {
           />
         </Card>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid grid-cols-1 gap-3">
           {conversas.map((conversa) => (
             <ConversaListItem key={conversa.agendamentoId} conversa={conversa} />
           ))}

@@ -187,6 +187,8 @@ export default function ProfileAvatar({
           }`}
         >
           {imagemExibida ? (
+            // <img> de propósito: durante o upload a imagem é a prévia local (blob:), que o next/image não carrega.
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imagemExibida}
               alt={usuario?.nome ? `Foto de ${usuario.nome}` : "Foto de perfil"}

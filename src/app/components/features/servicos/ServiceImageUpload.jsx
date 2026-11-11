@@ -212,7 +212,8 @@ export default function ServiceImageUpload({
               abrirSeletor();
             }
           }}
-          aria-label="Arraste uma foto do serviço ou clique para selecionar"
+          // Sem aria-label: o nome vem do texto visível (instrução, formatos e
+          // "Selecionar arquivo"), o mesmo que a pessoa lê na tela (WCAG 2.5.3).
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3 select-none ${
             isDragging
               ? "border-primary bg-primary/10 ring-4 ring-primary/20 scale-[1.01]"

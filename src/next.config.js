@@ -32,6 +32,10 @@ const nextConfig = {
     ],
   },
   reactCompiler: true,
+  // Libera forbidden() e o app/forbidden.jsx (tela 403 personalizada).
+  experimental: {
+    authInterrupts: true,
+  },
 };
 
 export default nextConfig;

@@ -2,3 +2,8 @@ node_modules
 .next
 *.env
 *.tsbuildinfo
+
+# Claude Code (configuração local, worktrees e instruções do assistente)
+.claude/
+CLAUDE.md
+CLAUDE.local.md

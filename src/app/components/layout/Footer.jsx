@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function Footer() {
   return (
-    <footer className="bg-surface border-t border-border text-muted-foreground font-sans text-body-sm transition-colors mt-auto">
+    <footer data-rodape-site className="bg-surface border-t border-border text-muted-foreground font-sans text-body-sm transition-colors mt-auto">
       <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
 
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-center sm:text-left">

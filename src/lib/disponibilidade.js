@@ -80,6 +80,10 @@ function intervalosOcupados(agendados, diaChave) {
  * Horários livres ('HH:MM', em ordem) de um dia, dado as disponibilidades
  * (blocos recorrentes por dia da semana) e os agendamentos do prestador.
  * `dia` é a chave 'AAAA-MM-DD'; `data` (Date) continua aceito por compatibilidade.
+ * @param {{ dia?: string, data?: Date | string, duracaoEstimada: number | string,
+ *   disponibilidades: Array<{ diaSemana: number, horaInicio: string, horaFim: string }>,
+ *   agendados?: Array<{ dataHora: string | Date, status: string, duracao?: number }>,
+ *   agora?: Date }} dados
  */
 export function calcularSlotsLivresDoDia({ dia, data, duracaoEstimada, disponibilidades, agendados = [], agora = new Date() }) {
   const diaChave = paraChaveDia(dia ?? data);

@@ -195,20 +195,15 @@ export default function UserBannerUpload({
         </div>
       )}
 
+      {/* Clicar ou arrastar na área toda é atalho de mouse. Para teclado e leitor
+          de tela, quem faz isso são os botões "Adicionar/Alterar capa" e "Remover"
+          lá dentro: um role="button" em volta deles seria um controle dentro de
+          outro, e o leitor de tela não anunciaria os de dentro. */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={abrirSeletor}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            abrirSeletor();
-          }
-        }}
-        aria-label="Capa do perfil. Clique ou arraste para alterar"
         className={`w-full h-44 sm:h-52 md:h-60 rounded-2xl overflow-hidden relative group cursor-pointer border transition select-none ${
           isDragging
             ? "border-primary ring-4 ring-primary/20 bg-primary/5 scale-[1.005]"
@@ -216,7 +211,8 @@ export default function UserBannerUpload({
         }`}
       >
         {imagemExibida ? (
-
+          // <img> de propósito: durante o upload a imagem é a prévia local (blob:), que o next/image não carrega.
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imagemExibida}
             alt="Capa do perfil"
@@ -273,8 +269,8 @@ export default function UserBannerUpload({
           <button
             type="button"
             onClick={abrirSeletor}
-            title="Alterar capa"
-            aria-label="Alterar capa do perfil"
+            title={imagemExibida ? "Alterar capa" : "Adicionar capa"}
+            aria-label={imagemExibida ? "Alterar capa do perfil" : "Adicionar capa do perfil"}
             className="px-3.5 py-2 pointer-coarse:min-h-11 rounded-lg bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition shadow-md active:scale-95 cursor-pointer"
           >
             <Camera size={16} aria-hidden="true" />

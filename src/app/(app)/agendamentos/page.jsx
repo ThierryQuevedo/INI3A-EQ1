@@ -10,6 +10,7 @@ import { listarPagamentosAFazer } from '@/app/actions/pagamentos.actions';
 import { STATUS_PAGAMENTO, aguardaPagamento } from '@/lib/statusPagamento';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { rotuloStatus, statusBadgeClass, STATUS_AGENDAMENTO } from '@/lib/statusAgendamento';
+import { FUSO, diaRelativo, partesNoFuso } from '@/lib/formatoData';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
 import { Card } from '@/app/components/ui/card';
 import EmptyState from '@/app/components/ui/EmptyState';
@@ -17,24 +18,20 @@ import { Button } from '@/app/components/ui/button';
 
 const STATUS_CANCELAVEL = ['pendente', 'confirmado'];
 
+export const metadata = { title: 'Sua agenda' };
+
 export const dynamic = 'force-dynamic';
 
+// Sempre no fuso de Brasília (lib/formatoData.js): esta página é renderizada no
+// servidor, que pode rodar em UTC — com o fuso da máquina, 09:00 viraria 12:00.
 function formatarData(data) {
-  const d = new Date(data);
-  const hoje = new Date();
-  const amanha = new Date();
-  amanha.setDate(hoje.getDate() + 1);
-
-  const mesmodia = (a, b) => a.toDateString() === b.toDateString();
-
-  if (mesmodia(d, hoje)) return 'Hoje';
-  if (mesmodia(d, amanha)) return 'Amanhã';
-
-  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+  const relativo = diaRelativo(partesNoFuso(data).dia);
+  if (relativo) return relativo;
+  return new Date(data).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', timeZone: FUSO });
 }
 
 function formatarHora(data) {
-  return new Date(data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return partesNoFuso(data).hora;
 }
 
 // Card individual de agendamento
@@ -44,7 +41,7 @@ function CardAgendamento({ item, usuarioLogado }) {
   const destaque = dataLabel === 'Hoje' || dataLabel === 'Amanhã';
   const dataTag = destaque
     ? dataLabel
-    : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+    : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: FUSO });
   // O papel é de cada agendamento, não da conta: prestador também agenda serviços.
   const ehCliente = item.papel === 'cliente';
   const horarioComecou = new Date(item.dataHora) <= new Date();
@@ -58,10 +55,11 @@ function CardAgendamento({ item, usuarioLogado }) {
   const pago = item.pagamentoStatus === 'pago';
 
   return (
-    <Card padding="default" interactive id={`pedido-${item.id}`}>
+    <Card padding="default" interactive id={`pedido-${item.id}`} className="min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
         <div className="flex items-center gap-4 min-w-0 flex-1">
-        <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/15' : 'bg-secondary'}`}>
+        {/* bg-info/10 e não /15: com /15 o texto azul ficava em 4,39:1 no tema claro (mínimo 4,5:1). */}
+        <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/10' : 'bg-secondary'}`}>
           <p className={`text-body-sm font-bold ${destaque ? 'text-info' : 'text-primary'}`}>
             {formatarHora(item.dataHora)}
           </p>
@@ -70,7 +68,7 @@ function CardAgendamento({ item, usuarioLogado }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-body-lg font-bold text-foreground min-w-0 break-words">{item.servicoNome}</h3>
-            <span className={`px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 ${destaque ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 ${destaque ? 'bg-info/10 text-info' : 'bg-muted text-muted-foreground'}`}>
               {dataTag}
             </span>
             {usuarioLogado.tipo === 'prestador' && (
@@ -147,6 +145,15 @@ function CardAgendamento({ item, usuarioLogado }) {
           {item.pagamentoStatus === 'reembolso_falhou' && item.pagamentoMetodo !== 'boleto' && (
             <BotaoRepetirReembolso agendamentoId={item.id} />
           )}
+          {!ehCliente && item.status === 'pendente' && (
+            <BotaoAcaoAgendamento
+              agendamentoId={item.id}
+              novoStatus="confirmado"
+              label="Confirmar"
+              titulo="Confirmar agendamento?"
+              descricao={`Deseja confirmar o agendamento de ${item.clienteNome} para ${item.servicoNome}?`}
+            />
+          )}
           {!ehCliente && item.status === 'confirmado' && (
             horarioComecou ? (
               <BotaoAcaoAgendamento
@@ -193,7 +200,8 @@ function CardAgendamento({ item, usuarioLogado }) {
       )}
 
       {ehCliente && item.status === 'concluido' && (
-        <div className="mt-4 pt-4 border-t border-border">
+        // A própria AvaliacaoServico desenha a divisória de cima.
+        <div className="mt-1">
           <AvaliacaoServico
             agendamentoId={item.id}
             avaliacaoExistente={
@@ -209,6 +217,21 @@ function CardAgendamento({ item, usuarioLogado }) {
             <Star size={15} aria-hidden="true" />
             {item.avaliacaoNota ? 'Ver avaliação' : 'Abrir página de avaliação'}
           </Link>
+        </div>
+      )}
+
+      {!ehCliente && item.status === 'concluido' && (
+        <div className="mt-1">
+          <AvaliacaoServico
+            agendamentoId={item.id}
+            alvo="cliente"
+            nomeCliente={item.clienteNome}
+            avaliacaoExistente={
+              item.avaliacaoClienteNota
+                ? { nota: item.avaliacaoClienteNota, comentario: item.avaliacaoClienteComentario }
+                : null
+            }
+          />
         </div>
       )}
     </Card>
@@ -316,7 +339,7 @@ export default async function AgendamentosPage() {
                 <p className="text-muted-foreground text-body-sm">Nenhum agendamento futuro no momento.</p>
               </Card>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {proximos.map((item) => (
                   <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
                 ))}
@@ -332,7 +355,7 @@ export default async function AgendamentosPage() {
                 Histórico
                 <span className="text-caption font-medium text-muted-foreground">· {historico.length}</span>
               </h2>
-              <div className="grid gap-4 opacity-90">
+              <div className="grid grid-cols-1 gap-4 opacity-90">
                 {historico.map((item) => (
                   <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
                 ))}

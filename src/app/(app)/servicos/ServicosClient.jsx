@@ -47,10 +47,6 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
         setFiltros((f) => ({ ...f, pertoDeMim: false }));
     }, []);
 
-    const precoMaximo = useMemo(() => {
-        const maior = servicos.reduce((max, s) => Math.max(max, Number(s.preco) || 0), 0);
-        return Math.max(100, Math.ceil(maior / 10) * 10);
-    }, [servicos]);
 
     const servicosFiltrados = useMemo(() => {
         const termo = normalizarTexto(termoBusca.trim());
@@ -69,7 +65,10 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                 descricao.includes(termo);
 
             const correspondeCategoria = !filtros.categoriaId || String(servico.categoriaId) === filtros.categoriaId;
-            const correspondePreco = filtros.precoMax == null || Number(servico.preco) <= filtros.precoMax;
+            const preco = Number(servico.preco);
+            const correspondePreco =
+                (filtros.precoMin == null || preco >= filtros.precoMin) &&
+                (filtros.precoMax == null || preco <= filtros.precoMax);
             const correspondeAvaliacao = (servico.avaliacaoMedia || 0) >= filtros.avaliacaoMin;
             const correspondeHorario = !filtros.comHorarioHoje || ehHoje(servico.proximoHorario);
             const correspondeProximidade =
@@ -130,7 +129,6 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
                         filtros={filtros}
                         onChange={setFiltros}
                         categorias={categorias}
-                        precoMaximo={precoMaximo}
                         statusLocalizacao={statusLocalizacao}
                         onAtivarPertoDeMim={ativarPertoDeMim}
                         onDesativarPertoDeMim={desativarPertoDeMim}

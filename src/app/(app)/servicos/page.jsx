@@ -1,3 +1,5 @@
+export const metadata = { title: 'Buscar serviços' };
+
 export const dynamic = 'force-dynamic';
 
 import { eq, isNull } from 'drizzle-orm';

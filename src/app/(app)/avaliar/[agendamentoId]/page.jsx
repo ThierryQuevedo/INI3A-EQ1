@@ -10,6 +10,7 @@ import BotaoVoltar from '@/app/components/ui/BotaoVoltar';
 import PlaceholderImage from '@/app/components/ui/PlaceholderImage';
 import PageContainer from '@/app/components/ui/PageContainer';
 import { Card } from '@/app/components/ui/card';
+import { FUSO } from '@/lib/formatoData';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +64,7 @@ export default async function AvaliarServicoPage({ params }) {
   }
 
   const quando = new Date(agendamento.dataHora).toLocaleString('pt-BR', {
+    timeZone: FUSO,
     day: '2-digit',
     month: 'long',
     year: 'numeric',

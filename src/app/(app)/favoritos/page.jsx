@@ -7,6 +7,8 @@ import PageContainer, { PageHeader } from "@/app/components/ui/PageContainer";
 import { Card } from "@/app/components/ui/card";
 import EmptyState from "@/app/components/ui/EmptyState";
 
+export const metadata = { title: 'Favoritos' };
+
 export const dynamic = "force-dynamic";
 
 export default async function FavoritosPage() {

@@ -33,7 +33,7 @@ export async function buscarPerfilPrestador(
       slug: usuarios.slug,
       nome: usuarios.nome,
       email: usuarios.email,
-      telefone: usuarios.telefone,
+      // Sem telefone: o perfil é público e o número não deve sair para visitantes.
       urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
       criadoEm: usuarios.criadoEm,

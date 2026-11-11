@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { partesNoFuso, formatarDiaCurto, formatarHora, formatarQuandoFalado } from "@/lib/formatoData";
+import { partesNoFuso, formatarDiaCurto, formatarHora } from "@/lib/formatoData";
 
 /** Link do atalho: abre a tela de agendar já com dia e hora marcados (A-03). */
 export function hrefAtalhoHorario(servicoId, proximoHorario) {
@@ -39,9 +39,11 @@ export default function AvailabilityBadge({ proximoHorario, servicoId, nomeServi
   }
 
   return (
+    // Sem aria-label: o nome do link é o próprio texto, com o contexto antes só
+    // para leitor de tela. Assim quem usa comando de voz ("clicar em Hoje, 14h")
+    // acha o link pelo que vê (WCAG 2.5.3).
     <Link
       href={hrefAtalhoHorario(servicoId, data)}
-      aria-label={`Marcar ${nomeServico || "este serviço"} ${formatarQuandoFalado(data)}`}
       className={cn(
         "relative z-10 flex min-h-12 w-full flex-wrap items-center gap-x-1.5 gap-y-0 rounded-lg border border-input bg-card px-3 py-1.5 text-left",
         "text-body-sm text-foreground hover:bg-secondary active:scale-[0.97] transition duracao-rapida",
@@ -49,6 +51,7 @@ export default function AvailabilityBadge({ proximoHorario, servicoId, nomeServi
       )}
     >
       <Clock size={16} className="shrink-0 text-primary" aria-hidden="true" />
+      <span className="sr-only">Marcar {nomeServico || "este serviço"}: </span>
       <span className="whitespace-nowrap">{textoDia},</span>
       <time dateTime={data.toISOString()} className="whitespace-nowrap font-bold tabular-nums text-body">
         {textoHora}

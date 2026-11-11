@@ -7,11 +7,12 @@ import dynamic from "next/dynamic";
 
 // Só abre no celular, por toque: carrega o sheet (e o framer-motion) sob demanda.
 const BottomSheet = dynamic(() => import("@/app/components/ui/BottomSheet"), { ssr: false });
-import { formatarPreco } from "@/app/components/ui/PriceTag";
+import FaixaPreco from "./FaixaPreco";
 import { cn } from "@/lib/utils";
 
 export const FILTROS_PADRAO = {
   categoriaId: "",
+  precoMin: null,
   precoMax: null,
   avaliacaoMin: 0,
   comHorarioHoje: false,
@@ -19,10 +20,11 @@ export const FILTROS_PADRAO = {
   ordenacao: "relevancia",
 };
 
-export function filtrosAtivos(filtros, precoMaximo) {
+export function filtrosAtivos(filtros) {
   return (
     !!filtros.categoriaId ||
-    (filtros.precoMax != null && filtros.precoMax < precoMaximo) ||
+    filtros.precoMin != null ||
+    filtros.precoMax != null ||
     filtros.avaliacaoMin > 0 ||
     filtros.comHorarioHoje ||
     filtros.pertoDeMim ||
@@ -51,12 +53,10 @@ function CamposFiltro({
   filtros,
   onChange,
   categorias,
-  precoMaximo,
   statusLocalizacao,
   onAtivarPertoDeMim,
   onDesativarPertoDeMim,
 }) {
-  const idPreco = useId();
   const idOrdenacao = useId();
   const avaliacoes = [0, 3, 4, 4.5];
   const localizando = statusLocalizacao === "buscando";
@@ -104,21 +104,11 @@ function CamposFiltro({
         )}
       </div>
 
-      <div>
-        <label htmlFor={idPreco} className="font-semibold text-body-sm text-foreground mb-2.5 block">
-          Preço até {formatarPreco(filtros.precoMax ?? precoMaximo)}
-        </label>
-        <input
-          id={idPreco}
-          type="range"
-          min={0}
-          max={precoMaximo}
-          step={Math.max(1, Math.round(precoMaximo / 50))}
-          value={filtros.precoMax ?? precoMaximo}
-          onChange={(e) => onChange({ ...filtros, precoMax: Number(e.target.value) })}
-          className="w-full accent-primary"
-        />
-      </div>
+      <FaixaPreco
+        min={filtros.precoMin}
+        max={filtros.precoMax}
+        onChange={({ min, max }) => onChange({ ...filtros, precoMin: min, precoMax: max })}
+      />
 
       <div>
         <p className="font-semibold text-body-sm text-foreground mb-2.5">Avaliação mínima</p>
@@ -173,18 +163,16 @@ export default function FilterDrawer({
   filtros,
   onChange,
   categorias,
-  precoMaximo,
   statusLocalizacao,
   onAtivarPertoDeMim,
   onDesativarPertoDeMim,
 }) {
   const [abertoMobile, setAbertoMobile] = useState(false);
-  const ativo = filtrosAtivos(filtros, precoMaximo);
+  const ativo = filtrosAtivos(filtros);
   const propsCampos = {
     filtros,
     onChange,
     categorias,
-    precoMaximo,
     statusLocalizacao,
     onAtivarPertoDeMim,
     onDesativarPertoDeMim,

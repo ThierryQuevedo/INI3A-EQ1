@@ -132,5 +132,6 @@ export async function avaliarCliente({
 
   revalidatePath('/dashboard');
   revalidatePath('/agendamentos');
+  revalidatePath('/cliente/[slug]', 'page');
   return { erro: null, sucesso: true };
 }

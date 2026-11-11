@@ -1,9 +1,11 @@
 import Link from "next/link";
 import Avatar from "@/app/components/ui/Avatar";
 import { cn } from "@/lib/utils";
+import { partesNoFuso } from "@/lib/formatoData";
 
+// Fuso fixo de Brasília (o servidor pode rodar em UTC).
 function formatarHora(data) {
-  return new Date(data).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return partesNoFuso(data).hora;
 }
 
 export default function ConversaListItem({ conversa }) {
@@ -12,7 +14,7 @@ export default function ConversaListItem({ conversa }) {
   return (
     <Link
       href={`/mensagens/${agendamentoId}`}
-      className="flex items-center gap-4 p-4 rounded-xl bg-card border border-border hover:bg-muted transition-colors"
+      className="flex items-center gap-4 min-w-0 p-4 rounded-xl bg-card border border-border hover:bg-muted transition-colors"
     >
       <Avatar nome={outroUsuario.nome} urlImagem={outroUsuario.urlImagem} size="lg" />
 

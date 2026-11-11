@@ -272,7 +272,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
           </Button>
         </form>
 
-        <section aria-labelledby="titulo-previa" className="lg:sticky lg:top-8">
+        <section aria-labelledby="titulo-previa" className="lg:sticky lg:top-20">
           <h2 id="titulo-previa" className="font-sans text-body-sm font-semibold text-muted-foreground tracking-normal mb-3 text-center lg:text-left">
             Pré-visualização
           </h2>
