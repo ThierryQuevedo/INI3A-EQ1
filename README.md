@@ -96,7 +96,7 @@ No Windows:
 instalarDependencias.bat
 ```
 
-No Linux/macOS
+No Linux/macOS:
 
 ```bash
 ./instalarDependencias.sh
