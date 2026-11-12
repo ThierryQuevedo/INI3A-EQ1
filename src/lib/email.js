@@ -1,5 +1,4 @@
-// Transporte de e-mail (Nodemailer). Os templates ficam em lib/emails/ e os
-// eventos que disparam envio, em lib/notificacoes.js.
+// envio de email com nodemailer
 
 import nodemailer from 'nodemailer';
 

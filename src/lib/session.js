@@ -28,10 +28,10 @@ export async function criarSessao(usuarioId) {
   return sessionId;
 }
 
-// Conta criada agora pelo Google: ainda falta perguntar se é cliente ou prestador.
+// conta nova do google sem tipo
 export const COMPLETAR_CADASTRO_COOKIE = 'marcaai_completar_cadastro';
 
-// routing pós login
+// destino depois do login
 export const PROXIMO_COOKIE = 'marcaai_proximo';
 
 export function caminhoInternoSeguro(valor) {

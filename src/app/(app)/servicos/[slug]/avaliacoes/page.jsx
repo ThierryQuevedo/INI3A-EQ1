@@ -9,6 +9,13 @@ import BotaoVoltar from "@/app/components/ui/BotaoVoltar";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
 import { estatisticasPorServico, avaliacoesPorServico } from "@/lib/avaliacoes";
 import PageContainer from "@/app/components/ui/PageContainer";
+import { nomeDoServico } from '@/lib/metadados';
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const nome = await nomeDoServico(slug);
+  return { title: nome ? `Avaliações de ${nome}` : 'Avaliações' };
+}
 
 export const dynamic = 'force-dynamic';
 

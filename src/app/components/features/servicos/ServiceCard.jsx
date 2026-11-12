@@ -58,19 +58,20 @@ export default function ServiceCard({ servico, interativo = true }) {
           <span
             className={cn(
               "absolute top-3 left-3 bg-card/95 text-foreground text-caption font-semibold px-2.5 py-1 rounded-md shadow-soft inline-flex items-center gap-1.5 min-w-0",
-              // Margens de 12px + coração de 36px + 8px de folga até o coração.
+              // margens mais coracao mais folga
               mostrarFavorito ? "max-w-[calc(100%-4.25rem)]" : "max-w-[80%]"
             )}
             title={nomeCategoria}
           >
             <CategoryIcon nome={nomeCategoria} size={13} className="shrink-0" />
-            <span className="truncate min-w-0">{nomeCategoria}</span>
+            {/* card estreito mostra so o icone */}
+            <span className="truncate min-w-0 @max-[12rem]:hidden">{nomeCategoria}</span>
           </span>
         )}
       </div>
 
-      <div className="p-4 pb-2">
-        <h3 className="font-bold text-body text-foreground leading-snug truncate" title={nomeServico}>
+      <div className="p-3 pb-2 @min-[12rem]:p-4 @min-[12rem]:pb-2">
+        <h3 className="font-bold text-body text-foreground leading-snug line-clamp-2 break-words" title={nomeServico}>
           {nomeServico || "Serviço"}
         </h3>
         <p className="text-body-sm text-muted-foreground truncate mt-0.5" title={nomeProfissional}>
@@ -111,7 +112,7 @@ export default function ServiceCard({ servico, interativo = true }) {
   return (
     <article
       aria-label={`${nomeServico || "Serviço"}, por ${nomeProfissional || "Profissional"}`}
-      className="group relative w-full bg-card rounded-xl shadow-soft hover:shadow-card border border-border transition hover:-translate-y-1 flex flex-col h-full overflow-hidden"
+      className="@container group relative w-full bg-card rounded-xl shadow-soft hover:shadow-card border border-border transition hover:-translate-y-1 flex flex-col h-full overflow-hidden"
     >
       {interativo ? (
         <Link href={hrefDetalhe} className={classeConteudo}>{conteudo}</Link>
@@ -119,9 +120,8 @@ export default function ServiceCard({ servico, interativo = true }) {
         <div className={classeConteudo}>{conteudo}</div>
       )}
 
-      {/* Com ações abaixo, quem vai para o fim do card são elas: a data pode
-          quebrar em duas linhas, e o preço continua alinhado entre os vizinhos. */}
-      <div className={cn("px-4 pb-4 pt-1 flex flex-wrap items-baseline justify-between gap-x-2", !interativo && "mt-auto")}>
+      {/* acoes no fim do card */}
+      <div className={cn("px-3 pb-4 pt-1 @min-[12rem]:px-4 flex flex-wrap items-baseline justify-between gap-x-2", !interativo && "mt-auto")}>
         <span className="text-body-lg font-bold text-foreground whitespace-nowrap tabular-nums">
           {formatarPreco(preco)}
         </span>
@@ -130,11 +130,9 @@ export default function ServiceCard({ servico, interativo = true }) {
         )}
       </div>
 
-      {/* A-03 / C-10 / G-07: dois alvos separados (8px). A pílula do próximo
-          horário é o atalho: abre a tela de agendar já com dia e hora
-          marcados. "Ver horários" abre a mesma tela no primeiro dia com vaga. */}
+      {/* pilula abre com dia e hora e ver horarios abre no primeiro dia */}
       {interativo && !desativado && (
-        <div className="mt-auto px-4 pb-4 flex flex-col gap-2">
+        <div className="mt-auto px-3 pb-4 @min-[12rem]:px-4 flex flex-col gap-2">
           {proximoHorario ? (
             <AvailabilityBadge proximoHorario={proximoHorario} servicoId={id} nomeServico={nomeServico} />
           ) : proximoHorario === null ? (

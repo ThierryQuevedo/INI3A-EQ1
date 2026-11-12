@@ -5,13 +5,14 @@ import { SlidersHorizontal, Check, MapPin } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import dynamic from "next/dynamic";
 
-// Só abre no celular, por toque: carrega o sheet (e o framer-motion) sob demanda.
+// carrega o sheet sob demanda so no celular
 const BottomSheet = dynamic(() => import("@/app/components/ui/BottomSheet"), { ssr: false });
-import { formatarPreco } from "@/app/components/ui/PriceTag";
+import FaixaPreco from "./FaixaPreco";
 import { cn } from "@/lib/utils";
 
 export const FILTROS_PADRAO = {
   categoriaId: "",
+  precoMin: null,
   precoMax: null,
   avaliacaoMin: 0,
   comHorarioHoje: false,
@@ -19,10 +20,11 @@ export const FILTROS_PADRAO = {
   ordenacao: "relevancia",
 };
 
-export function filtrosAtivos(filtros, precoMaximo) {
+export function filtrosAtivos(filtros) {
   return (
     !!filtros.categoriaId ||
-    (filtros.precoMax != null && filtros.precoMax < precoMaximo) ||
+    filtros.precoMin != null ||
+    filtros.precoMax != null ||
     filtros.avaliacaoMin > 0 ||
     filtros.comHorarioHoje ||
     filtros.pertoDeMim ||
@@ -51,12 +53,10 @@ function CamposFiltro({
   filtros,
   onChange,
   categorias,
-  precoMaximo,
   statusLocalizacao,
   onAtivarPertoDeMim,
   onDesativarPertoDeMim,
 }) {
-  const idPreco = useId();
   const idOrdenacao = useId();
   const avaliacoes = [0, 3, 4, 4.5];
   const localizando = statusLocalizacao === "buscando";
@@ -104,21 +104,11 @@ function CamposFiltro({
         )}
       </div>
 
-      <div>
-        <label htmlFor={idPreco} className="font-semibold text-body-sm text-foreground mb-2.5 block">
-          Preço até {formatarPreco(filtros.precoMax ?? precoMaximo)}
-        </label>
-        <input
-          id={idPreco}
-          type="range"
-          min={0}
-          max={precoMaximo}
-          step={Math.max(1, Math.round(precoMaximo / 50))}
-          value={filtros.precoMax ?? precoMaximo}
-          onChange={(e) => onChange({ ...filtros, precoMax: Number(e.target.value) })}
-          className="w-full accent-primary"
-        />
-      </div>
+      <FaixaPreco
+        min={filtros.precoMin}
+        max={filtros.precoMax}
+        onChange={({ min, max }) => onChange({ ...filtros, precoMin: min, precoMax: max })}
+      />
 
       <div>
         <p className="font-semibold text-body-sm text-foreground mb-2.5">Avaliação mínima</p>
@@ -168,23 +158,21 @@ function CamposFiltro({
   );
 }
 
-/** Sheet no mobile, sidebar fixa no desktop — substitui MenuFiltros.jsx. */
+// sheet no celular e sidebar no desktop
 export default function FilterDrawer({
   filtros,
   onChange,
   categorias,
-  precoMaximo,
   statusLocalizacao,
   onAtivarPertoDeMim,
   onDesativarPertoDeMim,
 }) {
   const [abertoMobile, setAbertoMobile] = useState(false);
-  const ativo = filtrosAtivos(filtros, precoMaximo);
+  const ativo = filtrosAtivos(filtros);
   const propsCampos = {
     filtros,
     onChange,
     categorias,
-    precoMaximo,
     statusLocalizacao,
     onAtivarPertoDeMim,
     onDesativarPertoDeMim,
@@ -211,8 +199,7 @@ export default function FilterDrawer({
         </BottomSheet>
       </div>
 
-      {/* Sticky abaixo do header (h-16): acompanha a rolagem da lista em vez
-          de deixar uma coluna vazia; rola por dentro se não couber na tela. */}
+      {/* sticky abaixo do header */}
       <aside className="max-lg:hidden lg:block lg:sticky lg:top-20 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto w-72 shrink-0 bg-card border border-border rounded-xl p-5 h-fit">
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-bold text-body-lg text-foreground">Filtros</h2>

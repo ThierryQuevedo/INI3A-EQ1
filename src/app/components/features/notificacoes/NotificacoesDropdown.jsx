@@ -45,7 +45,7 @@ export default function NotificacoesDropdown() {
     function handleClickFora(event) {
       if (menuRef.current && !menuRef.current.contains(event.target)) setAberto(false);
     }
-    // Esc fecha e devolve o foco ao sino.
+    // esc fecha e devolve o foco ao sino
     function handleKeyDown(event) {
       if (event.key !== "Escape") return;
       setAberto((estavaAberto) => {

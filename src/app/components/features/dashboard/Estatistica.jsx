@@ -1,6 +1,5 @@
 import { Card } from "@/app/components/ui/card";
 
-/** Card compacto de métrica dos painéis: ícone centralizado + valor + rótulo. */
 export default function Estatistica({ Icon, valor, rotulo }) {
   return (
     <Card padding="sm" className="flex items-center gap-3">

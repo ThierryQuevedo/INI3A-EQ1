@@ -17,8 +17,7 @@ import { validarUrlImagem, ERRO_IMAGEM_INVALIDA } from '@/lib/validarImagem';
 
 const ERRO_SERVICO_COM_AGENDAMENTOS = 'Este serviço já tem agendamentos e não pode ser excluído.';
 
-// Só o dono passa daqui, e serviço com agendamento nunca é excluído.
-// Devolve `{ erro }` ou `{ usuario, servico }`.
+// so o dono e servico com agendamento nao e excluido
 async function validarExclusaoDeServico(servicoId) {
   const usuario = await getSession();
   if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para continuar.' };
@@ -43,31 +42,7 @@ function chaveCodigoExclusao(usuarioId, servicoId) {
   return `excluir-servico:${usuarioId}:${servicoId}`;
 }
 
-export async function buscarServico(id: number) {
-  const [servico] = await db
-    .select()
-    .from(servicos)
-    .where(eq(servicos.id, Number(id)))
-    .limit(1);
-
-  return servico ?? null;
-}
-
-export async function buscarServicoPorSlug(slug: string) {
-  const [servico] = await db
-    .select()
-    .from(servicos)
-    .where(eq(servicos.slug, slug))
-    .limit(1);
-
-  return servico ?? null;
-}
-
-export async function listarServicos() {
-  return await db.select().from(servicos);
-}
-
-/** Só as categorias do sistema: as criadas em "Outro" não entram em filtros nem em listas. */
+// so categorias do sistema
 export async function listarCategorias() {
   return await db
     .select()
@@ -76,8 +51,7 @@ export async function listarCategorias() {
 }
 
 export async function listarServicosPorPrestador(prestadorId: number) {
-  // Chamada por componente cliente (disponibilidades): a foto vai como
-  // endereço curto, não como base64 (ver lib/imagemPublica.js).
+  // foto como endereco curto
   return await db
     .select({
       ...getTableColumns(servicos),
@@ -87,8 +61,7 @@ export async function listarServicosPorPrestador(prestadorId: number) {
     .where(eq(servicos.prestadorId, Number(prestadorId)));
 }
 
-// A URL do serviço é o slug e a busca por ele pega uma linha só: dois serviços
-// com o mesmo nome fariam um dos dois abrir a página do outro.
+// slug unico
 async function gerarSlugUnicoDeServico(nome: string) {
   const base = gerarSlug(nome) || 'servico';
   let candidato = base;
@@ -104,8 +77,7 @@ async function gerarSlugUnicoDeServico(nome: string) {
   }
 }
 
-// Campos em comum entre criar e editar. Devolve `{ erro, campo }` ao primeiro
-// problema, ou `{ dados }` com tudo limpo e pronto para gravar.
+// validacao comum a criar e editar
 function validarCamposServico(formData) {
   const nome = formData.get('nome')?.toString().trim() || '';
   const categoriaIdRaw = formData.get('categoriaId')?.toString() || '';
@@ -154,8 +126,7 @@ function validarCamposServico(formData) {
   };
 }
 
-// `categorias.nome` é único: dois prestadores digitando "Aula" em "Outro" usam a
-// mesma categoria em vez de o segundo receber um erro ao salvar.
+// nome de categoria e unico
 async function resolverCategoriaId(categoriaIdRaw, novaCategoriaNome) {
   if (categoriaIdRaw !== 'outro') return Number(categoriaIdRaw);
 
@@ -173,17 +144,19 @@ async function resolverCategoriaId(categoriaIdRaw, novaCategoriaNome) {
   return nova.id;
 }
 
-// Assinatura do useActionState: devolve { erro } em vez de lançar, para o
-// formulário mostrar a mensagem sem perder o que a pessoa digitou.
 export async function cadastrarServico(_estadoAnterior: unknown, formData: FormData) {
   const usuario = await getSession();
   if (!usuario) {
     redirect('/login');
   }
 
+  // so prestador cria servico
+  if (usuario.tipo !== 'prestador') {
+    return { erro: 'Sua conta ainda é de cliente. Vire prestador nas configurações para cadastrar serviços.' };
+  }
+
   const prestadorId = Number(usuario.id);
 
-  // Valida tudo antes de gravar qualquer coisa.
   const validacao = validarCamposServico(formData);
   if (!validacao.dados) return validacao;
   const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem } = validacao.dados;
@@ -230,14 +203,11 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
   revalidatePath('/dashboard');
   revalidatePath('/servicos');
 
-  // Fora do try: redirect() funciona lançando um sinal interno do Next.
-  redirect('/dashboard');
+  // fora do try pois redirect lanca
+  redirect('/dashboard?servico=criado');
 }
 
-/**
- * Desativa ou reativa um serviço do próprio prestador. Desativado, ele sai da
- * busca e não recebe novos agendamentos; os que já existem continuam valendo.
- */
+// desativado sai da busca
 export async function alterarServicoAtivo(servicoId: number, ativo: boolean) {
   const usuario = await getSession();
   if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para continuar.' };
@@ -257,12 +227,11 @@ export async function alterarServicoAtivo(servicoId: number, ativo: boolean) {
     .set({ desativadoEm: ativo ? null : new Date() })
     .where(eq(servicos.id, Number(servicoId)));
 
-  // Catálogo, home, favoritos e perfil mudam juntos.
   revalidatePath('/', 'layout');
   return { erro: null, sucesso: true };
 }
 
-/** Primeira etapa da exclusão: manda para o e-mail da conta um código de confirmação. */
+// exclusao etapa 1 envia codigo por email
 export async function solicitarCodigoExclusaoServico(servicoId: number) {
   const validacao = await validarExclusaoDeServico(servicoId);
   if (!validacao.usuario) return { erro: validacao.erro };
@@ -278,7 +247,7 @@ export async function solicitarCodigoExclusaoServico(servicoId: number) {
   const resultado = await enviarEmail({ to: usuario.email, subject: email.assunto, html: email.html });
 
   if (!resultado.enviado) {
-    // Sem SMTP em desenvolvimento, o código sai no terminal para dar para testar.
+    // sem smtp em dev o codigo vai para o terminal
     if (process.env.NODE_ENV !== 'production') {
       console.info(`[dev] Código para excluir o serviço ${servico.id}: ${codigo}`);
       return { erro: null, sucesso: true };
@@ -290,12 +259,7 @@ export async function solicitarCodigoExclusaoServico(servicoId: number) {
   return { erro: null, sucesso: true };
 }
 
-/**
- * Segunda etapa: confere o código e exclui. Disponibilidades e favoritos saem
- * junto (cascade no schema). Sem revalidatePath de propósito: ele renderizaria
- * de novo a página do serviço que acabou de sumir, e quem chama já faz uma
- * navegação completa.
- */
+// exclusao etapa 2 confere o codigo e exclui
 export async function excluirServico(servicoId: number, codigo: string) {
   const validacao = await validarExclusaoDeServico(servicoId);
   if (!validacao.usuario) return { erro: validacao.erro };
@@ -307,7 +271,7 @@ export async function excluirServico(servicoId: number, codigo: string) {
   try {
     await db.delete(servicos).where(eq(servicos.id, servico.id));
   } catch (error) {
-    // Um cliente pode ter agendado depois da checagem: a chave estrangeira segura.
+    // a fk barra agendamento feito depois
     if (error?.cause?.code === '23503' || error?.code === '23503') {
       return { erro: ERRO_SERVICO_COM_AGENDAMENTOS };
     }
@@ -318,10 +282,7 @@ export async function excluirServico(servicoId: number, codigo: string) {
   return { erro: null, destino: `/prestador/${usuario.slug || usuario.id}` };
 }
 
-/**
- * Edita um serviço do próprio prestador. O slug não muda junto com o nome, para
- * não quebrar links já compartilhados. Agendamentos existentes ficam como estão.
- */
+// edita o servico sem mudar o slug
 export async function atualizarServico(_estadoAnterior: unknown, formData: FormData) {
   const usuario = await getSession();
   if (!usuario) {
@@ -371,5 +332,5 @@ export async function atualizarServico(_estadoAnterior: unknown, formData: FormD
   revalidatePath('/servicos');
   revalidatePath(destino);
 
-  redirect(destino);
+  redirect(`${destino}?servico=editado`);
 }

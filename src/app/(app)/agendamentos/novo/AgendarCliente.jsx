@@ -31,22 +31,16 @@ import {
 } from '@/lib/formatoData';
 
 const DIAS_NA_FAIXA = 14;
-// Até onde procurar o "próximo dia com vaga" quando os 14 dias estão cheios.
+// limite de dias para buscar vaga
 const HORIZONTE_BUSCA = 120;
-// A-09: depois disso, avisa que está demorando (calibrar em teste real).
+// tempo ate avisar que esta demorando
 const TEMPO_DEMORA_MS = 8000;
 
 function prefereMovimentoReduzido() {
   return typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
 
-/**
- * Decide o que vem marcado ao abrir a tela (A-03 / G-05):
- * - dia e hora da URL (atalho do card) se a hora ainda estiver livre;
- * - se a hora foi preenchida, o mesmo dia (ou o próximo com vaga) + aviso;
- * - sem URL, o PRIMEIRO dia com vaga (não só hoje);
- * - se só existe 1 horário nos 14 dias, ele já vem marcado.
- */
+// comeca no dia e hora da url se livres senao no proximo dia com vaga
 function escolherSelecaoInicial({ dataInicial, horaInicial, hoje, dadosAgenda, totalNaFaixa }) {
   const slotsDe = (dia) => calcularSlotsLivresDoDia({ dia, ...dadosAgenda });
 
@@ -122,7 +116,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
     return daFaixa ? daFaixa.slots : calcularSlotsLivresDoDia({ dia: diaSelecionado, ...dadosAgenda });
   }, [diaSelecionado, diasDaFaixa, dadosAgenda]);
 
-  // Zero vagas nos 14 dias: procura o próximo dia com vaga mais adiante (G-05).
+  // sem vaga em 14 dias procura mais adiante
   const vagaDistante = useMemo(
     () =>
       totalNaFaixa > 0
@@ -131,7 +125,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
     [totalNaFaixa, hoje, dadosAgenda]
   );
 
-  // Vagas por dia do mês aberto no calendário ("Ver outro mês").
+  // vagas por dia do mes aberto
   const diasInfoDoMes = useMemo(() => {
     if (!calendarioAberto) return {};
     const { ano, mes } = mesCalendario;
@@ -145,9 +139,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
     return info;
   }, [calendarioAberto, mesCalendario, hoje, dadosAgenda]);
 
-  // D-06 (bug corrigido): ao escolher um dia com o dedo/mouse, rola UMA vez
-  // até os horários — só se estiverem fora da vista — e respeita o
-  // movimento reduzido. Pelo teclado não rola nem tira o foco do grupo.
+  // rola ate os horarios so com mouse ou toque
   useEffect(() => {
     if (pedidoRolagem === 0) return;
     const grade = refGrade.current;
@@ -158,8 +150,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
     }
   }, [pedidoRolagem]);
 
-  // Quando o horário foi perdido (preenchido por outra pessoa), o foco vai
-  // para a grade, onde está o aviso (A-03 / A-09).
+  // horario perdido leva o foco para a grade
   useEffect(() => {
     if (pedidoFocoGrade === 0) return;
     const grade = refGrade.current;
@@ -200,7 +191,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
     selecionarDia(vagaDistante.dia, { rolar: true });
   }
 
-  // "Alterar" do rodapé: volta à faixa de dias com o foco no dia marcado.
+  // volta o foco ao dia marcado
   function alterarSelecao() {
     const faixa = refFaixa.current;
     if (!faixa) return;
@@ -242,7 +233,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
           const ocupacao = await recarregarOcupacaoDoServico(servico.id);
           setAgendados(ocupacao);
         } catch {
-          // Sem recarregar, a grade ainda mostra o horário; o servidor recusa de novo.
+          // a grade ainda mostra o horario e o servidor recusa de novo
         }
         setHorarioSelecionado(null);
         setAviso(
@@ -260,8 +251,7 @@ export default function AgendarCliente({ servico, disponibilidades, agendadosIni
 
       setErro(resultado?.erro ?? 'Não conseguimos marcar agora. Toque de novo em "Marcar horário".');
     } catch {
-      // A-09: o envio é repetível. Se o primeiro chegou ao servidor, o
-      // segundo devolve o mesmo pedido em vez de "horário preenchido".
+      // reenvio seguro devolve o mesmo pedido
       setErro(
         'Não conseguimos falar com o servidor. Confira a internet e toque de novo em "Marcar horário". Se o pedido já tiver chegado, ele não será duplicado.'
       );

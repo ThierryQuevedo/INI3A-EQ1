@@ -1,17 +1,32 @@
 import { db } from '@/db';
 import { usuarios } from '@/db/schema';
 import { revalidatePath } from 'next/cache';
-import { eq } from 'drizzle-orm';
 import { redirect } from 'next/navigation';
+import { eq } from 'drizzle-orm';
+import ToastDeRetorno from '@/app/components/ui/ToastDeRetorno';
 import { requireAdmin } from '@/app/actions/auth.actions';
 import BotaoExcluirConfirm from '@/app/components/ui/BotaoExcluirConfirm';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
 import { Card } from '@/app/components/ui/card';
+import { FUSO } from '@/lib/formatoData';
+
+export const metadata = { title: 'Usuários · Admin' };
+
+// toast apos o redirect
+const AVISOS = {
+    excluido: { tipo: 'sucesso', mensagem: 'Usuário excluído.' },
+    vinculado: {
+        tipo: 'erro',
+        mensagem: 'Este usuário tem agendamentos no histórico (como cliente ou nos serviços dele) e não pode ser excluído.',
+    },
+    proprio: { tipo: 'erro', mensagem: 'Você não pode excluir a sua própria conta por aqui.' },
+};
 
 export default async function page({ searchParams }) {
     await requireAdmin();
+    const aviso = AVISOS[(await searchParams)?.aviso];
     const { erro } = await searchParams;
-    // Só as colunas da tabela: select() trazia hash de senha e as fotos em base64 de todos.
+    // so as colunas da tabela sem senha nem fotos
     const listaUsuarios = await db
         .select({
             id: usuarios.id,
@@ -25,24 +40,28 @@ export default async function page({ searchParams }) {
 
     async function deleteUser(formData) {
         'use server';
-        // A action é um endpoint próprio: o requireAdmin() da página não a protege.
+        // actions sao publicas entao confere de novo
         const admin = await requireAdmin();
         const id = Number(formData.get('id'));
-        if (!Number.isInteger(id) || id <= 0 || id === admin.id) return;
+        if (!id) return;
+        if (id === admin.id) redirect('/admin/usuarios?aviso=proprio');
 
+        let resultado = 'excluido';
         try {
             await db.delete(usuarios).where(eq(usuarios.id, id));
-        } catch (error) {
-            // Usuário com agendamentos: a chave estrangeira impede a exclusão.
-            if (error?.cause?.code === '23503' || error?.code === '23503') redirect('/admin/usuarios?erro=em-uso');
-            throw error;
+        } catch (erro) {
+            // agendamento sem cascade entao a fk recusa
+            if (erro?.cause?.code !== '23503' && erro?.code !== '23503') throw erro;
+            resultado = 'vinculado';
         }
 
         revalidatePath('/admin/usuarios');
+        redirect(`/admin/usuarios?aviso=${resultado}`);
     }
 
     return (
         <PageContainer size="xl" className="py-10">
+            <ToastDeRetorno mensagem={aviso?.mensagem} tipo={aviso?.tipo} />
             <PageHeader eyebrow="Administração" title="Usuários" />
 
             {erro === 'em-uso' && (
@@ -51,7 +70,7 @@ export default async function page({ searchParams }) {
                 </p>
             )}
 
-            <Card padding="none" className="overflow-x-auto">
+            <Card padding="none" className="relative overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-border bg-muted/50">
@@ -72,7 +91,7 @@ export default async function page({ searchParams }) {
                                 <td className="p-4 text-body-sm text-foreground">{user.email}</td>
                                 <td className="p-4 text-body-sm text-foreground">{user.telefone}</td>
                                 <td className="p-4 text-body-sm text-foreground capitalize">{user.tipo}</td>
-                                <td className="p-4 text-body-sm text-muted-foreground whitespace-nowrap">{user.criadoEm.toLocaleString('pt-BR')}</td>
+                                <td className="p-4 text-body-sm text-muted-foreground whitespace-nowrap">{user.criadoEm.toLocaleString('pt-BR', { timeZone: FUSO })}</td>
                                 <td className="p-4 text-right">
                                     <form action={deleteUser} className="inline">
                                         <input type="hidden" name="id" value={user.id} />

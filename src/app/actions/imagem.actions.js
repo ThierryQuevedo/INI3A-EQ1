@@ -7,11 +7,7 @@ import { usuarios, servicos } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { validarUrlImagem, ERRO_IMAGEM_INVALIDA } from '@/lib/validarImagem';
 
-/**
- * Salva a URL da foto de perfil no banco de dados para o usuário autenticado
- * @param {string|null} urlImagem
- * @returns {Promise<{ sucesso: boolean, erro?: string, url?: string|null }>}
- */
+// salva a foto de perfil
 export async function salvarFotoPerfil(urlImagem) {
   try {
     const usuario = await getSession();
@@ -39,11 +35,7 @@ export async function salvarFotoPerfil(urlImagem) {
   }
 }
 
-/**
- * Salva a URL da capa/banner no banco de dados para o usuário autenticado
- * @param {string|null} urlBanner
- * @returns {Promise<{ sucesso: boolean, erro?: string, url?: string|null }>}
- */
+// salva o banner
 export async function salvarBannerPerfil(urlBanner) {
   try {
     const usuario = await getSession();
@@ -71,12 +63,7 @@ export async function salvarBannerPerfil(urlBanner) {
   }
 }
 
-/**
- * Salva ou atualiza a URL da imagem de um serviço existente
- * @param {number|string} servicoId
- * @param {string|null} urlImagem
- * @returns {Promise<{ sucesso: boolean, erro?: string, url?: string|null }>}
- */
+// salva a imagem do servico
 export async function salvarImagemServico(servicoId, urlImagem) {
   try {
     const usuario = await getSession();
@@ -89,8 +76,7 @@ export async function salvarImagemServico(servicoId, urlImagem) {
     if (validacao.semMudanca) return { sucesso: true, url: urlImagem };
     const valorFinal = validacao.valor;
 
-    // Só o prestador dono do serviço pode trocar a foto (servicos.prestadorId
-    // é o id do usuário — ver schema).
+    // so o dono troca a foto
     const atualizados = await db
       .update(servicos)
       .set({ urlImagem: valorFinal })

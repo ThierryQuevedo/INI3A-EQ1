@@ -1,3 +1,5 @@
+export const metadata = { title: 'Buscar serviços' };
+
 export const dynamic = 'force-dynamic';
 
 import { eq, isNull } from 'drizzle-orm';
@@ -11,7 +13,6 @@ import { listarCategorias } from '@/app/actions/servicos.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
 
 export default async function ServicosPage() {
-  // As três consultas não dependem uma da outra: vão juntas ao banco (A-02).
   const [dadosBrutos, listaCategorias, favoritos] = await Promise.all([
     db
     .select({
@@ -39,7 +40,6 @@ export default async function ServicosPage() {
     listarIdsFavoritos(),
   ]);
 
-  // Estatísticas e próximo horário dependem só dos ids: também em paralelo.
   const [comEstat, proximosHorarios] = await Promise.all([
     comEstatisticas(dadosBrutos),
     calcularProximosHorariosLivres(dadosBrutos.map((s) => s.id)),

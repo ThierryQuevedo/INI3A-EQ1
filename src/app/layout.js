@@ -9,8 +9,7 @@ const inter = Inter({
   variable: "--font-inter",
 })
 
-// Títulos: só o peso 700 (woff2 oficial da Fontshare, licença ITF FFL v2.0 —
-// não pode ser subsetado nem convertido). Ver src/app/fonts/LEIA-ME.md.
+// titulos so no peso 700 e a licenca nao permite subset
 const satoshi = localFont({
   src: "./fonts/Satoshi-Bold.woff2",
   weight: "700",
@@ -20,11 +19,7 @@ const satoshi = localFont({
   adjustFontFallback: "Arial",
 })
 
-// A-12 (mobile-native §7 e §10): a página vai até as bordas (notch, barra
-// de gestos) e cada componente fixo se afasta com env(safe-area-inset-*) —
-// sem viewport-fit=cover esses valores são 0. O teclado do Android encolhe
-// o layout (interactive-widget), como no iPhone. Zoom NUNCA é bloqueado.
-// theme-color segue o tema do sistema; a cor é a do header (bg-card).
+// viewport ate as bordas e zoom nunca bloqueado
 export const viewport = {
   width: "device-width",
   initialScale: 1,

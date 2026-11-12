@@ -11,10 +11,7 @@ import { useToast } from "@/app/components/ui/ToastProvider";
 
 const INTERVALO_POLLING_MS = 3000;
 
-/**
- * Janela de uma conversa. Busca mensagens novas por polling (não há
- * WebSocket/SSE no projeto) e envia mensagens de forma otimista.
- */
+// conversa com polling e envio otimista
 export default function ChatWindow({
   agendamentoId,
   usuarioLogadoId,
@@ -74,8 +71,10 @@ export default function ChatWindow({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-4rem)]">
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-card shrink-0">
+    // data tela cheia esconde o rodape
+    <div data-tela-cheia className="flex flex-col h-[calc(100dvh-8rem-env(safe-area-inset-bottom,0px))] md:h-[calc(100dvh-4rem)]">
+      <div className="border-b border-border bg-card shrink-0">
+      <div className="max-w-4xl mx-auto w-full flex items-center gap-3 px-4 py-3">
         <Link
           href="/mensagens"
           className="md:hidden relative area-toque h-9 w-9 flex items-center justify-center rounded-full hover:bg-muted shrink-0 -ml-1"
@@ -89,8 +88,10 @@ export default function ChatWindow({
           <p className="text-caption text-muted-foreground truncate">{servicoNome}</p>
         </div>
       </div>
+      </div>
 
-      <div ref={listaRef} className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-2.5">
+      <div ref={listaRef} className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-4xl mx-auto w-full flex flex-col gap-2.5">
         {mensagens.length === 0 ? (
           <p className="text-center text-body-sm text-muted-foreground mt-8">
             Nenhuma mensagem ainda. Diga olá!
@@ -104,10 +105,13 @@ export default function ChatWindow({
             />
           ))
         )}
+        </div>
       </div>
 
       <div className="px-4 py-3 border-t border-border bg-card shrink-0">
-        <ChatInput onEnviar={handleEnviar} disabled={!podeEnviar} />
+        <div className="max-w-4xl mx-auto w-full">
+          <ChatInput onEnviar={handleEnviar} disabled={!podeEnviar} />
+        </div>
       </div>
     </div>
   );

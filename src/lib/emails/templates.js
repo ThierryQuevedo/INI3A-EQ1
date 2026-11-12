@@ -1,18 +1,20 @@
 import { layoutEmail, escapar } from './layout.js';
+import { FUSO } from '../formatoData.js';
 
-// Precisa acompanhar o `basePath` de next.config.mjs.
+// precisa acompanhar lib caminhobase
 const BASE_PATH = '/26-marcaai';
 
-/** Monta uma URL absoluta para uma rota interna, já com o basePath. */
+// url absoluta com basepath
 export function linkApp(rota) {
   const base = (process.env.SITE_URL || 'http://localhost:3000').replace(/\/+$/, '');
   const raiz = base.endsWith(BASE_PATH) ? base : `${base}${BASE_PATH}`;
   return `${raiz}${rota}`;
 }
 
-/** "segunda-feira, 15 de setembro de 2026 às 14:30" */
+// data por extenso no horario de brasilia
 export function formatarDataHora(data) {
   return new Date(data).toLocaleString('pt-BR', {
+    timeZone: FUSO,
     weekday: 'long',
     day: '2-digit',
     month: 'long',
@@ -27,12 +29,7 @@ function estrelas(nota) {
   return '★'.repeat(n) + '☆'.repeat(Math.max(0, 5 - n));
 }
 
-// Cada template devolve o mesmo formato:
-//   assunto  → linha de assunto do e-mail
-//   titulo   → título curto, guardado em `notificacoes.titulo`
-//   mensagem → versão em texto puro, guardada em `notificacoes.mensagem`
-//   link     → para onde a notificação leva
-//   html     → corpo do e-mail
+// cada template devolve assunto titulo mensagem link e html
 
 export function emailNovoAgendamentoPrestador({ prestadorNome, clienteNome, servicoNome, dataHora }) {
   const quando = formatarDataHora(dataHora);
@@ -89,19 +86,19 @@ export function emailAgendamentoSolicitadoCliente({ clienteNome, prestadorNome, 
   };
 }
 
-export function emailAgendamentoConfirmado({ clienteNome, prestadorNome, servicoNome, dataHora }) {
+export function emailAgendamentoConfirmado({ agendamentoId, clienteNome, prestadorNome, servicoNome, dataHora }) {
   const quando = formatarDataHora(dataHora);
-  const link = linkApp('/agendamentos');
+  const link = linkApp(`/agendamentos/${agendamentoId}/pagamento/`);
 
   return {
     assunto: `Agendamento confirmado: ${servicoNome}`,
     titulo: 'Agendamento confirmado',
-    mensagem: `${prestadorNome} confirmou seu agendamento de "${servicoNome}" para ${quando}.`,
+    mensagem: `${prestadorNome} confirmou seu agendamento de "${servicoNome}" para ${quando}. Você já pode pagar pelo app.`,
     link,
     html: layoutEmail({
       saudacao: `Boa notícia, ${clienteNome}!`,
       paragrafos: [
-        `<strong>${escapar(prestadorNome)}</strong> confirmou o seu agendamento. É só comparecer no horário combinado.`,
+        `<strong>${escapar(prestadorNome)}</strong> confirmou o seu agendamento. Você já pode pagar pelo app com PIX, cartão ou boleto.`,
       ],
       destaque: {
         rotulo: 'Detalhes do agendamento',
@@ -110,6 +107,86 @@ export function emailAgendamentoConfirmado({ clienteNome, prestadorNome, servico
           ['Profissional', escapar(prestadorNome)],
           ['Quando', escapar(quando)],
           ['Status', 'Confirmado'],
+        ],
+      },
+      cta: { texto: 'Pagar agora', href: link },
+    }),
+  };
+}
+
+export function emailPagamentoConfirmadoCliente({ agendamentoId, clienteNome, prestadorNome, servicoNome, dataHora }) {
+  const quando = formatarDataHora(dataHora);
+  const link = linkApp(`/agendamentos/${agendamentoId}/pagamento/`);
+
+  return {
+    assunto: `Pagamento confirmado: ${servicoNome}`,
+    titulo: 'Pagamento confirmado',
+    mensagem: `Recebemos o pagamento de "${servicoNome}" com ${prestadorNome}, marcado para ${quando}.`,
+    link,
+    html: layoutEmail({
+      saudacao: `Tudo certo, ${clienteNome}!`,
+      paragrafos: ['Recebemos o seu pagamento. O comprovante fica disponível no app.'],
+      destaque: {
+        rotulo: 'Detalhes do pagamento',
+        itens: [
+          ['Serviço', escapar(servicoNome)],
+          ['Profissional', escapar(prestadorNome)],
+          ['Quando', escapar(quando)],
+          ['Status', 'Pago'],
+        ],
+      },
+      cta: { texto: 'Ver pagamento', href: link },
+    }),
+  };
+}
+
+export function emailPagamentoConfirmadoPrestador({ prestadorNome, clienteNome, servicoNome, dataHora }) {
+  const quando = formatarDataHora(dataHora);
+  const link = linkApp('/agendamentos');
+
+  return {
+    assunto: `Pagamento recebido de ${clienteNome}`,
+    titulo: 'Pagamento recebido',
+    mensagem: `${clienteNome} pagou "${servicoNome}", marcado para ${quando}.`,
+    link,
+    html: layoutEmail({
+      saudacao: `Olá, ${prestadorNome}!`,
+      paragrafos: [`<strong>${escapar(clienteNome)}</strong> pagou o agendamento pelo app.`],
+      destaque: {
+        rotulo: 'Detalhes do agendamento',
+        itens: [
+          ['Serviço', escapar(servicoNome)],
+          ['Cliente', escapar(clienteNome)],
+          ['Quando', escapar(quando)],
+          ['Pagamento', 'Pago'],
+        ],
+      },
+      cta: { texto: 'Ver agenda', href: link },
+    }),
+  };
+}
+
+export function emailPagamentoReembolsado({ clienteNome, prestadorNome, servicoNome, dataHora }) {
+  const quando = formatarDataHora(dataHora);
+  const link = linkApp('/agendamentos');
+
+  return {
+    assunto: `Reembolso feito: ${servicoNome}`,
+    titulo: 'Reembolso feito',
+    mensagem: `O pagamento de "${servicoNome}" com ${prestadorNome}, marcado para ${quando}, foi devolvido.`,
+    link,
+    html: layoutEmail({
+      saudacao: `Olá, ${clienteNome}!`,
+      paragrafos: [
+        'Devolvemos o valor total do seu pagamento pela mesma forma usada. No cartão, a devolução pode levar algumas faturas para aparecer.',
+      ],
+      destaque: {
+        rotulo: 'Detalhes do reembolso',
+        itens: [
+          ['Serviço', escapar(servicoNome)],
+          ['Profissional', escapar(prestadorNome)],
+          ['Quando', escapar(quando)],
+          ['Status', 'Reembolsado'],
         ],
       },
       cta: { texto: 'Ver meus agendamentos', href: link },

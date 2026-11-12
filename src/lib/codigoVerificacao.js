@@ -1,9 +1,4 @@
-// Códigos de uso único para confirmar ações sensíveis (ex.: excluir um serviço).
-//
-// Ficam na memória do servidor, sem tabela nova: o app roda em um único processo
-// (pm2 em modo fork) e um código perdido num reinício só precisa ser pedido de
-// novo. Se um dia houver mais de um processo, isto precisa ir para o banco.
-// O `globalThis` mantém os códigos quando o `next dev` recarrega este módulo.
+// codigos de uso unico em memoria pois roda num processo so
 import crypto from 'crypto';
 
 const VALIDADE_MS = 10 * 60 * 1000;
@@ -12,7 +7,7 @@ const MAXIMO_TENTATIVAS = 5;
 
 const codigos = (globalThis.__marcaaiCodigosVerificacao ??= new Map());
 
-// Guarda só o resumo: o código em si existe apenas no e-mail enviado.
+// guarda so o hash
 function resumir(chave, codigo) {
   return crypto.createHash('sha256').update(`${chave}:${codigo}`).digest();
 }
@@ -23,7 +18,7 @@ function removerExpirados(agora) {
   }
 }
 
-/** Gera um código de 6 dígitos. Devolve `{ codigo }` ou `{ aguardarSegundos }` se foi pedido há pouco. */
+// codigo de 6 digitos
 export function criarCodigo(chave) {
   const agora = Date.now();
   removerExpirados(agora);
@@ -43,12 +38,12 @@ export function criarCodigo(chave) {
   return { codigo };
 }
 
-/** Descarta o código sem usar (ex.: o e-mail não pôde ser enviado). */
+// descarta o codigo
 export function descartarCodigo(chave) {
   codigos.delete(chave);
 }
 
-/** Confere o código, que só vale uma vez. Devolve `{ valido: true }` ou `{ erro }`. */
+// vale uma vez so
 export function conferirCodigo(chave, codigo) {
   const registro = codigos.get(chave);
 

@@ -15,28 +15,24 @@ import {
 } from 'lucide-react';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import Estatistica from '@/app/components/features/dashboard/Estatistica';
+import AvisoPagamentos from '@/app/components/features/pagamentos/AvisoPagamentos';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { rotuloStatus } from '@/lib/statusAgendamento';
+import { FUSO, diaRelativo, partesNoFuso } from '@/lib/formatoData';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
 import { Card } from '@/app/components/ui/card';
 import { Badge } from '@/app/components/ui/badge';
 import { Button } from '@/app/components/ui/button';
 
+// fuso de brasilia para evitar erro de hidratacao
 function formatarData(data) {
-  const d = new Date(data);
-  const hoje = new Date();
-  const amanha = new Date();
-  amanha.setDate(hoje.getDate() + 1);
-
-  const mesmoDia = (a, b) => a.toDateString() === b.toDateString();
-  if (mesmoDia(d, hoje)) return 'Hoje';
-  if (mesmoDia(d, amanha)) return 'Amanhã';
-
-  return d.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
+  const relativo = diaRelativo(partesNoFuso(data).dia);
+  if (relativo) return relativo;
+  return new Date(data).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: FUSO });
 }
 
 function formatarHora(data) {
-  return new Date(data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return partesNoFuso(data).hora;
 }
 
 function Miniatura({ urlImagem, nome }) {
@@ -75,7 +71,7 @@ function Vazio({ Icon, children }) {
   );
 }
 
-export default function DashboardCliente({ usuario, dados }) {
+export default function DashboardCliente({ usuario, dados, pagamentosAFazer }) {
   const { proximos, historico, avaliacoesPendentes, reputacao, metricas } = dados;
 
   return (
@@ -100,6 +96,8 @@ export default function DashboardCliente({ usuario, dados }) {
           </>
         }
       />
+
+      <AvisoPagamentos pagamentos={pagamentosAFazer} className="mb-6" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <Estatistica Icon={CalendarClock} valor={metricas.ativos} rotulo="Em andamento" />
@@ -189,7 +187,7 @@ export default function DashboardCliente({ usuario, dados }) {
                     <div className="min-w-0 flex-1">
                       <p className="text-body-sm font-semibold text-foreground truncate">{item.servicoNome}</p>
                       <p className="text-caption text-muted-foreground truncate">
-                        {new Date(item.dataHora).toLocaleDateString('pt-BR')} · {item.prestadorNome} · {formatarPreco(item.servicoPreco)}
+                        {new Date(item.dataHora).toLocaleDateString('pt-BR', { timeZone: FUSO })} · {item.prestadorNome} · {formatarPreco(item.servicoPreco)}
                       </p>
                     </div>
                     <Badge status={item.status} size="sm" className="max-sm:hidden">{rotuloStatus(item.status)}</Badge>

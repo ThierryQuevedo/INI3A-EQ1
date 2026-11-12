@@ -22,11 +22,11 @@ jobs:
             git reset --hard origin/main
             git clean -fd
             cd src
-            pm2 delete marcaai
-            rm -rf .next
-            npm install
-            npm run build
+            npm install || exit 1
+            # se o build falhar, para aqui: o processo atual nao e apagado e o workflow fica vermelho no GitHub
+            npm run build || exit 1
             npx drizzle-kit push
-            
+
+            pm2 delete marcaai || true
             pm2 start ./node_modules/.bin/next --name marcaai -- start -p 49682
             pm2 save

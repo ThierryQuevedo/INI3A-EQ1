@@ -1,16 +1,12 @@
-// Confere o contraste WCAG 2.2 dos tokens de cor de src/app/globals.css,
-// nos temas claro (@theme) e escuro (.dark). Lê o CSS de verdade — não há
-// cópia dos valores aqui — então roda de novo a cada mudança de token.
-//
-// Uso (dentro de src/): npm run tokens:contraste
-// Sai com código 1 se algum par obrigatório falhar.
+// confere o contraste wcag dos tokens
+// uso npm run tokens:contraste
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const css = readFileSync(join(dirname(fileURLToPath(import.meta.url)), '../app/globals.css'), 'utf8');
 
-// ---------- leitura dos blocos ----------
+// leitura dos blocos
 function bloco(seletor) {
   const ini = css.indexOf(seletor);
   if (ini < 0) throw new Error(`bloco ${seletor} não encontrado`);
@@ -27,7 +23,7 @@ function vars(texto) {
 const claro = vars(bloco('@theme {'));
 const escuro = { ...claro, ...vars(bloco('\n.dark {')) };
 
-// ---------- cor ----------
+// cor
 const toLin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 function oklchParaLinear(L, C, H) {
   const a = C * Math.cos((H * Math.PI) / 180), b = C * Math.sin((H * Math.PI) / 180);
@@ -40,7 +36,7 @@ function oklchParaLinear(L, C, H) {
     -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
   ].map((c) => Math.min(1, Math.max(0, c)));
 }
-// Devolve RGB linear (0–1) de um valor de token, resolvendo var() em cadeia.
+// rgb linear de um token
 function resolver(valor, tema, profundidade = 0) {
   if (profundidade > 10) throw new Error(`var() circular: ${valor}`);
   const v = valor.match(/^var\((--[\w-]+)\)$/);
@@ -60,9 +56,7 @@ function razao(a, b, tema) {
   return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
-// ---------- pares obrigatórios ----------
-// [frente, fundo, mínimo]. 4.5 = texto (1.4.3); 3 = borda de controle,
-// anel de foco e gráfico que carrega informação (1.4.11).
+// pares obrigatorios frente fundo e minimo
 const TEXTO = 4.5, NAO_TEXTO = 3;
 const pares = [
   ['foreground', 'background', TEXTO], ['foreground', 'card', TEXTO],

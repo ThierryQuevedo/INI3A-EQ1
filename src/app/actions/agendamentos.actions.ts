@@ -14,10 +14,11 @@ import {
   notificarServicoConcluido,
 } from '@/lib/notificacoes';
 import { buscarMotivosCancelamento, textoDoMotivo } from '@/lib/motivoCancelamento';
+import { encerrarPagamentosComAviso, resumirPagamentos } from '@/lib/pagamentos';
 import { calcularSlotsLivresDoDia } from '@/lib/disponibilidade';
 import { instanteNoFuso, partesNoFuso } from '@/lib/formatoData';
 
-// `usuarios` entra duas vezes no join (cliente e prestador).
+// usuarios entra duas vezes no join
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_agenda');
 
 const TRANSICOES_PERMITIDAS = {
@@ -27,14 +28,7 @@ const TRANSICOES_PERMITIDAS = {
 
 const TAMANHO_MAXIMO_MOTIVO = 500;
 
-/**
- * Cria o pedido de agendamento (nasce `pendente`; o prestador confirma depois).
- *
- * Repetir o envio é seguro: se o horário já tem um pedido ativo DESTE cliente
- * para ESTE serviço (ex.: o primeiro envio chegou ao servidor mas a resposta
- * se perdeu no 4G), devolve sucesso com esse pedido em vez de "horário já
- * preenchido". `codigo: 'ocupado'` só sai quando outra pessoa marcou antes.
- */
+// cria o pedido pendente e reenvio devolve o mesmo pedido
 export async function confirmarAgendamentoAction({
   servicoId,
   dataHora,
@@ -141,8 +135,7 @@ export async function confirmarAgendamentoAction({
     })
     .returning();
 
-  // `after` deixa o e-mail sair depois que a resposta já foi enviada: o cliente
-  // não espera o SMTP e uma falha de envio não afeta o agendamento.
+  // after manda o email depois da resposta
   after(() => notificarNovoAgendamento(novo.id));
 
   revalidatePath('/agendamentos');
@@ -153,14 +146,7 @@ export async function confirmarAgendamentoAction({
   };
 }
 
-/**
- * Tudo o que a tela de agendar precisa, numa ida ao banco por etapa:
- * serviço + prestador + categoria (uma consulta com junção) e, em paralelo,
- * as disponibilidades do serviço e os agendamentos futuros do prestador
- * (de todos os serviços dele, com a duração de cada um).
- * Só sai o que a tela mostra: nada de e-mail ou telefone do prestador.
- * Datas viram ISO para atravessar a fronteira servidor → cliente.
- */
+// dados da tela de agendar sem email nem telefone
 export async function carregarAgendaDoServico(servicoId: number) {
   const id = Number(servicoId);
   if (!Number.isInteger(id) || id <= 0) return null;
@@ -205,7 +191,7 @@ export async function carregarAgendaDoServico(servicoId: number) {
   };
 }
 
-/** Agendamentos futuros do prestador como ocupação: só instante, status e duração. */
+// ocupacao futura do prestador
 async function listarOcupacaoDoPrestador(prestadorId: number) {
   const linhas = await db
     .select({
@@ -226,7 +212,7 @@ async function listarOcupacaoDoPrestador(prestadorId: number) {
   return linhas.map((l) => ({ dataHora: l.dataHora.toISOString(), status: l.status, duracao: l.duracao }));
 }
 
-/** Recarrega só a ocupação (usado quando alguém marca o horário antes do cliente). */
+// recarrega so a ocupacao
 export async function recarregarOcupacaoDoServico(servicoId: number) {
   const [servico] = await db
     .select({ prestadorId: servicos.prestadorId })
@@ -237,12 +223,7 @@ export async function recarregarOcupacaoDoServico(servicoId: number) {
   return listarOcupacaoDoPrestador(servico.prestadorId);
 }
 
-/**
- * Muda o status de um agendamento e devolve `{ erro }` para a tela explicar
- * quando não deu. As regras ficam aqui, não só no botão: concluir exige que o
- * horário já tenha começado, e cancelar algo já confirmado exige um motivo. O
- * motivo vai para o chat do agendamento e para o aviso enviado ao outro lado.
- */
+// muda o status e cancelar confirmado exige motivo
 export async function atualizarStatusAgendamento(id: number, status: string, motivo?: string) {
   const usuario = await getSession();
   if (!usuario) return { erro: 'Sua sessão expirou. Entre de novo para continuar.' };
@@ -284,8 +265,7 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
     return { erro: 'Conte o motivo para cancelar um agendamento já confirmado.' };
   }
 
-  // A condição no status evita que dois cliques (ou os dois lados ao mesmo
-  // tempo) apliquem a mudança e disparem o aviso duas vezes.
+  // condicao no status evita aplicar duas vezes
   const atualizou = await db.transaction(async (tx) => {
     const linhas = await tx
       .update(agendamentos)
@@ -308,6 +288,12 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
 
   if (!atualizou) return { erro: 'Este agendamento acabou de mudar. Atualize a página e confira.' };
 
+  // cancelamento vale mesmo se a devolucao falhar
+  const { aviso, reembolsoFalhou } =
+    status === 'cancelado'
+      ? await encerrarPagamentosComAviso(agendamentoId, motivoLimpo)
+      : { aviso: null, reembolsoFalhou: false };
+
   switch (status) {
     case 'confirmado':
       after(() => notificarAgendamentoConfirmado(agendamentoId));
@@ -325,14 +311,10 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
   revalidatePath('/dashboard');
   revalidatePath('/agendamentos');
   revalidatePath('/mensagens');
-  return { erro: null, sucesso: true };
+  return { erro: null, sucesso: true, aviso, reembolsoFalhou };
 }
 
-/**
- * Agenda do usuário logado, nos dois papéis: uma conta de prestador também pode
- * agendar serviços de outros profissionais. `papel` diz de que lado ele está em
- * cada item, e o telefone do cliente só sai para quem atende.
- */
+// agenda nos dois papeis
 export async function listarMeusAgendamentos() {
   const usuario = await getSession();
   if (!usuario) return [];
@@ -345,11 +327,14 @@ export async function listarMeusAgendamentos() {
       clienteId: agendamentos.clienteId,
       servicoNome: servicos.nome,
       servicoPreco: servicos.preco,
+      prestadorId: servicos.prestadorId,
       clienteNome: usuarios.nome,
       clienteTelefone: usuarios.telefone,
       prestadorNome: prestadorUsuarios.nome,
       avaliacaoNota: avaliacoes.notaParaPrestador,
       avaliacaoComentario: avaliacoes.comentarioPrestador,
+      avaliacaoClienteNota: avaliacoes.notaParaCliente,
+      avaliacaoClienteComentario: avaliacoes.comentarioCliente,
     })
     .from(agendamentos)
     .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -359,16 +344,23 @@ export async function listarMeusAgendamentos() {
     .where(or(eq(servicos.prestadorId, usuario.id), eq(agendamentos.clienteId, usuario.id)))
     .orderBy(asc(agendamentos.dataHora));
 
-  const motivos = await buscarMotivosCancelamento(
-    linhas.filter((l) => l.status === 'cancelado').map((l) => l.id)
-  );
+  const [motivos, resumoPagamentos] = await Promise.all([
+    buscarMotivosCancelamento(linhas.filter((l) => l.status === 'cancelado').map((l) => l.id)),
+    resumirPagamentos(linhas.map((l) => l.id)),
+  ]);
 
-  return linhas.map(({ clienteId, clienteTelefone, ...item }) => {
+  return linhas.map(({ clienteId, clienteTelefone, prestadorId, ...item }) => {
     const papel = clienteId === usuario.id ? 'cliente' : 'prestador';
     const cancelamento = motivos.get(item.id);
+    const pagamento = resumoPagamentos.get(item.id);
     return {
       ...item,
       papel,
+      proprioServico: clienteId === prestadorId,
+      pagamentoStatus: pagamento?.status ?? null,
+      pagamentoMetodo: pagamento?.metodo ?? null,
+      // comprovante vai so para o pagador
+      pagamentoComprovanteUrl: papel === 'cliente' ? pagamento?.comprovanteUrl ?? null : null,
       clienteTelefone: papel === 'prestador' ? clienteTelefone : null,
       motivoCancelamento: cancelamento?.motivo ?? null,
       motivoFoiMeu: cancelamento?.remetenteId === usuario.id,

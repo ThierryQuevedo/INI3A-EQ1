@@ -10,13 +10,12 @@ import FormField from '@/app/components/ui/FormField';
 import { Input } from '@/app/components/ui/input';
 import { Button } from '@/app/components/ui/button';
 
-// Mesmo contorno, foco e estado de erro do <Input>, para o campo de várias linhas.
+// textarea com o visual do input
 const CLASSE_TEXTAREA =
   'w-full min-h-28 bg-background border border-input rounded-lg px-4 py-3 text-body text-foreground placeholder:text-muted-foreground outline-none transition resize-y focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-transparent';
 
 const ESTADO_INICIAL = { erro: null, campo: null };
 
-/** Formulário de serviço: cria um novo ou, recebendo `servico`, edita o existente. */
 export default function ServicoForm({ categorias = [], action, nomePrestador, servico = null }) {
   const [estado, formAction, enviando] = useActionState(action, ESTADO_INICIAL);
   const editando = !!servico;
@@ -30,7 +29,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
   const [descricao, setDescricao] = useState(servico?.descricao ?? '');
   const [urlImagem, setUrlImagem] = useState(servico?.urlImagem ?? '');
 
-  // Erro vindo do servidor: leva o foco ao campo em questão.
+  // erro do servidor leva o foco ao campo
   useEffect(() => {
     if (estado?.campo) document.getElementById(estado.campo)?.focus();
   }, [estado]);
@@ -55,7 +54,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
   }
 
   const erroCategoria = erroCategoriaLocal ? 'Selecione uma categoria para continuar.' : erroDoCampo('categoriaId');
-  // Erro do servidor sem campo (falha ao salvar) aparece junto do botão.
+  // erro sem campo fica perto do botao
   const erroGeral = estado?.erro && !estado?.campo ? estado.erro : null;
 
   function escolherCategoria(valor) {
@@ -63,9 +62,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
     setErroCategoriaLocal(false);
   }
 
-  // Envio manual: quando o React executa a `action` do <form>, ele reseta o
-  // formulário a cada envio e os campos controlados voltam a mostrar o valor
-  // anterior enquanto o estado guarda o novo.
+  // envio manual para o react nao resetar os campos
   function aoSubmeter(e) {
     e.preventDefault();
     if (!categoriaSelecionada) {
@@ -108,9 +105,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 lg:gap-8 items-start">
         <form
-          // `action` fica para o envio antes da hidratação (POST progressivo,
-          // nada na URL). Hidratado, o preventDefault do onSubmit faz o React
-          // não executá-la — e, com isso, não resetar o formulário.
+          // action cobre o envio antes da hidratacao
           action={formAction}
           onSubmit={aoSubmeter}
           aria-busy={enviando}
@@ -272,7 +267,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
           </Button>
         </form>
 
-        <section aria-labelledby="titulo-previa" className="lg:sticky lg:top-8">
+        <section aria-labelledby="titulo-previa" className="lg:sticky lg:top-20">
           <h2 id="titulo-previa" className="font-sans text-body-sm font-semibold text-muted-foreground tracking-normal mb-3 text-center lg:text-left">
             Pré-visualização
           </h2>

@@ -18,7 +18,7 @@ export default function ServiceImageUpload({
   const imageUrl = urlCustomizada !== null ? urlCustomizada : (initialUrl || "");
 
   const [previewUrl, setPreviewUrl] = useState("");
-  const [fileMeta, setFileMeta] = useState(null); // { nome, tamanhoFormatado }
+  const [fileMeta, setFileMeta] = useState(null); // nome e tamanho formatado
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [erroValidacao, setErroValidacao] = useState(null);
@@ -48,7 +48,6 @@ export default function ServiceImageUpload({
   function processarArquivo(file) {
     if (!file) return;
 
-    // 1. Validação visualmente clara
     const validacao = validarArquivo(file, maxSizeMB);
     if (!validacao.valido) {
       setErroValidacao(validacao.erro);
@@ -82,7 +81,6 @@ export default function ServiceImageUpload({
     setIsUploading(true);
 
     try {
-      // 2. Simulação de upload (leve, sem banco de dados)
       const resultado = await fazerUploadImagem(arquivoRecortado, { limiteMB: maxSizeMB });
       setUrlCustomizada(resultado.url);
       setPreviewUrl("");
@@ -106,7 +104,6 @@ export default function ServiceImageUpload({
     }
   }
 
-  // Drag & Drop
   function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -130,7 +127,6 @@ export default function ServiceImageUpload({
     }
   }
 
-  // Remoção
   function handleRemover(e) {
     e.stopPropagation();
     setUrlCustomizada("");
@@ -151,7 +147,6 @@ export default function ServiceImageUpload({
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      {/* Label e indicador de opcional/obrigatório */}
       <div className="flex items-center justify-between">
         <label className="text-caption font-inter font-medium text-foreground">
           {label} {required && <span className="text-destructive">*</span>}
@@ -161,10 +156,8 @@ export default function ServiceImageUpload({
         </span>
       </div>
 
-      {/* Input oculto para submissão no formulário */}
       <input type="hidden" name={name} value={imageUrl || ""} />
 
-      {/* Input de arquivo invisível */}
       <input
         ref={fileInputRef}
         type="file"
@@ -174,7 +167,6 @@ export default function ServiceImageUpload({
         aria-label="Upload de imagem do serviço"
       />
 
-      {/* Validações Visualmente Claras (Mensagem intuitiva de erro) */}
       {erroValidacao && (
         <div
           role="alert"
@@ -196,9 +188,7 @@ export default function ServiceImageUpload({
         </div>
       )}
 
-      {/* Exibição condicional: Dropzone OU Card de Pré-visualização */}
       {!imagemAtual ? (
-        /* ÁREA DE SOLTURA AMIGÁVEL (DROPZONE) */
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -212,7 +202,7 @@ export default function ServiceImageUpload({
               abrirSeletor();
             }
           }}
-          aria-label="Arraste uma foto do serviço ou clique para selecionar"
+          // sem aria label pois o nome vem do texto visivel
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3 select-none ${
             isDragging
               ? "border-primary bg-primary/10 ring-4 ring-primary/20 scale-[1.01]"
@@ -241,10 +231,8 @@ export default function ServiceImageUpload({
           </span>
         </div>
       ) : (
-        /* CARD DE PRÉ-VISUALIZAÇÃO COMPLETO */
         <div className="rounded-xl border border-border bg-card p-4 shadow-soft flex flex-col sm:flex-row items-center justify-between gap-4 transition">
           <div className="flex items-center gap-4 w-full sm:w-auto">
-            {/* Thumbnail com suporte a loading */}
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-lg overflow-hidden border border-border bg-muted shrink-0 relative">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -261,7 +249,6 @@ export default function ServiceImageUpload({
               )}
             </div>
 
-            {/* Metadados e Status */}
             <div className="flex flex-col min-w-0">
               <p className="font-semibold text-foreground text-body-sm truncate max-w-[180px] sm:max-w-xs">
                 {fileMeta?.nome || "Foto do serviço anexada"}
@@ -272,7 +259,6 @@ export default function ServiceImageUpload({
                 </p>
               )}
 
-              {/* Badge de status */}
               <div className="mt-2 flex items-center gap-1.5 text-caption font-medium">
                 {isUploading ? (
                   <span className="inline-flex items-center gap-1 text-primary">
@@ -289,7 +275,6 @@ export default function ServiceImageUpload({
             </div>
           </div>
 
-          {/* Botões de Ação: Trocar ou Apagar */}
           <div className="flex items-center gap-2 w-full sm:w-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-border">
             <button
               type="button"

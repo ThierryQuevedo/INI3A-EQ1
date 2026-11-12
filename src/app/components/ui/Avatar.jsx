@@ -15,7 +15,6 @@ const TAMANHOS = {
   lg: "h-14 w-14 text-body-lg",
 };
 
-/** Avatar simples de exibição: foto quando existe, senão as iniciais do nome. */
 export default function Avatar({ nome, urlImagem, size = "md", className }) {
   return (
     <div

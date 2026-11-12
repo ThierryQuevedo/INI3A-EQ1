@@ -1,4 +1,5 @@
-import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar, doublePrecision } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
+import { pgTable, serial, text, timestamp, integer, decimal, boolean, varchar, doublePrecision, uniqueIndex } from 'drizzle-orm/pg-core';
 
 export const usuarios = pgTable('usuarios', {
   id: serial('id').primaryKey(),
@@ -53,7 +54,7 @@ export const servicos = pgTable('servicos', {
   descricao: text('descricao'),
   preco: decimal('preco', { precision: 10, scale: 2 }).notNull(),
   duracaoEstimada: integer('duracao_estimada').notNull(),
-  // Preenchido = desativado pelo prestador: fora da busca e de novos agendamentos.
+  // preenchido quer dizer desativado
   desativadoEm: timestamp('desativado_em'),
 });
 
@@ -81,6 +82,45 @@ export const agendamentos = pgTable('agendamentos', {
   dataHora: timestamp('data_hora').notNull(),
   status: text('status').default('pendente').notNull(),
 });
+
+// uma linha por tentativa sem cascade
+export const cobrancas = pgTable(
+  'cobrancas',
+  {
+    id: serial('id').primaryKey(),
+    agendamentoId: integer('agendamento_id')
+      .notNull()
+      .references(() => agendamentos.id),
+    // vazio ate a abacatepay responder
+    provedorId: text('provedor_id').unique(),
+    metodo: text('metodo').notNull(),
+    // valores em lib statuspagamento
+    status: text('status').default('criando').notNull(),
+    valorCentavos: integer('valor_centavos').notNull(),
+    taxaCentavos: integer('taxa_centavos'),
+    pixCopiaECola: text('pix_copia_e_cola'),
+    pixQrCode: text('pix_qr_code'),
+    boletoLinhaDigitavel: text('boleto_linha_digitavel'),
+    boletoUrl: text('boleto_url'),
+    comprovanteUrl: text('comprovante_url'),
+    cartaoBandeira: text('cartao_bandeira'),
+    cartaoFinal: text('cartao_final'),
+    modoTeste: boolean('modo_teste'),
+    erro: text('erro'),
+    expiraEm: timestamp('expira_em'),
+    pagoEm: timestamp('pago_em'),
+    reembolsadoEm: timestamp('reembolsado_em'),
+    sincronizadoEm: timestamp('sincronizado_em'),
+    criadoEm: timestamp('criado_em').defaultNow().notNull(),
+    atualizadoEm: timestamp('atualizado_em').defaultNow().notNull(),
+  },
+  (tabela) => [
+    // impede duas cobrancas ativas
+    uniqueIndex('cobrancas_uma_ativa_por_agendamento')
+      .on(tabela.agendamentoId)
+      .where(sql`${tabela.status} in ('criando', 'pendente', 'pago')`),
+  ]
+);
 
 export const avaliacoes = pgTable('avaliacoes', {
   id: serial('id').primaryKey(),
@@ -112,7 +152,7 @@ export const favoritos = pgTable('favoritos', {
   usuarioId: integer('usuario_id')
     .notNull()
     .references(() => usuarios.id, { onDelete: 'cascade' }),
-  // Exatamente um dos dois é preenchido: favorito de serviço ou de prestador.
+  // so um dos dois e preenchido
   servicoId: integer('servico_id').references(() => servicos.id, { onDelete: 'cascade' }),
   prestadorId: integer('prestador_id').references(() => usuarios.id, { onDelete: 'cascade' }),
   criadoEm: timestamp('criado_em').defaultNow().notNull(),

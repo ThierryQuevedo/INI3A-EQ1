@@ -195,20 +195,12 @@ export default function UserBannerUpload({
         </div>
       )}
 
+      {/* clique e arraste sao atalhos de mouse e o teclado usa os botoes */}
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={abrirSeletor}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            abrirSeletor();
-          }
-        }}
-        aria-label="Capa do perfil. Clique ou arraste para alterar"
         className={`w-full h-44 sm:h-52 md:h-60 rounded-2xl overflow-hidden relative group cursor-pointer border transition select-none ${
           isDragging
             ? "border-primary ring-4 ring-primary/20 bg-primary/5 scale-[1.005]"
@@ -216,7 +208,8 @@ export default function UserBannerUpload({
         }`}
       >
         {imagemExibida ? (
-
+          // img pois a previa local e blob
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={imagemExibida}
             alt="Capa do perfil"
@@ -273,8 +266,8 @@ export default function UserBannerUpload({
           <button
             type="button"
             onClick={abrirSeletor}
-            title="Alterar capa"
-            aria-label="Alterar capa do perfil"
+            title={imagemExibida ? "Alterar capa" : "Adicionar capa"}
+            aria-label={imagemExibida ? "Alterar capa do perfil" : "Adicionar capa do perfil"}
             className="px-3.5 py-2 pointer-coarse:min-h-11 rounded-lg bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition shadow-md active:scale-95 cursor-pointer"
           >
             <Camera size={16} aria-hidden="true" />

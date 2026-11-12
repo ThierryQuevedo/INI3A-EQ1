@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const INTERVALO_MS = 15000;
 
-/** Bolinha com a contagem de mensagens não lidas, atualizada por polling leve. */
+// nao lidas por polling
 export default function BadgeNaoLidas({ className }) {
   const [total, setTotal] = useState(0);
 

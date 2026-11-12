@@ -4,11 +4,7 @@ import { WifiOff } from 'lucide-react';
 import { useConexao } from '@/lib/useConexao';
 import { cn } from '@/lib/utils';
 
-/**
- * A-09: faixa de "sem internet". Só aparece quando o navegador TEM CERTEZA
- * de que está offline. A região role="status" fica sempre montada para o
- * leitor de tela anunciar a mudança.
- */
+// faixa de sem internet
 export default function AvisoConexao({ mensagem, className }) {
   const online = useConexao();
 

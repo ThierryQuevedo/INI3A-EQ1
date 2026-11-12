@@ -4,17 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "./button";
 
-/**
- * Modal de confirmação único para todo o app (substitui window.confirm e os
- * modais reimplementados em BotaoStatusConfirm/BotaoExcluirConfirm/MenuPerfilDropdown).
- * Totalmente controlado: o chamador guarda o estado `open` e renderiza seu próprio gatilho.
- *
- * G-01: usa o <dialog> nativo com showModal() — foco preso, Esc, ::backdrop
- * e devolução do foco ao gatilho vêm do navegador — e entra/sai por CSS
- * (.dialogo em globals.css, com @starting-style). Assim o framer-motion
- * deixa de ir para o bundle de toda página (o Header importa este arquivo
- * via MenuPerfilDropdown).
- */
+// modal de confirmacao unico do app
 export default function ConfirmDialog({
   open,
   onOpenChange,
@@ -46,7 +36,7 @@ export default function ConfirmDialog({
 
   async function handleConfirmar() {
     setPendente(true);
-    // `onConfirm` devolve false para manter o modal aberto (ex.: fluxo em etapas).
+    // onconfirm false mantem o modal aberto
     let manterAberto = false;
     try {
       manterAberto = (await onConfirm?.()) === false;
@@ -63,12 +53,12 @@ export default function ConfirmDialog({
       aria-labelledby={idTitulo}
       aria-describedby={description ? idDescricao : undefined}
       className="dialogo"
-      // Esc: o navegador fecharia sozinho; quem manda no estado é o chamador.
+      // esc fica com o chamador
       onCancel={(e) => {
         e.preventDefault();
         fechar();
       }}
-      // Clique no fundo (::backdrop) cai no próprio <dialog>.
+      // clique no fundo cai no dialog
       onClick={(e) => {
         if (e.target === refDialogo.current) fechar();
       }}

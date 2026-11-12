@@ -8,7 +8,7 @@ import { getSession } from './auth.actions';
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { imagemPublica } from '@/lib/imagemPublica';
 
-/** ids favoritados do usuário logado — usado para marcar o coração preenchido nos cards. */
+// ids favoritados
 export async function listarIdsFavoritos() {
   const usuario = await getSession();
   if (!usuario) return { servicos: [], prestadores: [] };
@@ -82,7 +82,7 @@ async function estatisticasPorPrestador(prestadorIds: number[]) {
   return new Map(linhas.map((l) => [l.prestadorId, { media: Number(l.media) || 0, total: Number(l.total) || 0 }]));
 }
 
-/** Serviços e prestadores favoritados pelo usuário logado, com os dados prontos pra exibir. */
+// favoritos do usuario logado
 export async function listarFavoritos() {
   const usuario = await getSession();
   if (!usuario) return { servicos: [], prestadores: [] };
@@ -103,7 +103,7 @@ export async function listarFavoritos() {
     .innerJoin(servicos, eq(favoritos.servicoId, servicos.id))
     .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
     .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-    // Desativado some da lista, mas o favorito fica guardado e volta ao reativar.
+    // servico desativado some da lista
     .where(and(eq(favoritos.usuarioId, usuario.id), isNotNull(favoritos.servicoId), isNull(servicos.desativadoEm)));
 
   const servicosComEstat = await comEstatisticas(favoritosServico);

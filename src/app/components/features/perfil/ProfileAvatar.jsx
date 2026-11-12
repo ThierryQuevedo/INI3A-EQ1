@@ -108,7 +108,6 @@ export default function ProfileAvatar({
     }
   }
 
-  // Drag & Drop
   function handleDragOver(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -187,6 +186,8 @@ export default function ProfileAvatar({
           }`}
         >
           {imagemExibida ? (
+            // img pois a previa local e blob
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={imagemExibida}
               alt={usuario?.nome ? `Foto de ${usuario.nome}` : "Foto de perfil"}

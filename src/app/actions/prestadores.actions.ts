@@ -16,7 +16,7 @@ import { getSession } from '@/app/actions/auth.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
 import { podeVerContato } from '@/lib/contato';
 
-// `incluirDesativados` é só para o próprio prestador ver os serviços que tirou do ar.
+// incluirdesativados so para o proprio prestador
 export async function buscarPerfilPrestador(
   identificador: string | number,
   { incluirDesativados = false } = {}
@@ -182,7 +182,6 @@ export async function atualizarLocalizacaoPrestador(dados: {
   return { erro: null, sucesso: true };
 }
 
-/** Wrapper no formato useActionState (estadoAnterior, formData), usado por CampoEditavel em /configuracoes. */
 export async function atualizarEnderecoTextoAction(estadoAnterior: unknown, formData: FormData) {
   const enderecoTexto = formData.get('enderecoTexto');
   return atualizarLocalizacaoPrestador({ enderecoTexto: enderecoTexto ? String(enderecoTexto) : null });

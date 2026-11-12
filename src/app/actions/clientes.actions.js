@@ -46,7 +46,7 @@ export async function buscarPerfilCliente(identificador) {
 
   const clienteId = dadosUsuario.id;
 
-  // Estatísticas de avaliações recebidas pelo cliente (feitas pelos prestadores)
+  // avaliacoes recebidas dos prestadores
   const [estatAvaliacoes] = await db
     .select({
       media: avg(avaliacoes.notaParaCliente),
@@ -61,7 +61,6 @@ export async function buscarPerfilCliente(identificador) {
       )
     );
 
-  // Estatísticas de agendamentos
   const [estatAgendamentos] = await db
     .select({
       total: count(agendamentos.id),
@@ -81,7 +80,6 @@ export async function buscarPerfilCliente(identificador) {
       )
     );
 
-  // Últimas avaliações recebidas de prestadores
   const ultimasAvaliacoes = await db
     .select({
       id: avaliacoes.id,
@@ -116,8 +114,7 @@ export async function buscarPerfilCliente(identificador) {
   };
 }
 
-// O cliente vem da sessão: o painel traz agendamentos e telefones, e receber o
-// id por parâmetro deixaria qualquer um ler o painel de outra pessoa.
+// cliente vem da sessao nunca de parametro
 export async function buscarDashboardCliente() {
   const usuario = await getSession();
   if (!usuario) return null;
@@ -125,7 +122,6 @@ export async function buscarDashboardCliente() {
   const id = usuario.id;
   const agora = new Date();
 
-  // Próximos agendamentos ativos
   const proximos = await db
     .select({
       id: agendamentos.id,
@@ -154,7 +150,6 @@ export async function buscarDashboardCliente() {
     )
     .orderBy(agendamentos.dataHora);
 
-  // Histórico de agendamentos
   const historico = await db
     .select({
       id: agendamentos.id,
@@ -182,7 +177,7 @@ export async function buscarDashboardCliente() {
     .orderBy(desc(agendamentos.dataHora))
     .limit(10);
 
-  // Avaliações pendentes (serviços concluídos em que o cliente ainda não avaliou o prestador)
+  // concluidos ainda sem avaliacao
   const avaliacoesPendentes = await db
     .select({
       agendamentoId: agendamentos.id,
@@ -207,7 +202,6 @@ export async function buscarDashboardCliente() {
     .orderBy(desc(agendamentos.dataHora))
     .limit(5);
 
-  // Média de reputação do cliente
   const [reputacao] = await db
     .select({
       media: avg(avaliacoes.notaParaCliente),
@@ -222,7 +216,6 @@ export async function buscarDashboardCliente() {
       )
     );
 
-  // Totalizadores
   const [totalAgendamentos] = await db
     .select({ total: count(agendamentos.id) })
     .from(agendamentos)

@@ -4,11 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import ServiceCard from "@/app/components/features/servicos/ServiceCard";
 
-/**
- * Faixa horizontal de ServiceCards com scroll-snap nativo: arrasta no toque,
- * rola com trackpad/teclado e ganha setas no desktop. Sem biblioteca de
- * carrossel — o navegador já faz o trabalho pesado.
- */
+// carrossel com scroll snap nativo
 export default function CarrosselServicos({ servicos, rotulo }) {
   const trilhoRef = useRef(null);
   const [podeVoltar, setPodeVoltar] = useState(false);

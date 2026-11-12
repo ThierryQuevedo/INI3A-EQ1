@@ -1,4 +1,4 @@
-import { Calendar, Phone, Mail, Clock3, Star, ChevronRight, Pencil } from 'lucide-react';
+import { Calendar, Mail, Clock3, Star, ChevronRight, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -24,8 +24,16 @@ import { imagemPublica } from '@/lib/imagemPublica';
 import { mascararEmail, servicoTemAgendamentos } from '@/lib/servicos';
 import ExcluirServicoButton from '@/app/components/features/servicos/ExcluirServicoButton';
 import AlternarServicoAtivoButton from '@/app/components/features/servicos/AlternarServicoAtivoButton';
+import ToastDeRetorno from '@/app/components/ui/ToastDeRetorno';
+import { nomeDoServico } from '@/lib/metadados';
 
 const PREVIA_AVALIACOES = 3;
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const nome = await nomeDoServico(slug);
+  return nome ? { title: nome } : {};
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -33,8 +41,9 @@ function rotuloAvaliacoes(total) {
   return `${total} ${total === 1 ? 'avaliação' : 'avaliações'}`;
 }
 
-export default async function DetalheServico({ params }) {
+export default async function DetalheServico({ params, searchParams }) {
   const { slug } = await params;
+  const { servico: retorno } = (await searchParams) ?? {};
 
   if (!slug) {
     return notFound();
@@ -53,7 +62,6 @@ export default async function DetalheServico({ params }) {
       prestadorSlug: usuarios.slug,
       prestadorNome: usuarios.nome,
       prestadorEmail: usuarios.email,
-      prestadorTelefone: usuarios.telefone,
       prestadorImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       prestadorBiografia: prestadores.biografia,
       desativadoEm: servicos.desativadoEm,
@@ -91,7 +99,6 @@ export default async function DetalheServico({ params }) {
     prestador: {
       nome: dadosDb.prestadorNome || "Profissional",
       biografia: dadosDb.prestadorBiografia,
-      telefone: dadosDb.prestadorTelefone,
       email: dadosDb.prestadorEmail,
       urlImagem: dadosDb.prestadorImagem,
     }
@@ -108,10 +115,9 @@ export default async function DetalheServico({ params }) {
 
   return (
     <PageContainer size="lg" className="py-6 sm:py-8">
+      <ToastDeRetorno mensagem={ehDono && retorno === 'editado' ? 'Alterações salvas.' : null} />
       <BotaoVoltar fallbackHref="/servicos" className="mb-4" />
 
-      {/* Cabeçalho: foto + identidade do serviço numa faixa só, sem card nem
-          banner placeholder — a informação principal fica na primeira dobra. */}
       <header className="flex items-start gap-4 sm:gap-6">
         <div className="w-28 sm:w-44 lg:w-52 shrink-0">
           <FotoServico
@@ -165,8 +171,7 @@ export default async function DetalheServico({ params }) {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_20rem] gap-6 lg:gap-8 mt-8 items-start">
-        {/* Coluna lateral: no mobile sobe para logo após o cabeçalho, para o
-            "Agendar" ficar visível sem rolar; no desktop acompanha a rolagem. */}
+        {/* no mobile sobe e no desktop fica fixa */}
         <aside className="order-first lg:order-none lg:col-start-2 lg:row-start-1 lg:sticky lg:top-20 space-y-4">
           <Card padding="sm" className="sm:p-5">
             <div className="flex items-end justify-between gap-3">
@@ -248,26 +253,15 @@ export default async function DetalheServico({ params }) {
               <p className="text-body-sm text-muted-foreground leading-relaxed mt-3 line-clamp-4">{servico.prestador.biografia}</p>
             )}
 
-            {(servico.prestador.telefone || servico.prestador.email) && (
+            {servico.prestador.email && (
               <ul className="mt-3 space-y-1">
-                {servico.prestador.telefone && (
-                  <li>
-                    <a href={`tel:${servico.prestador.telefone}`} className="flex items-center gap-2.5 h-9 pointer-coarse:h-11 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
-                      <Phone size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
-                      <span className="sr-only">Telefone: </span>
-                      <span className="truncate">{servico.prestador.telefone}</span>
-                    </a>
-                  </li>
-                )}
-                {servico.prestador.email && (
-                  <li>
-                    <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-2.5 h-9 pointer-coarse:h-11 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
-                      <Mail size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
-                      <span className="sr-only">E-mail: </span>
-                      <span className="truncate">{servico.prestador.email}</span>
-                    </a>
-                  </li>
-                )}
+                <li>
+                  <a href={`mailto:${servico.prestador.email}`} className="flex items-center gap-2.5 h-9 pointer-coarse:h-11 px-2 -mx-2 rounded-lg text-body-sm text-foreground hover:bg-muted transition-colors">
+                    <Mail size={16} className="text-muted-foreground shrink-0" aria-hidden="true" />
+                    <span className="sr-only">E-mail: </span>
+                    <span className="truncate">{servico.prestador.email}</span>
+                  </a>
+                </li>
               </ul>
             )}
 

@@ -1,13 +1,4 @@
-// Sistema de notificações do Marca Aí.
-//
-// Cada evento da aplicação tem uma função `notificar*` aqui. Elas recebem só o
-// id do agendamento, resolvem por conta própria quem é o cliente e quem é o
-// prestador, registram a notificação na tabela `notificacoes` e disparam o
-// e-mail.
-//
-// Nenhuma função exportada lança exceção: uma falha de SMTP ou de rede é
-// registrada no console (e na coluna `erro`) e nada mais. Quem chama nunca deve
-// quebrar por causa de um e-mail.
+// uma funcao por evento que grava e envia email sem lancar
 import { eq } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { db } from '@/db';
@@ -21,20 +12,16 @@ import {
   emailNovaAvaliacao,
   emailNovaMensagem,
   emailNovoAgendamentoPrestador,
+  emailPagamentoConfirmadoCliente,
+  emailPagamentoConfirmadoPrestador,
+  emailPagamentoReembolsado,
   emailServicoConcluido,
 } from './emails/templates.js';
 
-// `usuarios` entra duas vezes no join (cliente e prestador), então o segundo
-// lado precisa de um alias.
+// usuarios entra duas vezes no join
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios');
 
-/**
- * Resolve um agendamento para os dois lados envolvidos.
- *
- * `servicos.prestadorId` aponta para `prestadores.usuarioId`, que é o próprio
- * `usuarios.id` — por isso dá para ligar direto em `usuarios` sem passar pela
- * tabela `prestadores`.
- */
+// dados dos dois lados do agendamento
 async function dadosDoAgendamento(agendamentoId) {
   const [info] = await db
     .select({
@@ -59,12 +46,7 @@ async function dadosDoAgendamento(agendamentoId) {
   return info ?? null;
 }
 
-/**
- * Grava a notificação e envia o e-mail.
- *
- * A linha é criada antes do envio para que uma falha de SMTP também fique
- * registrada, com `enviado: false` e o motivo em `erro`.
- */
+// grava antes de enviar para registrar falha
 async function registrarEEnviar({ usuarioId, emailDestino, tipo, template }) {
   const [registro] = await db
     .insert(notificacoes)
@@ -98,7 +80,7 @@ async function registrarEEnviar({ usuarioId, emailDestino, tipo, template }) {
   return resultado;
 }
 
-/** Roda o notificador engolindo qualquer erro — e-mail nunca derruba a ação. */
+// engole erro pois email nunca derruba a acao
 async function comProtecao(nome, executar) {
   try {
     await executar();
@@ -107,7 +89,7 @@ async function comProtecao(nome, executar) {
   }
 }
 
-/** Cliente acabou de agendar: avisa o prestador e manda o comprovante ao cliente. */
+// avisa o prestador e manda comprovante
 export async function notificarNovoAgendamento(agendamentoId) {
   await comProtecao('notificarNovoAgendamento', async () => {
     const dados = await dadosDoAgendamento(agendamentoId);
@@ -130,7 +112,7 @@ export async function notificarNovoAgendamento(agendamentoId) {
   });
 }
 
-/** Prestador confirmou o agendamento: avisa o cliente. */
+// avisa o cliente
 export async function notificarAgendamentoConfirmado(agendamentoId) {
   await comProtecao('notificarAgendamentoConfirmado', async () => {
     const dados = await dadosDoAgendamento(agendamentoId);
@@ -145,7 +127,7 @@ export async function notificarAgendamentoConfirmado(agendamentoId) {
   });
 }
 
-/** Agendamento cancelado: avisa o outro lado, com o motivo quando houver. */
+// avisa o outro lado
 export async function notificarAgendamentoCancelado(agendamentoId, { canceladoPorId, motivo }) {
   await comProtecao('notificarAgendamentoCancelado', async () => {
     const dados = await dadosDoAgendamento(agendamentoId);
@@ -162,7 +144,7 @@ export async function notificarAgendamentoCancelado(agendamentoId, { canceladoPo
   });
 }
 
-/** Mensagem nova no chat: avisa quem está do outro lado da conversa. */
+// avisa o outro lado da conversa
 export async function notificarNovaMensagem(agendamentoId, { remetenteId, texto }) {
   await comProtecao('notificarNovaMensagem', async () => {
     const dados = await dadosDoAgendamento(agendamentoId);
@@ -185,7 +167,7 @@ export async function notificarNovaMensagem(agendamentoId, { remetenteId, texto 
   });
 }
 
-/** Serviço concluído: convida o cliente a avaliar, com link para /avaliar/[id]. */
+// convida o cliente a avaliar
 export async function notificarServicoConcluido(agendamentoId) {
   await comProtecao('notificarServicoConcluido', async () => {
     const { pode, motivo } = await verificarPodeAvaliar(agendamentoId);
@@ -206,7 +188,45 @@ export async function notificarServicoConcluido(agendamentoId) {
   });
 }
 
-/** Cliente avaliou o serviço: avisa o prestador. Vale para avaliação nova ou editada. */
+// comprovante e aviso
+export async function notificarPagamentoConfirmado(agendamentoId) {
+  await comProtecao('notificarPagamentoConfirmado', async () => {
+    const dados = await dadosDoAgendamento(agendamentoId);
+    if (!dados) return;
+
+    await Promise.all([
+      registrarEEnviar({
+        usuarioId: dados.clienteId,
+        emailDestino: dados.clienteEmail,
+        tipo: 'pagamento_confirmado',
+        template: emailPagamentoConfirmadoCliente(dados),
+      }),
+      registrarEEnviar({
+        usuarioId: dados.prestadorId,
+        emailDestino: dados.prestadorEmail,
+        tipo: 'pagamento_recebido',
+        template: emailPagamentoConfirmadoPrestador(dados),
+      }),
+    ]);
+  });
+}
+
+// avisa o cliente
+export async function notificarPagamentoReembolsado(agendamentoId) {
+  await comProtecao('notificarPagamentoReembolsado', async () => {
+    const dados = await dadosDoAgendamento(agendamentoId);
+    if (!dados) return;
+
+    await registrarEEnviar({
+      usuarioId: dados.clienteId,
+      emailDestino: dados.clienteEmail,
+      tipo: 'pagamento_reembolsado',
+      template: emailPagamentoReembolsado(dados),
+    });
+  });
+}
+
+// avisa o prestador
 export async function notificarNovaAvaliacao(agendamentoId, { nota, comentario }) {
   await comProtecao('notificarNovaAvaliacao', async () => {
     const dados = await dadosDoAgendamento(agendamentoId);

@@ -3,10 +3,12 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { avaliarServico } from "@/app/actions/avaliacoes.actions";
+import { avaliarCliente, avaliarServico } from "@/app/actions/avaliacoes.actions";
 
-export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, variante = "card" }) {
+// avaliacao depois do servico concluido
+export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, variante = "card", alvo = "prestador", nomeCliente }) {
   const naPagina = variante === "pagina";
+  const avaliandoCliente = alvo === "cliente";
   const [enviado, setEnviado] = useState(!!avaliacaoExistente);
   const [nota, setNota] = useState(avaliacaoExistente?.nota || 0);
   const [notaHover, setNotaHover] = useState(0);
@@ -54,7 +56,8 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
     }
     setErro(null);
     startTransition(async () => {
-      const resultado = await avaliarServico({ agendamentoId, nota, comentario });
+      const avaliar = avaliandoCliente ? avaliarCliente : avaliarServico;
+      const resultado = await avaliar({ agendamentoId, nota, comentario });
       if (resultado?.erro) {
         setErro(resultado.erro);
         return;
@@ -66,7 +69,9 @@ export default function AvaliacaoServico({ agendamentoId, avaliacaoExistente, va
   return (
     <div className={naPagina ? "" : "mt-3 pt-3 border-t border-border"}>
       <p className={`${naPagina ? "text-body" : "text-body-sm"} font-bold text-foreground mb-2`}>
-        Como foi o serviço? Deixe sua avaliação
+        {avaliandoCliente
+          ? `Como foi atender ${nomeCliente || "este cliente"}? Avalie o cliente`
+          : "Como foi o serviço? Deixe sua avaliação"}
       </p>
 
       <div className="flex items-center gap-1 mb-2" role="radiogroup" aria-label="Nota de 1 a 5 estrelas">

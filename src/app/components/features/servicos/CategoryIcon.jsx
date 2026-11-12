@@ -27,6 +27,6 @@ export function getCategoryIcon(nomeCategoria) {
 
 export default function CategoryIcon({ nome, size = 16, className, ...props }) {
   const Icon = getCategoryIcon(nome);
-  // eslint-disable-next-line react-hooks/static-components -- seleção entre um conjunto fixo de ícones importados, não criação dinâmica de componente
+  // eslint-disable-next-line react-hooks/static-components
   return <Icon size={size} className={className} aria-hidden="true" {...props} />;
 }

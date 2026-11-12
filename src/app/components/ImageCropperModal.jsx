@@ -6,7 +6,7 @@ import { Button } from "@/app/components/ui/button";
 
 const ZOOM_MIN = 1;
 const ZOOM_MAX = 3;
-const PASSO_TECLADO = 10; // px por seta (Shift = 4x)
+const PASSO_TECLADO = 10; // pixels por seta
 
 export default function ImageCropperModal({
   open,
@@ -14,15 +14,15 @@ export default function ImageCropperModal({
   onCancel,
   onConfirm,
   isSaving = false,
-  aspect = 1, // largura / altura do recorte final (1 = quadrado/círculo, 3 = banner 1200x400 etc.)
-  shape = "circle", // "circle" | "rect"
+  aspect = 1, // largura sobre altura do recorte
+  shape = "circle", // circle ou rect
   outputWidth = 512,
-  outputHeight = null, // se omitido, é calculado a partir de `aspect`
+  outputHeight = null, // se omitido usa aspect
 }) {
-  const VL = 320; // largura lógica do viewport de recorte (px do canvas)
-  const VA = Math.round(VL / aspect); // altura do viewport, respeitando a proporção
-  const SL = outputWidth; // largura de saída
-  const SA = outputHeight || Math.round(outputWidth / aspect); // altura de saída
+  const VL = 320; // largura logica do viewport
+  const VA = Math.round(VL / aspect);
+  const SL = outputWidth;
+  const SA = outputHeight || Math.round(outputWidth / aspect);
 
   const refDialogo = useRef(null);
   const canvasRef = useRef(null);
@@ -36,9 +36,7 @@ export default function ImageCropperModal({
   const [pronto, setPronto] = useState(false);
   const [erro, setErro] = useState(null);
 
-  // Reinicia zoom/offset/pronto ao abrir com uma imagem nova — ajuste durante o
-  // render (padrão recomendado pelo React para resetar estado quando uma prop
-  // muda), não dentro do efeito, que fica só com a carga assíncrona da imagem.
+  // reinicia zoom e posicao com outra imagem
   const chaveAtual = open ? imageSrc : null;
   const [chaveAnterior, setChaveAnterior] = useState(chaveAtual);
   if (chaveAtual !== chaveAnterior) {
@@ -51,8 +49,7 @@ export default function ImageCropperModal({
     }
   }
 
-  // <dialog> nativo: foco preso, Esc e devolução do foco vêm do navegador
-  // (mesmo padrão do ConfirmDialog — G-01).
+  // dialog nativo cuida do foco e do esc
   useEffect(() => {
     const dialogo = refDialogo.current;
     if (!dialogo) return;
@@ -101,8 +98,7 @@ export default function ImageCropperModal({
     if (pronto) desenhar();
   }, [pronto, desenhar]);
 
-  // Se a janela perde o foco no meio do arrasto (troca de app, alerta do
-  // sistema), o pointerup nunca chega: encerra o arrasto aqui.
+  // encerra o arrasto se a janela perder o foco
   useEffect(() => {
     if (!open) return;
     function encerrar() {
@@ -128,7 +124,7 @@ export default function ImageCropperModal({
   }
 
   function handlePointerDown(e) {
-    // Um segundo dedo no meio do arrasto não "rouba" o gesto.
+    // segundo dedo nao toma o gesto
     if (!pronto || dragState.current) return;
     const rect = e.currentTarget.getBoundingClientRect();
     dragState.current = {
@@ -136,8 +132,7 @@ export default function ImageCropperModal({
       startX: e.clientX,
       startY: e.clientY,
       origem: offset,
-      // Em telas estreitas a área exibida é menor que o canvas lógico:
-      // converte o deslocamento do dedo para px do canvas.
+      // converte o deslocamento para px do canvas
       fator: rect.width > 0 ? VL / rect.width : 1,
     };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -153,8 +148,7 @@ export default function ImageCropperModal({
     setOffset(limitarOffset(novo, zoom));
   }
 
-  // pointerup, pointercancel (o navegador assumiu o gesto) e
-  // lostpointercapture: todos encerram o arrasto do mesmo jeito.
+  // encerra o arrasto
   function handlePointerFim(e) {
     if (dragState.current?.pointerId === e.pointerId) dragState.current = null;
   }
@@ -163,7 +157,7 @@ export default function ImageCropperModal({
     if (!pronto) return;
     const passo = e.shiftKey ? PASSO_TECLADO * 4 : PASSO_TECLADO;
     const movimentos = {
-      // A imagem anda no sentido da seta.
+      // a imagem anda no sentido da seta
       ArrowLeft: [-passo, 0],
       ArrowRight: [passo, 0],
       ArrowUp: [0, -passo],
@@ -229,14 +223,13 @@ export default function ImageCropperModal({
       ref={refDialogo}
       aria-labelledby={idTitulo}
       className="dialogo"
-      // Esc: o navegador fecharia sozinho; quem manda no estado é o chamador.
-      // Durante o envio, o modal fica aberto.
+      // esc fica com o chamador
       onCancel={(e) => {
         e.preventDefault();
         cancelar();
       }}
     >
-      {/* Conteúdo sempre montado: o fade de saída do .dialogo mostra o recorte, não um quadro vazio. */}
+      {/* conteudo sempre montado para o fade de saida */}
       <div className="bg-card text-card-foreground rounded-xl shadow-elevated border border-border p-5 flex flex-col items-center gap-4">
           <div className="flex items-center justify-between gap-3 w-full">
             <h2 id={idTitulo} className="font-sans text-h6 font-bold text-foreground tracking-normal">

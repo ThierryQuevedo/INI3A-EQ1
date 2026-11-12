@@ -1,7 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
+import { forbidden, redirect, unstable_rethrow } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcryptjs';
 import { and, eq, ne } from 'drizzle-orm';
@@ -10,8 +10,8 @@ import { usuarios, sessoes, prestadores } from '@/db/schema';
 import { SESSION_COOKIE, COMPLETAR_CADASTRO_COOKIE, criarSessao, consumirProximo } from '@/lib/session';
 import { destinoPadrao, filtroEmail, gerarSlugUnicoDeUsuario, normalizarEmail } from '@/lib/usuarios';
 import { desformatarTelefone, formatarTelefone } from '@/lib/formatarTelefone';
+import { SENHA_MINIMA, emailValido, telefoneValido } from '@/lib/validacao';
 import { imagemPublica } from '@/lib/imagemPublica';
-import { validarUrlImagem } from '@/lib/validarImagem';
 import { verificarLimite, registrarFalha, limparFalhas, ipDaRequisicao } from '@/lib/limiteTentativas';
 
 const ERRO_EMAIL_EM_USO = 'Já existe uma conta com este e-mail.';
@@ -20,16 +20,13 @@ const ERRO_TELEFONE_EM_USO = 'Este telefone já está em uso em outra conta.';
 // diferentes deixavam descobrir quais e-mails têm conta.
 const ERRO_LOGIN = 'E-mail ou senha incorretos.';
 const TAMANHO_MINIMO_SENHA = 6;
-const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Força bruta: 5 erros por e-mail e 20 por IP a cada 15 minutos.
 const JANELA_LOGIN_MS = 15 * 60 * 1000;
 const MAXIMO_POR_EMAIL = 5;
 const MAXIMO_POR_IP = 20;
 
-// Login e cadastro devolvem `destino` e quem navega é o formulário, com uma
-// carga completa da página (ver lib/useIrAposEntrar.js). Como a página nasce do
-// zero, não há o que revalidar aqui.
+
 export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
   try {
     const nome = String(formData.get('nome') ?? '').trim();
@@ -41,25 +38,23 @@ export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
     if (!nome || !email || !senha || !digitosTelefone) {
       return { erro: 'Campos incompletos.' };
     }
+    if (!emailValido(email)) {
+      return { erro: 'E-mail inválido.', errosCampos: { email: 'E-mail inválido.' } };
+    }
+    if (!telefoneValido(digitosTelefone)) {
+      const erroTelefone = 'Telefone inválido. Ex: (11) 91234-5678';
+      return { erro: erroTelefone, errosCampos: { cel: erroTelefone } };
+    }
+    if (senha.length < SENHA_MINIMA) {
+      const erroSenha = `A senha deve ter pelo menos ${SENHA_MINIMA} caracteres.`;
+      return { erro: erroSenha, errosCampos: { senha: erroSenha } };
+    }
 
     if (nome.length > 100) {
       return { erro: 'O nome pode ter no máximo 100 caracteres.', errosCampos: { nome: 'O nome pode ter no máximo 100 caracteres.' } };
     }
 
-    if (!RE_EMAIL.test(email)) {
-      return { erro: 'Informe um e-mail válido.', errosCampos: { email: 'Informe um e-mail válido.' } };
-    }
-
-    if (senha.length < TAMANHO_MINIMO_SENHA) {
-      const msg = `A senha deve ter ao menos ${TAMANHO_MINIMO_SENHA} caracteres.`;
-      return { erro: msg, errosCampos: { senha: msg } };
-    }
-
-    if (digitosTelefone.length < 10) {
-      return { erro: 'Informe um telefone válido, com DDD.', errosCampos: { cel: 'Informe um telefone válido, com DDD.' } };
-    }
-
-    // Sempre na mesma máscara: é ela que a coluna única compara.
+    // sempre na mesma mascara pois a coluna unica compara texto
     const telefone = formatarTelefone(digitosTelefone);
 
     const [emailExistente] = await db
@@ -102,8 +97,7 @@ export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
     const proximo = await consumirProximo();
     return { erro: null, destino: proximo ?? destinoPadrao(tipo) };
   } catch (error) {
-    // Dois envios simultâneos podem passar pelas consultas acima e bater na
-    // restrição única do banco: é dado repetido, não falha do servidor.
+    // envio duplo bate na restricao unica e nao e erro
     if (error?.cause?.code === '23505' || error?.code === '23505') {
       return { erro: 'Este e-mail ou telefone já está em uso em outra conta.' };
     }
@@ -159,11 +153,7 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
   }
 }
 
-/**
- * Último passo de quem criou a conta pelo Google: a conta nasce como cliente e
- * aqui a pessoa diz se também vai oferecer serviços. Depois disso, continua de
- * onde parou (ex.: o agendamento que estava marcando antes de entrar).
- */
+// ultimo passo do cadastro google
 export async function concluirCadastroGoogle(estadoAnterior: unknown, formData: FormData) {
   const usuario = await requireSession();
   const virarPrestador = formData.get('tipo') === 'prestador';
@@ -239,6 +229,8 @@ export async function getSession() {
     return usuario;
 
   } catch (error) {
+    // deixa subir o sinal do next no build
+    unstable_rethrow(error);
     console.error("Erro em getSession:", error);
     return null;
   }
@@ -255,7 +247,7 @@ export async function requireSession() {
 export async function requireAdmin() {
   const usuario = await requireSession();
   if (!usuario.admin) {
-    redirect('/dashboard');
+    forbidden();
   }
   return usuario;
 }
@@ -288,13 +280,9 @@ export async function atualizarEmail(estadoAnterior: unknown, formData: FormData
     redirect('/login');
   }
 
-  const email = formData.get('email');
-  if (!email || String(email).trim() === '') {
-    return { erro: 'Informe um e-mail válido.' };
-  }
-
-  const emailNormalizado = normalizarEmail(email);
-  if (!RE_EMAIL.test(emailNormalizado)) {
+  // mesma normalizacao do cadastro
+  const emailNormalizado = normalizarEmail(formData.get('email'));
+  if (!emailValido(emailNormalizado)) {
     return { erro: 'Informe um e-mail válido.' };
   }
 
@@ -321,17 +309,13 @@ export async function atualizarTelefone(estadoAnterior: unknown, formData: FormD
     redirect('/login');
   }
 
+  // mesma mascara do cadastro
   const telefone = formData.get('telefone');
-  if (!telefone || String(telefone).trim() === '') {
-    return { erro: 'Informe um telefone válido.' };
+  if (!telefoneValido(telefone)) {
+    return { erro: 'Informe um telefone válido, com DDD. Ex: (11) 91234-5678' };
   }
 
-  // Sempre na mesma máscara do cadastro: é ela que a coluna única compara.
-  const digitos = desformatarTelefone(telefone);
-  if (digitos.length < 10) {
-    return { erro: 'Informe um telefone válido, com DDD.' };
-  }
-  const telefoneNormalizado = formatarTelefone(digitos);
+  const telefoneNormalizado = formatarTelefone(telefone);
 
   const [existente] = await db
     .select({ id: usuarios.id })
@@ -408,32 +392,3 @@ export async function atualizarSenha(estadoAnterior: unknown, formData: FormData
   return { erro: null, sucesso: true };
 }
 
-export async function atualizarFotoPerfil(urlImagem: string) {
-  const usuario = await getSession();
-  if (!usuario) {
-    throw new Error('Não autorizado');
-  }
-
-  const validacao = validarUrlImagem(urlImagem);
-  if (!validacao.valido) throw new Error('Imagem inválida');
-  if (validacao.semMudanca) return;
-
-  await db.update(usuarios).set({ urlImagem: validacao.valor }).where(eq(usuarios.id, usuario.id));
-
-  revalidatePath('/configuracoes');
-}
-
-export async function atualizarUrlBanner(urlBanner: string) {
-  const usuario = await getSession();
-  if (!usuario) {
-    throw new Error('Não autorizado');
-  }
-
-  const validacao = validarUrlImagem(urlBanner);
-  if (!validacao.valido) throw new Error('Imagem inválida');
-  if (validacao.semMudanca) return;
-
-  await db.update(usuarios).set({ urlBanner: validacao.valor }).where(eq(usuarios.id, usuario.id));
-
-  revalidatePath('/configuracoes');
-}

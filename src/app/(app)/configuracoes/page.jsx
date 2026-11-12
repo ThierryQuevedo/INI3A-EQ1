@@ -11,6 +11,9 @@ import CampoEditavel from "./CampoEditavel";
 import CampoSenha from "./CampoSenha";
 import LinhaCampo from "./LinhaCampo";
 import BotaoVirarPrestador from "./BotaoVirarPrestador";
+import { FUSO } from "@/lib/formatoData";
+
+export const metadata = { title: 'Configurações' };
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +23,7 @@ export default async function PaginaConfiguracoes() {
   const usuario = await requireSession();
 
   const dataCriacao = usuario.criadoEm
-    ? new Date(usuario.criadoEm).toLocaleDateString("pt-BR", { day: '2-digit', month: 'long', year: 'numeric' })
+    ? new Date(usuario.criadoEm).toLocaleDateString("pt-BR", { day: '2-digit', month: 'long', year: 'numeric', timeZone: FUSO })
     : null;
 
   const inicialNome = usuario.nome ? usuario.nome.charAt(0).toUpperCase() : "U";

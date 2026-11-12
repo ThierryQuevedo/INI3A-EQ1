@@ -13,11 +13,7 @@ export const metadata = {
   title: "Entrar",
 };
 
-/**
- * A-08: lê (sem consumir) o destino guardado por /api/auth/entrar. Se for a
- * tela de agendar, busca o nome do serviço e do profissional para o login
- * mostrar o pedido em andamento. Qualquer coisa inesperada → login comum.
- */
+// le o destino sem consumir
 async function lerPedidoEmAndamento() {
   const cookieStore = await cookies();
   const destino = caminhoInternoSeguro(cookieStore.get(PROXIMO_COOKIE)?.value);
@@ -51,9 +47,7 @@ async function lerPedidoEmAndamento() {
 }
 
 export default async function LoginPage() {
-  // Quem já entrou não tem o que fazer aqui (ex.: voltou pelo histórico do navegador).
-  // O formulário é quem navega: esta página também é renderizada de novo logo após
-  // o login, e um redirect() aqui passaria na frente do destino que a action devolveu.
+  // sem redirect pois passaria na frente do destino da action
   const usuario = await getSession();
   const cookieStore = await cookies();
   const destinoSessao = usuario

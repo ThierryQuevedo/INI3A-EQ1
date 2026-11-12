@@ -8,16 +8,14 @@ import { getSession } from './auth.actions';
 
 const ERRO_SESSAO = 'Sua sessão expirou. Entre de novo para continuar.';
 
-// O prestador vem sempre da sessão, nunca do cliente: server actions são
-// endpoints públicos, e um id recebido por parâmetro pode ser forjado.
+// prestador vem da sessao
 export async function listarDisponibilidades(servicoId?: number) {
   const usuario = await getSession();
   if (!usuario) return [];
 
   const filtros = [eq(disponibilidades.prestadorId, usuario.id)];
 
-  // Sem o filtro de servicoId, a agenda de todos os serviços do prestador
-  // aparecia junta (horários "iguais" entre serviços diferentes).
+  // filtra por servico
   if (servicoId) {
     filtros.push(eq(disponibilidades.servicoId, Number(servicoId)));
   }
@@ -45,7 +43,7 @@ export async function criarDisponibilidade(
     return { erro: 'servicoId é obrigatório.' };
   }
 
-  // Sem isto, um prestador poderia abrir horários no serviço de outro.
+  // impede abrir horario no servico de outro
   const [servicoProprio] = await db
     .select({ id: servicos.id })
     .from(servicos)
@@ -55,8 +53,7 @@ export async function criarDisponibilidade(
     return { erro: 'Você não tem permissão para alterar este serviço.' };
   }
 
-  // Checa apenas as disponibilidades cadastradas para ESSE serviço nesse dia
-  // (checar todas as do prestador misturaria a agenda de serviços diferentes).
+  // compara so com o mesmo servico no dia
   const disponibilidadesDoDia = await db
     .select()
     .from(disponibilidades)
@@ -116,8 +113,7 @@ export async function atualizarDisponibilidade(
     return { erro: 'Horário não encontrado.' };
   }
 
-  // Conflito checado apenas contra os OUTROS horários do mesmo serviço/dia —
-  // excluir o próprio registro evita falso-positivo ao apenas ajustar o intervalo.
+  // ignora o proprio registro
   const disponibilidadesDoDia = await db
     .select()
     .from(disponibilidades)
@@ -168,14 +164,7 @@ export async function deletarDisponibilidade(id: number) {
   return { ok: true };
 }
 
-/**
- * Calcula o próximo horário livre de vários serviços de uma vez (sem N+1 query),
- * reaproveitando a mesma lógica de slots usada na tela de agendamento.
- * Os agendamentos considerados são os de TODOS os serviços do prestador — o
- * mesmo conjunto que a tela de agendar usa (carregarAgendaDoServico) —, para o
- * card nunca oferecer um horário que a tela seguinte mostra como ocupado.
- * Retorna { [servicoId]: isoString | null }.
- */
+// proximo horario livre de varios servicos
 export async function calcularProximosHorariosLivres(servicoIds: number[]) {
   const ids = Array.from(new Set((servicoIds || []).map(Number))).filter((n) => !Number.isNaN(n));
   if (ids.length === 0) return {};

@@ -1,11 +1,11 @@
 import { cn } from "@/lib/utils";
 
 const WIDTHS = {
-  sm: "max-w-2xl",    // formulários estreitos: login, cadastro, avaliar
-  md: "max-w-3xl",    // conteúdo de 1 coluna: configuracoes, admin/categorias, termos, suporte
-  lg: "max-w-5xl",    // formulários longos: novo-serviço, agendamentos/novo, detalhe de serviço
-  xl: "max-w-6xl",    // marketing/listagens: home, sobre, servicos, perfis públicos
-  "2xl": "max-w-7xl", // dashboards e tabelas largas: dashboard, admin/usuarios
+  sm: "max-w-2xl",    // formularios estreitos
+  md: "max-w-3xl",    // conteudo de uma coluna
+  lg: "max-w-5xl",    // formularios longos
+  xl: "max-w-6xl",    // listagens
+  "2xl": "max-w-7xl", // dashboards e tabelas largas
 };
 
 export default function PageContainer({ size = "xl", className, children, ...props }) {

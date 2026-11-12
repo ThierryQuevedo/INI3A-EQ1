@@ -1,9 +1,4 @@
-// Layout base dos e-mails transacionais do Marca Aí.
-//
-// Os estilos são inline de propósito: cliente de e-mail não carrega CSS externo
-// nem enxerga os tokens do Tailwind. As cores de marca também ficam fixas aqui —
-// a regra do globals.css de não usar `tcc-*` direto vale para o markup da
-// aplicação, que tem tema claro e escuro; e-mail não tem.
+// layout dos emails com estilos inline
 const CORES = {
   fundo: '#F7F8FC',
   card: '#FFFFFF',
@@ -15,7 +10,7 @@ const CORES = {
   suave: '#94979E',
 };
 
-/** Escapa texto vindo do usuário (nome, comentário) antes de entrar no HTML. */
+// escapa texto do usuario
 export function escapar(texto) {
   return String(texto ?? '')
     .replace(/&/g, '&amp;')
@@ -25,15 +20,7 @@ export function escapar(texto) {
     .replace(/'/g, '&#39;');
 }
 
-/**
- * Monta o corpo HTML de um e-mail.
- *
- * @param {object} opcoes
- * @param {string} opcoes.saudacao   Primeira linha, em destaque. Ex.: "Olá, Ana!"
- * @param {string[]} opcoes.paragrafos Parágrafos do corpo, já escapados.
- * @param {{rotulo: string, itens: [string, string][]}} [opcoes.destaque] Caixa com os dados do agendamento.
- * @param {{texto: string, href: string}} [opcoes.cta] Botão laranja ao final.
- */
+// monta o html do email
 export function layoutEmail({ saudacao, paragrafos = [], destaque = null, cta = null }) {
   const corpo = paragrafos
     .map(

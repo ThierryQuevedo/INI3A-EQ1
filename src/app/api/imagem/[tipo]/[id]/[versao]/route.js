@@ -4,11 +4,7 @@ import { db } from '@/db';
 import { servicos, usuarios } from '@/db/schema';
 import { TIPOS_IMAGEM } from '@/lib/imagemPublica';
 
-/*
- * Serve as imagens que estão gravadas no banco como data URL (ver
- * lib/imagemPublica.js). São as mesmas fotos já exibidas publicamente em
- * catálogo e perfis, então não há checagem de sessão.
- */
+// serve imagens do banco sem checar sessao pois sao publicas
 
 const COLUNA_POR_TIPO = {
   servico: { tabela: servicos, coluna: servicos.urlImagem, id: servicos.id },
@@ -36,9 +32,7 @@ export async function GET(_request, { params }) {
   }
 
   const bytes = Buffer.from(partes[2], 'base64');
-  // Versão confere com o conteúdo atual → cache permanente. Versão antiga
-  // (imagem trocada depois que a página foi gerada) → entrega a atual, mas
-  // sem fixar no cache.
+  // versao atual tem cache permanente
   const versaoAtual = createHash('md5').update(valor).digest('hex').slice(0, 12);
   const cache =
     versao === versaoAtual ? 'public, max-age=31536000, immutable' : 'public, max-age=0, must-revalidate';

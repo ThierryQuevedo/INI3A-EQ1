@@ -1,4 +1,4 @@
-import { MapPin, Phone, Users, Star, Clock3, CalendarDays, Pencil } from 'lucide-react';
+import { MapPin, Users, Star, Clock3, CalendarDays, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -12,6 +12,14 @@ import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import FavoritoButton from '@/app/components/features/favoritos/FavoritoButton';
 import { PerfilBanner, PerfilResumo, CardAvaliacao } from '@/app/components/features/perfil/PerfilPublico';
 import PageContainer from '@/app/components/ui/PageContainer';
+import { nomeDoUsuario } from '@/lib/metadados';
+import { FUSO } from '@/lib/formatoData';
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const nome = await nomeDoUsuario(slug);
+  return nome ? { title: nome } : {};
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -45,7 +53,7 @@ export default async function PerfilPrestador({ params }) {
   const souOPrestador = visitante?.id === usuario.id;
 
   const membroDesde = primeiraLetraMaiuscula(
-    new Date(usuario.criadoEm).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+    new Date(usuario.criadoEm).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: FUSO })
   );
 
   const localizacao = usuario.enderecoTexto
@@ -111,16 +119,15 @@ export default async function PerfilPrestador({ params }) {
             acoes={
               <>
                 <Button asChild variant="marcar" className="flex-1">
-                  {/* <Link> respeita o basePath e não recarrega a página inteira (A-01). */}
                   <Link href={primeiroServico ? `/agendamentos/novo/?servico=${primeiroServico.id}` : '#servicos'}>
                     <CalendarDays aria-hidden="true" /> Agendar
                   </Link>
                 </Button>
-                {usuario.telefone && (
+                {souOPrestador && (
                   <Button asChild variant="outline" size="icon" className="rounded-lg">
-                    <a href={`tel:${usuario.telefone}`} aria-label={`Ligar para ${usuario.nome}`}>
-                      <Phone aria-hidden="true" />
-                    </a>
+                    <Link href="/configuracoes" aria-label="Editar meu perfil">
+                      <Pencil aria-hidden="true" />
+                    </Link>
                   </Button>
                 )}
                 {!souOPrestador && (
@@ -137,7 +144,7 @@ export default async function PerfilPrestador({ params }) {
             estatisticas={[
               { Icon: Users, rotulo: 'Clientes atendidos', valor: totalClientesAtendidos },
               { Icon: Star, rotulo: 'Avaliações', valor: totalAvaliacoes },
-              { Icon: Clock3, rotulo: 'No Marca Aí desde', valor: membroDesde },
+              { Icon: Clock3, rotulo: 'Membro desde', valor: membroDesde },
             ]}
             biografia={usuario.biografia}
           />

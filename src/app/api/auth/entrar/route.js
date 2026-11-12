@@ -2,12 +2,11 @@ import { NextResponse } from 'next/server';
 import { PROXIMO_COOKIE, caminhoInternoSeguro } from '@/lib/session';
 import { linkApp } from '@/lib/emails/templates';
 
-// Guarda o destino pós-login num cookie e manda para o /login sem query string.
-// Existe porque um Server Component não pode escrever cookie.
+// guarda o destino pos login num cookie
 export async function GET(request) {
   const proximo = caminhoInternoSeguro(request.nextUrl.searchParams.get('proximo'));
 
-  // Atrás do proxy o host da requisição é o interno; SITE_URL tem o público.
+  // atras do proxy usa site_url
   let url;
   if (process.env.SITE_URL) {
     url = linkApp('/login/');
@@ -23,7 +22,7 @@ export async function GET(request) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      // A-08: 1 hora para concluir login OU cadastro sem perder o pedido.
+      // 1 hora para concluir o login
       maxAge: 3600,
       path: '/',
     });

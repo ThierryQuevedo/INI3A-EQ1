@@ -7,18 +7,12 @@ import { RotateCcw, WifiOff, CircleAlert } from 'lucide-react';
 import { Button } from './button';
 import { useConexao } from '@/lib/useConexao';
 
-/**
- * A-09: tela de erro com saída clara (Nielsen #9). Diz o que aconteceu sem
- * "Oops", oferece "Tentar de novo" (reset do error boundary + refresh dos
- * dados do servidor) e um caminho alternativo. Se o navegador sabe que está
- * offline, a mensagem fala da internet. O foco vai para o título.
- */
+// tela de erro com tentar de novo
 export default function TelaErro({ error, reset, titulo = 'Não conseguimos abrir esta página', hrefAlternativo = '/', rotuloAlternativo = 'Ir para o início' }) {
   const online = useConexao();
   const router = useRouter();
   const refTitulo = useRef(null);
 
-  // Busca de novo os dados do servidor e remonta o trecho que falhou.
   function tentarDeNovo() {
     startTransition(() => {
       router.refresh();
@@ -27,23 +21,22 @@ export default function TelaErro({ error, reset, titulo = 'Não conseguimos abri
   }
 
   useEffect(() => {
-    // Registro para quem estiver depurando; o usuário vê só a mensagem abaixo.
+    // log para depuracao
     if (error) console.error(error);
     refTitulo.current?.focus();
 
-    // Aba aberta antes de um deploy: o JavaScript dela aponta para actions e
-    // arquivos que não existem mais. Recarregar busca a versão nova e resolve.
+    // aba antiga de antes do deploy resolve recarregando
     if (/Server Action|ChunkLoadError|Loading chunk/i.test(error?.message ?? '')) {
       try {
         const CHAVE = 'marcaai_recarregou_por_versao';
         const ultimaVez = Number(sessionStorage.getItem(CHAVE)) || 0;
-        // Uma vez por minuto no máximo, para nunca entrar em ciclo de recarga.
+        // no maximo uma vez por minuto
         if (Date.now() - ultimaVez > 60000) {
           sessionStorage.setItem(CHAVE, String(Date.now()));
           window.location.reload();
         }
       } catch {
-        // Sem sessionStorage a pessoa ainda tem o botão "Tentar de novo".
+        // sem sessionstorage ainda tem o botao
       }
     }
   }, [error]);

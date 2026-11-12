@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
+import { partesNoFuso } from "@/lib/formatoData";
 
+// fuso de brasilia para evitar erro de hidratacao
 function formatarHora(data) {
-  return new Date(data).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+  return partesNoFuso(data).hora;
 }
 
 export default function ChatBubble({ mensagem, deMim }) {
@@ -19,7 +21,8 @@ export default function ChatBubble({ mensagem, deMim }) {
         <p
           className={cn(
             "text-caption mt-1",
-            deMim ? "text-primary-foreground/70" : "text-muted-foreground"
+            // com 70 a hora perdia contraste
+            deMim ? "text-primary-foreground/85" : "text-muted-foreground"
           )}
         >
           {formatarHora(mensagem.criadoEm)}

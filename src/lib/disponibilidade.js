@@ -1,8 +1,4 @@
-// Cálculo de horários livres. Roda igual no servidor (próximo horário dos
-// cards) e no navegador (tela de agendar), porque tudo é feito no fuso de
-// Brasília com chaves de dia 'AAAA-MM-DD' e horas 'HH:MM' — ver formatoData.js.
-// Card e tela usam a MESMA função e o MESMO conjunto de agendamentos (todos os
-// do prestador), para o card nunca prometer um horário que a tela não mostra.
+// horarios livres no fuso de brasilia iguais no servidor e no navegador
 import {
   ehChaveDiaValida,
   hojeNoFuso,
@@ -29,7 +25,7 @@ export function gerarSlots(horaInicio, horaFim, duracaoMin) {
   return slots;
 }
 
-/** true se o instante (ISO/Date) cai hoje, em Brasília. */
+// cai hoje em brasilia
 export function ehHoje(dataOuIso) {
   if (!dataOuIso) return false;
   const data = new Date(dataOuIso);
@@ -37,7 +33,7 @@ export function ehHoje(dataOuIso) {
   return partesNoFuso(data).dia === hojeNoFuso();
 }
 
-/** Aceita chave 'AAAA-MM-DD' ou Date; devolve a chave do dia em Brasília. */
+// chave do dia em brasilia
 function paraChaveDia(dataOuChave) {
   if (typeof dataOuChave === 'string' && ehChaveDiaValida(dataOuChave)) return dataOuChave;
   return partesNoFuso(new Date(dataOuChave)).dia;
@@ -58,11 +54,7 @@ export function agruparPorPeriodo(slots) {
   return grupos;
 }
 
-/**
- * Agendamentos ativos de um dia como intervalos [início, fim) em minutos.
- * Sem `duracao` no agendamento (dado antigo), conta só o minuto de início —
- * o mesmo critério da checagem de conflito no servidor.
- */
+// agendamentos ativos do dia em minutos
 function intervalosOcupados(agendados, diaChave) {
   const intervalos = [];
   for (const ag of agendados) {
@@ -76,10 +68,13 @@ function intervalosOcupados(agendados, diaChave) {
   return intervalos;
 }
 
+// horarios livres de um dia
+// o jsdoc abaixo tipa os parametros para o type check do next build (sem ele, agendados vira never[])
 /**
- * Horários livres ('HH:MM', em ordem) de um dia, dado as disponibilidades
- * (blocos recorrentes por dia da semana) e os agendamentos do prestador.
- * `dia` é a chave 'AAAA-MM-DD'; `data` (Date) continua aceito por compatibilidade.
+ * @param {{ dia?: string, data?: Date | string, duracaoEstimada: number | string,
+ *   disponibilidades: Array<{ diaSemana: number, horaInicio: string, horaFim: string }>,
+ *   agendados?: Array<{ dataHora: string | Date, status: string, duracao?: number }>,
+ *   agora?: Date }} dados
  */
 export function calcularSlotsLivresDoDia({ dia, data, duracaoEstimada, disponibilidades, agendados = [], agora = new Date() }) {
   const diaChave = paraChaveDia(dia ?? data);
@@ -109,10 +104,7 @@ export function calcularSlotsLivresDoDia({ dia, data, duracaoEstimada, disponibi
   });
 }
 
-/**
- * Vagas dos próximos `quantidade` dias a partir de `diaInicial`:
- * [{ dia: 'AAAA-MM-DD', slots: ['09:00', …] }].
- */
+// vagas dos proximos dias
 export function calcularVagasPorDia({ diaInicial = hojeNoFuso(), quantidade = 14, ...dados }) {
   const resultado = [];
   for (let i = 0; i < quantidade; i++) {
@@ -122,10 +114,7 @@ export function calcularVagasPorDia({ diaInicial = hojeNoFuso(), quantidade = 14
   return resultado;
 }
 
-/**
- * Primeiro dia com vaga a partir de `apartirDe` (chave), varrendo até
- * `horizonteDias`. Devolve { dia, hora } ou null.
- */
+// primeiro dia com vaga
 export function primeiraVaga({ apartirDe = hojeNoFuso(), horizonteDias = 14, ...dados }) {
   for (let i = 0; i <= horizonteDias; i++) {
     const dia = somarDias(apartirDe, i);
@@ -135,10 +124,7 @@ export function primeiraVaga({ apartirDe = hojeNoFuso(), horizonteDias = 14, ...
   return null;
 }
 
-/**
- * Primeiro horário livre como instante (Date), varrendo até `horizonteDias`.
- * Usado para o "próximo horário" das listagens (home, catálogo, perfil).
- */
+// primeiro horario livre como date
 export function proximoSlotLivre({ disponibilidades, agendados, duracaoEstimada, apartirDe = null, horizonteDias = 14 }) {
   const vaga = primeiraVaga({
     disponibilidades,

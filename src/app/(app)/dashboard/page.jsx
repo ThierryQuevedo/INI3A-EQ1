@@ -1,41 +1,50 @@
 import Link from "next/link";
-import { CalendarClock, Plus, DollarSign, Star, Users, CalendarX2, ChevronRight, ExternalLink } from "lucide-react";
+import { CalendarClock, Plus, DollarSign, Star, Users, CalendarX2, ChevronRight, ExternalLink, Briefcase, Pencil } from "lucide-react";
 import { requireSession } from "@/app/actions/auth.actions";
 import BotaoAcaoAgendamento from "@/app/components/features/agendamentos/BotaoAcaoAgendamento";
 import DashboardCliente from "@/app/components/features/dashboard/DashboardCliente";
 import Estatistica from "@/app/components/features/dashboard/Estatistica";
 import { Button } from "@/app/components/ui/button";
 import { formatarPreco } from "@/app/components/ui/PriceTag";
+import { formatarDuracao } from "@/app/components/ui/DurationTag";
+import ToastDeRetorno from "@/app/components/ui/ToastDeRetorno";
 import PageContainer, { PageHeader } from "@/app/components/ui/PageContainer";
 import { Card } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { rotuloStatus } from "@/lib/statusAgendamento";
+import { FUSO, hojeNoFuso, instanteNoFuso, partesNoFuso, somarDias } from "@/lib/formatoData";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios } from "@/db/schema";
 import { eq, and, gte, lt } from "drizzle-orm";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
+import { listarPagamentosAFazer } from "@/app/actions/pagamentos.actions";
 import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
 import { buscarMotivosCancelamento } from "@/lib/motivoCancelamento";
+import { resumirPagamentos } from "@/lib/pagamentos";
+import { STATUS_PAGAMENTO } from "@/lib/statusPagamento";
+
+export const metadata = { title: 'Painel' };
 
 export const dynamic = 'force-dynamic';
 
 const LIMITE_PROXIMOS = 8;
 
+// fuso de brasilia pois o servidor pode estar em utc
 function formatarHora(data) {
-  const d = new Date(data);
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return partesNoFuso(data).hora;
 }
 
 function formatarData(data) {
-  return new Date(data).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+  return new Date(data).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: FUSO });
 }
 
-/** Uma linha por agendamento: hora | cliente e serviço | status + ações. */
 function LinhaAgendamento({ ag, mostrarData }) {
   const podeConfirmar = ag.status === 'pendente';
   const horarioComecou = new Date(ag.dataHora) <= new Date();
   const podeConcluir = ag.status === 'confirmado' && horarioComecou;
   const podeCancelar = ag.status !== 'cancelado' && ag.status !== 'concluido';
+  const pagamento = STATUS_PAGAMENTO[ag.pagamentoStatus];
+  const IconPagamento = pagamento?.Icon;
 
   return (
     <li className="flex flex-col gap-2 px-4 py-3 @2xl:flex-row @2xl:items-center @2xl:gap-4">
@@ -59,9 +68,15 @@ function LinhaAgendamento({ ag, mostrarData }) {
 
       <div className="flex items-center gap-1.5 flex-wrap @2xl:flex-nowrap @2xl:justify-end @md:pl-[6.25rem] @2xl:pl-0">
         <Badge status={ag.status} size="sm" className="mr-1">
-          {/* rótulo curto: na linha compacta "Aguardando confirmação" empurra as ações */}
+          {/* rotulo curto para nao empurrar as acoes */}
           {ag.status === 'pendente' ? 'Pendente' : rotuloStatus(ag.status)}
         </Badge>
+        {pagamento && (
+          <span className={`mr-1 px-2 h-6 inline-flex items-center gap-1 rounded-md text-caption font-semibold whitespace-nowrap ${pagamento.badge}`}>
+            <IconPagamento size={13} aria-hidden="true" />
+            {pagamento.label}
+          </span>
+        )}
         {podeConfirmar && (
           <BotaoAcaoAgendamento
             agendamentoId={ag.id}
@@ -123,21 +138,70 @@ function ListaAgendamentos({ itens, mostrarData, IconeVazio, textoVazio }) {
   );
 }
 
-export default async function Dashboard() {
+function MeusServicos({ itens }) {
+  return (
+    <section aria-labelledby="titulo-servicos" className="mt-8">
+      <div className="flex items-center justify-between gap-3 mb-3 min-h-8">
+        <h2 id="titulo-servicos" className="text-body-lg font-bold text-foreground">
+          Meus serviços
+          {itens.length > 0 && <span className="text-muted-foreground font-medium"> ({itens.length})</span>}
+        </h2>
+      </div>
+      {itens.length === 0 ? (
+        <Card padding="sm" className="flex flex-wrap items-center gap-3 text-muted-foreground shadow-none">
+          <Briefcase size={18} className="shrink-0" aria-hidden="true" />
+          <p className="text-body-sm flex-1 min-w-0">Você ainda não cadastrou nenhum serviço.</p>
+          <Button asChild size="sm">
+            <Link href="/servicos/novo"><Plus aria-hidden="true" /> Cadastrar serviço</Link>
+          </Button>
+        </Card>
+      ) : (
+        <Card padding="none">
+          <ul className="divide-y divide-border">
+            {itens.map((s) => (
+              <li key={s.id} className="flex items-center gap-3 px-4 py-3">
+                <div className="min-w-0 flex-1">
+                  <Link
+                    href={`/servicos/${s.slug || s.id}`}
+                    className="relative area-toque block text-body-sm font-semibold text-foreground truncate hover:underline underline-offset-4"
+                  >
+                    {s.nome}
+                  </Link>
+                  <p className="text-caption text-muted-foreground tabular-nums">
+                    {formatarPreco(s.preco)} · {formatarDuracao(s.duracaoEstimada)}
+                  </p>
+                </div>
+                {s.desativadoEm && <Badge variant="neutro" size="sm">Desativado</Badge>}
+                <Button asChild variant="ghost" size="sm">
+                  <Link href={`/servicos/${s.slug || s.id}/editar`} aria-label={`Editar ${s.nome}`}>
+                    <Pencil aria-hidden="true" /> <span className="max-sm:hidden">Editar</span>
+                  </Link>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+    </section>
+  );
+}
+
+export default async function Dashboard({ searchParams }) {
   const usuario = await requireSession();
+  const { servico: retorno } = (await searchParams) ?? {};
 
   if (usuario.tipo === 'cliente') {
-    const dadosCliente = await buscarDashboardCliente();
-    return <DashboardCliente usuario={usuario} dados={dadosCliente} />;
+    const [dadosCliente, pagamentosAFazer] = await Promise.all([buscarDashboardCliente(), listarPagamentosAFazer()]);
+    return <DashboardCliente usuario={usuario} dados={dadosCliente} pagamentosAFazer={pagamentosAFazer} />;
   }
 
   const nome = usuario.nome;
   const prestadorId = usuario.id;
 
-  const hoje = new Date();
-  hoje.setHours(0, 0, 0, 0);
-  const amanha = new Date(hoje);
-  amanha.setDate(hoje.getDate() + 1);
+  // meia noite de hoje e amanha em brasilia
+  const diaHoje = hojeNoFuso();
+  const hoje = instanteNoFuso(diaHoje, '00:00');
+  const amanha = instanteNoFuso(somarDias(diaHoje, 1), '00:00');
 
   const camposAgendamento = {
     id: agendamentos.id,
@@ -148,9 +212,9 @@ export default async function Dashboard() {
     duracaoEstimada: servicos.duracaoEstimada,
   };
 
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+  const primeiroDiaMes = instanteNoFuso(`${diaHoje.slice(0, 7)}-01`, '00:00');
 
-  const [agendamentosHojeBrutos, agendamentosFuturosBrutos, perfilPrestador, faturamento] = await Promise.all([
+  const [agendamentosHojeBrutos, agendamentosFuturosBrutos, perfilPrestador, faturamento, meusServicos] = await Promise.all([
     db.select(camposAgendamento)
       .from(agendamentos)
       .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
@@ -184,14 +248,32 @@ export default async function Dashboard() {
         eq(agendamentos.status, 'concluido'),
         gte(agendamentos.dataHora, primeiroDiaMes)
       )),
+
+    db.select({
+        id: servicos.id,
+        nome: servicos.nome,
+        slug: servicos.slug,
+        preco: servicos.preco,
+        duracaoEstimada: servicos.duracaoEstimada,
+        desativadoEm: servicos.desativadoEm,
+      })
+      .from(servicos)
+      .where(eq(servicos.prestadorId, prestadorId))
+      .orderBy(servicos.nome),
   ]);
 
-  const motivos = await buscarMotivosCancelamento(
-    [...agendamentosHojeBrutos, ...agendamentosFuturosBrutos].filter((a) => a.status === 'cancelado').map((a) => a.id)
-  );
-  const comMotivo = (a) => ({ ...a, motivoCancelamento: motivos.get(a.id)?.motivo ?? null });
-  const agendamentosHoje = agendamentosHojeBrutos.map(comMotivo);
-  const agendamentosFuturos = agendamentosFuturosBrutos.map(comMotivo);
+  const todosAgendamentos = [...agendamentosHojeBrutos, ...agendamentosFuturosBrutos];
+  const [motivos, resumoPagamentos] = await Promise.all([
+    buscarMotivosCancelamento(todosAgendamentos.filter((a) => a.status === 'cancelado').map((a) => a.id)),
+    resumirPagamentos(todosAgendamentos.map((a) => a.id)),
+  ]);
+  const comDetalhes = (a) => ({
+    ...a,
+    motivoCancelamento: motivos.get(a.id)?.motivo ?? null,
+    pagamentoStatus: resumoPagamentos.get(a.id)?.status ?? null,
+  });
+  const agendamentosHoje = agendamentosHojeBrutos.map(comDetalhes);
+  const agendamentosFuturos = agendamentosFuturosBrutos.map(comDetalhes);
 
   const faturamentoTotal = faturamento.reduce((acc, curr) => acc + Number(curr.preco || 0), 0);
 
@@ -200,6 +282,7 @@ export default async function Dashboard() {
 
   return (
     <PageContainer size="2xl" className="py-6 sm:py-8">
+      <ToastDeRetorno mensagem={retorno === 'criado' ? 'Serviço cadastrado. Ele já aparece na busca.' : null} />
       <PageHeader
         eyebrow="Painel do prestador"
         title={`Olá, ${primeiroNome}`}
@@ -231,7 +314,7 @@ export default async function Dashboard() {
         <Estatistica
           Icon={Star}
           valor={perfilPrestador?.avaliacaoMedia > 0 ? perfilPrestador.avaliacaoMedia.toFixed(1) : '—'}
-          rotulo={`${perfilPrestador?.totalAvaliacoes ?? 0} avaliações`}
+          rotulo={`${perfilPrestador?.totalAvaliacoes ?? 0} ${perfilPrestador?.totalAvaliacoes === 1 ? 'avaliação' : 'avaliações'}`}
         />
         <Estatistica Icon={Users} valor={perfilPrestador?.totalClientesAtendidos ?? 0} rotulo="Clientes atendidos" />
       </div>
@@ -274,6 +357,8 @@ export default async function Dashboard() {
           />
         </section>
       </div>
+
+      <MeusServicos itens={meusServicos} />
     </PageContainer>
   );
 }

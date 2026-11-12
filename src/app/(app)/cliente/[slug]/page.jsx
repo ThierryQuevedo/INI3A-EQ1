@@ -5,6 +5,14 @@ import { buscarPerfilCliente } from '@/app/actions/clientes.actions';
 import { Button } from '@/app/components/ui/button';
 import { PerfilBanner, PerfilResumo, CardAvaliacao } from '@/app/components/features/perfil/PerfilPublico';
 import PageContainer from '@/app/components/ui/PageContainer';
+import { nomeDoUsuario } from '@/lib/metadados';
+import { FUSO } from '@/lib/formatoData';
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params;
+  const nome = await nomeDoUsuario(slug);
+  return nome ? { title: nome } : {};
+}
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +36,7 @@ export default async function PerfilClientePage({ params }) {
   const { usuario, totalConcluidos, avaliacaoMedia, totalAvaliacoesRecebidas, avaliacoes } = perfil;
 
   const membroDesde = primeiraLetraMaiuscula(
-    new Date(usuario.criadoEm).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+    new Date(usuario.criadoEm).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: FUSO })
   );
 
   return (
@@ -74,7 +82,7 @@ export default async function PerfilClientePage({ params }) {
                     urlImagem={av.prestadorImagem}
                     href={`/prestador/${av.prestadorSlug || ''}`}
                     nota={av.nota}
-                    contexto={`${av.servicoNome} · ${new Date(av.dataHora).toLocaleDateString('pt-BR')}`}
+                    contexto={`${av.servicoNome} · ${new Date(av.dataHora).toLocaleDateString('pt-BR', { timeZone: FUSO })}`}
                     comentario={av.comentario}
                   />
                 ))}

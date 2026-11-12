@@ -12,10 +12,17 @@ import { comEstatisticas } from "@/lib/avaliacoes";
 import { getSession } from "@/app/actions/auth.actions";
 import { listarCategorias } from "@/app/actions/servicos.actions";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
+import { listarPagamentosAFazer } from "@/app/actions/pagamentos.actions";
+import AvisoPagamentos from "@/app/components/features/pagamentos/AvisoPagamentos";
 import { calcularProximosHorariosLivres } from "@/app/actions/disponibilidades.actions";
 import { ehHoje } from "@/lib/disponibilidade";
+import { FUSO, partesNoFuso } from "@/lib/formatoData";
 import PageContainer from "@/app/components/ui/PageContainer";
 import { imagemPublica } from '@/lib/imagemPublica';
+
+export const metadata = {
+  title: { absolute: 'Marca Aí: encontre um profissional e agende na hora' },
+};
 
 export const dynamic = "force-dynamic";
 
@@ -65,8 +72,7 @@ export default async function Home() {
       .limit(24),
     listarCategorias(),
     usuario && usuario.tipo === "cliente" ? buscarDashboardCliente() : null,
-    // Índice leve para o preview da busca (fuzzy search no cliente): só os
-    // campos que a lista de sugestões mostra, sem descrição nem horários.
+    // indice leve para as sugestoes
     db
       .select({
         id: servicos.id,
@@ -100,11 +106,10 @@ export default async function Home() {
   const comHorarioHoje = catalogoComHorario.filter((s) => ehHoje(s.proximoHorario)).slice(0, 10);
 
   const agendamentoProximo = proximoAgendamento?.proximos?.[0] ?? null;
+  const pagamentosAFazer = usuario ? await listarPagamentosAFazer() : [];
 
   return (
     <PageContainer size="xl" className="pt-6 sm:pt-8 pb-12 space-y-10">
-      {/* Topo compacto: título curto + busca enxuta, para os serviços
-          aparecerem já na primeira dobra (a busca completa vive em /servicos). */}
       <section className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
         <div>
           <h1 className="text-h5 sm:text-h4 font-bold text-foreground">Encontre um profissional e agende na hora.</h1>
@@ -115,6 +120,8 @@ export default async function Home() {
 
         <BuscaHome servicos={indiceBusca} categorias={listaCategorias.map((c) => ({ id: c.id, nome: c.nome }))} />
       </section>
+
+      <AvisoPagamentos pagamentos={pagamentosAFazer} />
 
       {agendamentoProximo && (
         <Link
@@ -128,8 +135,8 @@ export default async function Home() {
             <span className="block text-caption font-semibold opacity-80">Seu próximo agendamento</span>
             <span className="block text-body-sm font-semibold truncate">
               {agendamentoProximo.servicoNome} com {agendamentoProximo.prestadorNome} ·{" "}
-              {new Date(agendamentoProximo.dataHora).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })} às{" "}
-              {new Date(agendamentoProximo.dataHora).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+              {new Date(agendamentoProximo.dataHora).toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: FUSO })} às{" "}
+              {partesNoFuso(agendamentoProximo.dataHora).hora}
             </span>
           </span>
           <ChevronRight size={18} className="shrink-0 opacity-70" aria-hidden="true" />
@@ -172,7 +179,6 @@ export default async function Home() {
         </section>
       )}
 
-      {/* O catálogo completo não fica na home: um CTA leva à página de catálogo. */}
       <section className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl bg-primary text-primary-foreground p-6 sm:p-8">
         <div>
           <h2 className="text-h5 font-bold">Não achou o que procurava?</h2>

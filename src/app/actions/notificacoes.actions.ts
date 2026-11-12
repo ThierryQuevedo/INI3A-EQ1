@@ -8,7 +8,6 @@ import { getSession } from './auth.actions';
 
 const LIMITE_PADRAO = 20;
 
-/** Notificações do usuário logado, mais recentes primeiro. */
 export async function listarMinhasNotificacoes(limite: number = LIMITE_PADRAO) {
   const usuario = await getSession();
   if (!usuario) return [];
@@ -21,7 +20,7 @@ export async function listarMinhasNotificacoes(limite: number = LIMITE_PADRAO) {
     .limit(limite);
 }
 
-/** Total de notificações não lidas do usuário logado — usado no badge do sino. */
+// total de nao lidas do sino
 export async function contarNotificacoesNaoLidas() {
   const usuario = await getSession();
   if (!usuario) return 0;

@@ -1,5 +1,5 @@
-// Confere a configuração de SMTP do .env enviando um único e-mail.
-// Uso, dentro de src/: npm run email:teste -- destino@exemplo.com
+// testa o smtp do env enviando um email
+// uso npm run email:teste -- destino@exemplo.com
 import { enviarEmail } from '../lib/email.js';
 
 const destino = process.argv[2];

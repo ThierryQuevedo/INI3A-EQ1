@@ -4,8 +4,13 @@ import { requireSession } from '@/app/actions/auth.actions';
 import { listarMeusAgendamentos } from '@/app/actions/agendamentos.actions';
 import AvaliacaoServico from '@/app/components/features/agendamentos/AvaliacaoServico';
 import BotaoAcaoAgendamento from '@/app/components/features/agendamentos/BotaoAcaoAgendamento';
+import BotaoRepetirReembolso from '@/app/components/features/pagamentos/BotaoRepetirReembolso';
+import AvisoPagamentos from '@/app/components/features/pagamentos/AvisoPagamentos';
+import { listarPagamentosAFazer } from '@/app/actions/pagamentos.actions';
+import { STATUS_PAGAMENTO, aguardaPagamento } from '@/lib/statusPagamento';
 import { formatarPreco } from '@/app/components/ui/PriceTag';
 import { rotuloStatus, statusBadgeClass, STATUS_AGENDAMENTO } from '@/lib/statusAgendamento';
+import { FUSO, diaRelativo, partesNoFuso } from '@/lib/formatoData';
 import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
 import { Card } from '@/app/components/ui/card';
 import EmptyState from '@/app/components/ui/EmptyState';
@@ -13,43 +18,46 @@ import { Button } from '@/app/components/ui/button';
 
 const STATUS_CANCELAVEL = ['pendente', 'confirmado'];
 
+export const metadata = { title: 'Sua agenda' };
+
 export const dynamic = 'force-dynamic';
 
+// fuso de brasilia pois o servidor pode estar em utc
 function formatarData(data) {
-  const d = new Date(data);
-  const hoje = new Date();
-  const amanha = new Date();
-  amanha.setDate(hoje.getDate() + 1);
-
-  const mesmodia = (a, b) => a.toDateString() === b.toDateString();
-
-  if (mesmodia(d, hoje)) return 'Hoje';
-  if (mesmodia(d, amanha)) return 'Amanhã';
-
-  return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+  const relativo = diaRelativo(partesNoFuso(data).dia);
+  if (relativo) return relativo;
+  return new Date(data).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long', timeZone: FUSO });
 }
 
 function formatarHora(data) {
-  return new Date(data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  return partesNoFuso(data).hora;
 }
 
-// Card individual de agendamento
 function CardAgendamento({ item, usuarioLogado }) {
   const { Icon = CalendarPlus } = STATUS_AGENDAMENTO[item.status?.toLowerCase()] || {};
   const dataLabel = formatarData(item.dataHora);
   const destaque = dataLabel === 'Hoje' || dataLabel === 'Amanhã';
   const dataTag = destaque
     ? dataLabel
-    : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' });
-  // O papel é de cada agendamento, não da conta: prestador também agenda serviços.
+    : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: FUSO });
+  // papel e por agendamento pois prestador tambem agenda
   const ehCliente = item.papel === 'cliente';
   const horarioComecou = new Date(item.dataHora) <= new Date();
+  const pagamento = STATUS_PAGAMENTO[item.pagamentoStatus];
+  const IconPagamento = pagamento?.Icon;
+  const hrefPagamento = `/agendamentos/${item.id}/pagamento`;
+  const podePagar =
+    ehCliente &&
+    !item.proprioServico &&
+    aguardaPagamento({ statusAgendamento: item.status, statusPagamento: item.pagamentoStatus, preco: item.servicoPreco });
+  const pago = item.pagamentoStatus === 'pago';
 
   return (
-    <Card padding="default" interactive id={`pedido-${item.id}`}>
+    <Card padding="default" interactive id={`pedido-${item.id}`} className="min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-5">
         <div className="flex items-center gap-4 min-w-0 flex-1">
-        <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/15' : 'bg-secondary'}`}>
+        {/* com 15 o contraste nao passava */}
+        <div className={`size-14 sm:size-16 shrink-0 flex items-center justify-center rounded-lg ${destaque ? 'bg-info/10' : 'bg-secondary'}`}>
           <p className={`text-body-sm font-bold ${destaque ? 'text-info' : 'text-primary'}`}>
             {formatarHora(item.dataHora)}
           </p>
@@ -58,7 +66,7 @@ function CardAgendamento({ item, usuarioLogado }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-body-lg font-bold text-foreground min-w-0 break-words">{item.servicoNome}</h3>
-            <span className={`px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 ${destaque ? 'bg-info/15 text-info' : 'bg-muted text-muted-foreground'}`}>
+            <span className={`px-2 h-6 inline-flex items-center rounded-md text-caption font-semibold shrink-0 ${destaque ? 'bg-info/10 text-info' : 'bg-muted text-muted-foreground'}`}>
               {dataTag}
             </span>
             {usuarioLogado.tipo === 'prestador' && (
@@ -76,10 +84,16 @@ function CardAgendamento({ item, usuarioLogado }) {
               {item.clienteNome}{item.clienteTelefone ? ` · ${item.clienteTelefone}` : ''}
             </p>
           )}
-          {/* A-06: o selo "Aguardando confirmação" ganha o que acontece a seguir. */}
           {ehCliente && item.status === 'pendente' && (
             <p className="text-body-sm text-muted-foreground mt-1">
-              O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail.
+              O profissional ainda vai confirmar. Avisamos você aqui no app e por e-mail. Depois da confirmação, você poderá pagar aqui.
+            </p>
+          )}
+          {item.pagamentoStatus === 'reembolso_falhou' && (
+            <p className="text-body-sm text-foreground mt-1">
+              {ehCliente
+                ? 'O valor pago ainda não foi devolvido. Fale com o suporte se a nova tentativa não resolver.'
+                : 'O valor pago pelo cliente ainda não foi devolvido.'}
             </p>
           )}
           {item.status === 'cancelado' && (
@@ -111,6 +125,32 @@ function CardAgendamento({ item, usuarioLogado }) {
             <Icon size={13} aria-hidden="true" />
             {rotuloStatus(item.status)}
           </span>
+          {pagamento && (
+            <span className={`px-3 h-8 inline-flex items-center gap-1.5 rounded-md text-caption font-semibold ${pagamento.badge}`}>
+              <IconPagamento size={13} aria-hidden="true" />
+              {pagamento.label}
+            </span>
+          )}
+          {ehCliente && pago && (
+            <Link
+              href={hrefPagamento}
+              className="relative area-toque text-body-sm font-semibold text-primary underline underline-offset-4 hover:text-primary-hover"
+            >
+              Ver pagamento
+            </Link>
+          )}
+          {item.pagamentoStatus === 'reembolso_falhou' && item.pagamentoMetodo !== 'boleto' && (
+            <BotaoRepetirReembolso agendamentoId={item.id} />
+          )}
+          {!ehCliente && item.status === 'pendente' && (
+            <BotaoAcaoAgendamento
+              agendamentoId={item.id}
+              novoStatus="confirmado"
+              label="Confirmar"
+              titulo="Confirmar agendamento?"
+              descricao={`Deseja confirmar o agendamento de ${item.clienteNome} para ${item.servicoNome}?`}
+            />
+          )}
           {!ehCliente && item.status === 'confirmado' && (
             horarioComecou ? (
               <BotaoAcaoAgendamento
@@ -132,7 +172,7 @@ function CardAgendamento({ item, usuarioLogado }) {
               titulo="Cancelar agendamento?"
               descricao={
                 item.status === 'confirmado'
-                  ? 'Este horário já estava confirmado. O motivo será enviado para a outra pessoa. Essa ação não pode ser desfeita.'
+                  ? `Este horário já estava confirmado. O motivo será enviado para a outra pessoa.${pago ? ' O valor pago será devolvido integralmente ao cliente.' : ''} Essa ação não pode ser desfeita.`
                   : 'Essa ação não pode ser desfeita.'
               }
               pedirMotivo
@@ -144,8 +184,21 @@ function CardAgendamento({ item, usuarioLogado }) {
         </div>
       </div>
 
+      {podePagar && (
+        <div className="mt-4 pt-4 border-t border-border flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-body font-semibold text-foreground">
+            {item.pagamentoStatus === 'pendente' ? 'Pagamento em aberto: ' : 'Falta pagar: '}
+            <span className="tabular-nums whitespace-nowrap">{formatarPreco(item.servicoPreco)}</span>
+          </p>
+          <Button asChild size="lg" className="w-full sm:w-auto">
+            <Link href={hrefPagamento}>{item.pagamentoStatus === 'pendente' ? 'Continuar pagamento' : 'Pagar agora'}</Link>
+          </Button>
+        </div>
+      )}
+
       {ehCliente && item.status === 'concluido' && (
-        <div className="mt-4 pt-4 border-t border-border">
+        // a avaliacao ja desenha a divisoria
+        <div className="mt-1">
           <AvaliacaoServico
             agendamentoId={item.id}
             avaliacaoExistente={
@@ -163,11 +216,25 @@ function CardAgendamento({ item, usuarioLogado }) {
           </Link>
         </div>
       )}
+
+      {!ehCliente && item.status === 'concluido' && (
+        <div className="mt-1">
+          <AvaliacaoServico
+            agendamentoId={item.id}
+            alvo="cliente"
+            nomeCliente={item.clienteNome}
+            avaliacaoExistente={
+              item.avaliacaoClienteNota
+                ? { nota: item.avaliacaoClienteNota, comentario: item.avaliacaoClienteComentario }
+                : null
+            }
+          />
+        </div>
+      )}
     </Card>
   );
 }
 
-// Cartão de contagem por status, no resumo do topo
 function CardResumo({ label, valor, Icon, cor }) {
   return (
     <Card padding="sm" className="flex items-center gap-3">
@@ -184,7 +251,7 @@ function CardResumo({ label, valor, Icon, cor }) {
 
 export default async function AgendamentosPage() {
   const usuarioLogado = await requireSession();
-  const meusAgendamentos = await listarMeusAgendamentos();
+  const [meusAgendamentos, pagamentosAFazer] = await Promise.all([listarMeusAgendamentos(), listarPagamentosAFazer()]);
 
   const agora = new Date();
 
@@ -214,6 +281,8 @@ export default async function AgendamentosPage() {
         }
       />
 
+      <AvisoPagamentos pagamentos={pagamentosAFazer} className="mb-6" />
+
       {meusAgendamentos.length === 0 ? (
         <Card dashed padding="default" className="shadow-none">
           <EmptyState
@@ -230,7 +299,6 @@ export default async function AgendamentosPage() {
         </Card>
       ) : (
         <>
-          {/* Resumo rápido */}
           <div className="grid grid-cols-3 gap-3 mb-8">
             <CardResumo
               label="Próximos"
@@ -252,7 +320,6 @@ export default async function AgendamentosPage() {
             />
           </div>
 
-          {/* Próximos agendamentos */}
           <section className="mb-8">
             <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
               <CalendarClock size={19} className="text-primary" aria-hidden="true" />
@@ -266,7 +333,7 @@ export default async function AgendamentosPage() {
                 <p className="text-muted-foreground text-body-sm">Nenhum agendamento futuro no momento.</p>
               </Card>
             ) : (
-              <div className="grid gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {proximos.map((item) => (
                   <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
                 ))}
@@ -274,7 +341,6 @@ export default async function AgendamentosPage() {
             )}
           </section>
 
-          {/* Histórico */}
           {historico.length > 0 && (
             <section>
               <h2 className="text-body-lg font-bold text-foreground mb-3 flex items-center gap-2">
@@ -282,7 +348,7 @@ export default async function AgendamentosPage() {
                 Histórico
                 <span className="text-caption font-medium text-muted-foreground">· {historico.length}</span>
               </h2>
-              <div className="grid gap-4 opacity-90">
+              <div className="grid grid-cols-1 gap-4 opacity-90">
                 {historico.map((item) => (
                   <CardAgendamento key={item.id} item={item} usuarioLogado={usuarioLogado} />
                 ))}

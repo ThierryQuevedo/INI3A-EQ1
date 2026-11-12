@@ -17,7 +17,7 @@ const CAMPOS_SERVICO = [
   { chave: "prestadorNome", peso: 0.7 },
 ];
 
-/** Pinta de destaque os caracteres que casaram com a busca. */
+// destaca o que casou com a busca
 function Realce({ texto, indices }) {
   if (!texto) return null;
   if (!indices?.length) return texto;
@@ -54,12 +54,7 @@ function TituloGrupo({ children }) {
   );
 }
 
-/**
- * Barra de busca da home com preview das opções (fuzzy search no cliente).
- * Segue o padrão ARIA de combobox: o foco fica no input e as setas movem a
- * opção ativa via aria-activedescendant. Enter sem opção ativa (ou JS
- * desligado) envia o formulário para o catálogo, como antes.
- */
+// busca da home no padrao combobox
 export default function BuscaHome({ servicos, categorias }) {
   const router = useRouter();
   const idBase = useId();
@@ -72,7 +67,7 @@ export default function BuscaHome({ servicos, categorias }) {
   const [indiceAtivo, setIndiceAtivo] = useState(-1);
   const termoAdiado = useDeferredValue(termo);
 
-  // Profissionais únicos, derivados do índice de serviços.
+  // profissionais unicos do indice
   const profissionais = useMemo(() => {
     const porId = new Map();
     for (const s of servicos) {
@@ -102,7 +97,7 @@ export default function BuscaHome({ servicos, categorias }) {
     const achadosProfissionais = buscarFuzzy(profissionais, t, [{ chave: "nome" }], { limite: 3, notaMinima: 0.45 });
     const achadosCategorias = buscarFuzzy(categorias, t, [{ chave: "nome" }], { limite: 3, notaMinima: 0.45 });
 
-    // Lista achatada na ordem visual, para a navegação por teclado.
+    // lista na ordem visual
     const opcoes = [
       ...achadosServicos.map((r) => ({ tipo: "servico", ...r, href: `/servicos/${r.item.slug || r.item.id}` })),
       ...achadosProfissionais.map((r) => ({
@@ -129,7 +124,7 @@ export default function BuscaHome({ servicos, categorias }) {
     return () => document.removeEventListener("pointerdown", aoClicarFora);
   }, [aberto]);
 
-  // Mantém a opção ativa visível quando a lista rola.
+  // mantem a opcao ativa visivel
   useEffect(() => {
     if (!idAtivo) return;
     document.getElementById(idAtivo)?.scrollIntoView({ block: "nearest" });
@@ -181,7 +176,7 @@ export default function BuscaHome({ servicos, categorias }) {
       role: "option",
       "aria-selected": o.indice === indiceAtivo,
       className: classeOpcao(o),
-      // pointerdown prevenido: o input não perde o foco antes do clique.
+      // evita perder o foco antes do clique
       onPointerDown: (e) => e.preventDefault(),
       onPointerMove: () => setIndiceAtivo(o.indice),
       onClick: () => irPara(o),
@@ -217,7 +212,7 @@ export default function BuscaHome({ servicos, categorias }) {
           value={termo}
           onChange={(e) => {
             setTermo(e.target.value);
-            // Termo novo: nenhuma opção ativa (Enter = buscar no catálogo).
+            // termo novo zera a opcao ativa
             setIndiceAtivo(-1);
             setAberto(true);
           }}
@@ -241,7 +236,7 @@ export default function BuscaHome({ servicos, categorias }) {
         )}
       </Form>
 
-      {/* Região viva: leitor de tela ouve quantos resultados há. */}
+      {/* leitor de tela ouve o total */}
       <p className="sr-only" role="status" aria-live="polite">
         {mostrarPainel
           ? opcoes.length

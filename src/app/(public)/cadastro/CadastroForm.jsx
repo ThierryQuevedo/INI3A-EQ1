@@ -18,7 +18,6 @@ import { Input } from "@/app/components/ui/input";
 
 const estadoInicial = { erro: null };
 
-// Regex de validação
 const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function validarCampos({ nome, email, cel, senha }) {
@@ -61,13 +60,13 @@ export default function CadastroForm({ destinoSessao = null }) {
   const [state, formAction, isPending] = useActionState(cadastrar, estadoInicial);
   const destino = state?.destino ?? destinoSessao;
   useIrAposEntrar(destino);
-  // A navegação leva um instante: o botão segue ocupado até a página trocar.
+  // botao segue ocupado ate navegar
   const cadastrando = isPending || !!destino;
 
   const [campos, setCampos] = useState({ nome: "", email: "", cel: "", senha: "" });
   const [errosLocais, setErrosLocais] = useState({});
 
-  // Erro do servidor (e-mail ou telefone já em uso) aparece no próprio campo.
+  // erro do servidor aparece no campo
   const erros = { ...state?.errosCampos, ...errosLocais };
 
   function handleChange(e) {
@@ -78,10 +77,7 @@ export default function CadastroForm({ destinoSessao = null }) {
     setErrosLocais((prev) => (prev[name] ? { ...prev, [name]: undefined } : prev));
   }
 
-  // Valida o que está de fato no formulário: o preenchimento automático do
-  // navegador (que uma guia anônima não tem) nem sempre avisa o estado do React.
-  // O envio é manual porque, quando o React executa a `action` do <form>, ele
-  // reseta os campos a cada tentativa — e um erro faria a pessoa redigitar tudo.
+  // le o form direto por causa do autopreenchimento
   function handleSubmit(e) {
     e.preventDefault();
     const dados = new FormData(e.currentTarget);
@@ -166,8 +162,7 @@ export default function CadastroForm({ destinoSessao = null }) {
               value={campos.cel}
               onChange={handleChange}
               onKeyDown={(e) => {
-                // Vários teclados Android mandam "Unidentified"/"Process" no keydown:
-                // deixar passar — mascararTelefone() já limpa o que não é número.
+                // teclado android manda unidentified e a mascara limpa depois
                 const permitidas = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter", "Unidentified", "Process"];
                 if (permitidas.includes(e.key) || e.ctrlKey || e.metaKey) return;
                 if (!/^[0-9]$/.test(e.key)) {

@@ -11,18 +11,7 @@ const PERIODOS = [
   { chave: 'noite', rotulo: 'Noite', Icon: Moon },
 ];
 
-/**
- * C-07 / C-01 / F-01 / G-04 / G-06: horários do dia escolhido.
- *
- * - Um único grupo de rádio nativo para o dia inteiro (setas percorrem
- *   manhã → tarde → noite), com nome falado ("14 horas e 30 minutos").
- * - A hora é o maior texto do botão, em Inter com algarismos de largura
- *   fixa (Satoshi não tem tabular-nums).
- * - Grade auto-fill com mínimo em rem: com fonte grande passa de 4 para
- *   3 ou 2 colunas em vez de sobrepor números; altura mínima, não fixa.
- * - Selecionado = cor + borda + check, sem mudar de tamanho.
- * - O `key` do dia remonta o bloco e dispara o fade curto (D-06).
- */
+// horarios do dia num grupo de radios
 export default function GradeHorarios({ dia, slots, horarioSelecionado, onSelecionar, aviso, refGrupo }) {
   const grupos = agruparPorPeriodo(slots);
 

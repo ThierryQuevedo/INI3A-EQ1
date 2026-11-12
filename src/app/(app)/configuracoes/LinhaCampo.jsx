@@ -2,7 +2,6 @@
 
 import { Pencil } from "lucide-react";
 
-/** Linha de dado + valor, com botão de editar opcional — label acima, valor abaixo, sem separador pontilhado. */
 export default function LinhaCampo({ icon, label, valor, vazio = false, onEditar }) {
   return (
     <div className="flex items-center justify-between gap-4 py-1">

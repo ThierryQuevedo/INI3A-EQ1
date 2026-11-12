@@ -1,5 +1,4 @@
 import { OAuth2Client } from 'google-auth-library';
-//cliente com base no .env
 export function getGoogleOAuthClient() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
