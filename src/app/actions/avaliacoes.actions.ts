@@ -9,6 +9,8 @@ import { getSession } from './auth.actions';
 import { notificarNovaAvaliacao } from '@/lib/notificacoes';
 import { verificarPodeAvaliar } from '@/lib/avaliacoes';
 
+const TAMANHO_MAXIMO_COMENTARIO = 1000;
+
 const ERROS_AVALIACAO = {
   nao_encontrado: 'Agendamento não encontrado.',
   nao_autorizado: 'Não autorizado.',
@@ -36,7 +38,7 @@ export async function avaliarServico({
   const { motivo } = await verificarPodeAvaliar(agendamentoId, usuario.id);
   if (motivo && motivo !== 'ja_avaliado') return { erro: ERROS_AVALIACAO[motivo] };
 
-  const comentarioNormalizado = comentario?.trim() || null;
+  const comentarioNormalizado = String(comentario ?? '').trim().slice(0, TAMANHO_MAXIMO_COMENTARIO) || null;
 
   const [existente] = await db
     .select({ id: avaliacoes.id })
@@ -109,7 +111,7 @@ export async function avaliarCliente({
     return { erro: 'Este serviço ainda não foi concluído.' };
   }
 
-  const comentarioNormalizado = comentario?.trim() || null;
+  const comentarioNormalizado = String(comentario ?? '').trim().slice(0, TAMANHO_MAXIMO_COMENTARIO) || null;
 
   const [existente] = await db
     .select({ id: avaliacoes.id })

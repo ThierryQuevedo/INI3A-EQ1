@@ -5,6 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import { db } from '@/db';
 import { usuarios, servicos } from '@/db/schema';
 import { getSession } from './auth.actions';
+import { validarUrlImagem, ERRO_IMAGEM_INVALIDA } from '@/lib/validarImagem';
 
 /**
  * Salva a URL da foto de perfil no banco de dados para o usuário autenticado
@@ -18,7 +19,10 @@ export async function salvarFotoPerfil(urlImagem) {
       return { sucesso: false, erro: 'Usuário não autenticado.' };
     }
 
-    const valorFinal = urlImagem && urlImagem.trim() !== '' ? urlImagem.trim() : null;
+    const validacao = validarUrlImagem(urlImagem);
+    if (!validacao.valido) return { sucesso: false, erro: ERRO_IMAGEM_INVALIDA };
+    if (validacao.semMudanca) return { sucesso: true, url: urlImagem };
+    const valorFinal = validacao.valor;
 
     await db
       .update(usuarios)
@@ -47,7 +51,10 @@ export async function salvarBannerPerfil(urlBanner) {
       return { sucesso: false, erro: 'Usuário não autenticado.' };
     }
 
-    const valorFinal = urlBanner && urlBanner.trim() !== '' ? urlBanner.trim() : null;
+    const validacao = validarUrlImagem(urlBanner);
+    if (!validacao.valido) return { sucesso: false, erro: ERRO_IMAGEM_INVALIDA };
+    if (validacao.semMudanca) return { sucesso: true, url: urlBanner };
+    const valorFinal = validacao.valor;
 
     await db
       .update(usuarios)
@@ -77,7 +84,10 @@ export async function salvarImagemServico(servicoId, urlImagem) {
       return { sucesso: false, erro: 'Usuário não autenticado.' };
     }
 
-    const valorFinal = urlImagem && urlImagem.trim() !== '' ? urlImagem.trim() : null;
+    const validacao = validarUrlImagem(urlImagem);
+    if (!validacao.valido) return { sucesso: false, erro: ERRO_IMAGEM_INVALIDA };
+    if (validacao.semMudanca) return { sucesso: true, url: urlImagem };
+    const valorFinal = validacao.valor;
 
     // Só o prestador dono do serviço pode trocar a foto (servicos.prestadorId
     // é o id do usuário — ver schema).

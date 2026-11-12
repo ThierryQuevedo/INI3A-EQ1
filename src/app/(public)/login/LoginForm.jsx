@@ -194,6 +194,12 @@ export default function LoginForm({ pedido = null, destinoSessao = null }) {
               </div>
             </FormField>
 
+            <div className="-mt-2 text-right">
+              <Link href="/esqueci-senha" className="relative area-toque text-body-sm font-semibold text-primary underline underline-offset-4 hover:text-primary-hover">
+                Esqueci minha senha
+              </Link>
+            </div>
+
             <Button type="submit" size="lg" className="w-full mt-2" disabled={entrando}>
               {entrando ? "Entrando..." : "Entrar"}
             </Button>

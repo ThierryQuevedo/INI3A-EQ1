@@ -14,6 +14,8 @@ import {
   notificarServicoConcluido,
 } from '@/lib/notificacoes';
 import { buscarMotivosCancelamento, textoDoMotivo } from '@/lib/motivoCancelamento';
+import { calcularSlotsLivresDoDia } from '@/lib/disponibilidade';
+import { instanteNoFuso, partesNoFuso } from '@/lib/formatoData';
 
 // `usuarios` entra duas vezes no join (cliente e prestador).
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_agenda');
@@ -49,13 +51,18 @@ export async function confirmarAgendamentoAction({
   }
 
   const [servicoExistente] = await db
-    .select({ id: servicos.id, prestadorId: servicos.prestadorId })
+    .select({ id: servicos.id, prestadorId: servicos.prestadorId, duracaoEstimada: servicos.duracaoEstimada })
     .from(servicos)
     .where(and(eq(servicos.id, Number(servicoId)), isNull(servicos.desativadoEm)))
     .limit(1);
 
   if (!servicoExistente) {
     return { erro: 'Este serviço não está mais disponível.', codigo: 'servico' };
+  }
+
+  // Sem isto o prestador marcava o próprio serviço, concluía e se dava nota 5.
+  if (servicoExistente.prestadorId === usuario.id) {
+    return { erro: 'Você não pode agendar um serviço seu.', codigo: 'invalido' };
   }
 
   const [agendamentoExistente] = await db
@@ -91,11 +98,44 @@ export async function confirmarAgendamentoAction({
     return { erro: 'Este horário acabou de ser preenchido. Escolha outro.', codigo: 'ocupado' };
   }
 
+  // A tela só oferece horários livres, mas a action é um endpoint público: o
+  // horário precisa cair numa disponibilidade do serviço e não pode se
+  // sobrepor (pela duração) a outro atendimento do prestador. Mesma função
+  // de slots da tela de agendar (lib/disponibilidade.js).
+  const { dia, hora } = partesNoFuso(agendamentoDate);
+  const [dispsDoServico, ocupacao] = await Promise.all([
+    db
+      .select({
+        diaSemana: disponibilidades.diaSemana,
+        horaInicio: disponibilidades.horaInicio,
+        horaFim: disponibilidades.horaFim,
+      })
+      .from(disponibilidades)
+      .where(
+        and(
+          eq(disponibilidades.prestadorId, servicoExistente.prestadorId),
+          eq(disponibilidades.servicoId, servicoExistente.id)
+        )
+      ),
+    listarOcupacaoDoPrestador(servicoExistente.prestadorId),
+  ]);
+  // lib/disponibilidade.js é JS: os defaults dos parâmetros confundem o TS, daí o `as any`.
+  const slotsLivres = calcularSlotsLivresDoDia({
+    dia,
+    duracaoEstimada: servicoExistente.duracaoEstimada,
+    disponibilidades: dispsDoServico,
+    agendados: ocupacao,
+  } as any);
+  const instanteExato = instanteNoFuso(dia, hora).getTime() === agendamentoDate.getTime();
+  if (!instanteExato || !slotsLivres.includes(hora)) {
+    return { erro: 'Este horário não está mais disponível. Escolha outro.', codigo: 'ocupado' };
+  }
+
   const [novo] = await db
     .insert(agendamentos)
     .values({
       clienteId: usuario.id,
-      servicoId,
+      servicoId: servicoExistente.id,
       dataHora: agendamentoDate,
       status: 'pendente',
     })

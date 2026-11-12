@@ -4,16 +4,16 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { eq, getTableColumns, inArray, sql } from 'drizzle-orm';
 import { db } from '@/db';
-import { servicos, categorias, prestadores } from '@/db/schema';
+import { servicos, categorias, prestadores, usuarios } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { gerarSlug } from '@/lib/slug';
 import { imagemPublica } from '@/lib/imagemPublica';
 import { CATEGORIAS_PADRAO } from '@/lib/categorias';
-import { CAMINHO_BASE } from '@/lib/caminhoBase';
 import { servicoTemAgendamentos } from '@/lib/servicos';
 import { conferirCodigo, criarCodigo, descartarCodigo } from '@/lib/codigoVerificacao';
 import { enviarEmail } from '@/lib/email';
 import { emailCodigoExclusaoServico } from '@/lib/emails/templates';
+import { validarUrlImagem, ERRO_IMAGEM_INVALIDA } from '@/lib/validarImagem';
 
 const ERRO_SERVICO_COM_AGENDAMENTOS = 'Este serviço já tem agendamentos e não pode ser excluído.';
 
@@ -115,6 +115,13 @@ function validarCamposServico(formData) {
   const descricao = formData.get('descricao')?.toString().trim() || '';
 
   if (!nome) return { erro: 'Informe o nome do serviço.', campo: 'nome' };
+  if (nome.length > 120) return { erro: 'O nome pode ter no máximo 120 caracteres.', campo: 'nome' };
+  if (novaCategoriaNome.length > 60) {
+    return { erro: 'O nome da categoria pode ter no máximo 60 caracteres.', campo: 'novaCategoria' };
+  }
+  if (descricao.length > 2000) {
+    return { erro: 'A descrição pode ter no máximo 2000 caracteres.', campo: 'descricao' };
+  }
   if (!categoriaIdRaw) return { erro: 'Selecione uma categoria para continuar.', campo: 'categoriaId' };
   if (categoriaIdRaw === 'outro' && !novaCategoriaNome) {
     return { erro: 'Informe o nome da nova categoria.', campo: 'novaCategoria' };
@@ -130,6 +137,9 @@ function validarCamposServico(formData) {
     return { erro: 'A duração deve ser um número inteiro de minutos, entre 1 e 1440.', campo: 'duracaoEstimada' };
   }
 
+  const imagem = validarUrlImagem(formData.get('urlImagem')?.toString());
+  if (!imagem.valido) return { erro: ERRO_IMAGEM_INVALIDA, campo: 'urlImagem' };
+
   return {
     dados: {
       nome,
@@ -138,7 +148,8 @@ function validarCamposServico(formData) {
       preco: precoNum.toFixed(2),
       duracaoEstimada,
       descricao: descricao || null,
-      urlImagem: formData.get('urlImagem')?.toString().trim() || null,
+      urlImagem: imagem.semMudanca ? undefined : imagem.valor,
+      fotoSemMudanca: !!imagem.semMudanca,
     },
   };
 }
@@ -184,6 +195,12 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
       .where(eq(prestadores.usuarioId, prestadorId))
       .limit(1);
 
+    // Quem cadastra um serviço passa a ser prestador também em `usuarios.tipo`;
+    // antes ficava só a linha em `prestadores` e a conta seguia como cliente.
+    if (usuario.tipo !== 'prestador') {
+      await db.update(usuarios).set({ tipo: 'prestador' }).where(eq(usuarios.id, prestadorId));
+    }
+
     if (!prestadorExiste) {
       await db.insert(prestadores).values({
         usuarioId: prestadorId,
@@ -201,7 +218,7 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
       nome,
       slug: await gerarSlugUnicoDeServico(nome),
       descricao,
-      urlImagem,
+      urlImagem: urlImagem ?? null,
       preco,
       duracaoEstimada,
     });
@@ -325,11 +342,11 @@ export async function atualizarServico(_estadoAnterior: unknown, formData: FormD
 
   const validacao = validarCamposServico(formData);
   if (!validacao.dados) return validacao;
-  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem } = validacao.dados;
+  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem, fotoSemMudanca } =
+    validacao.dados;
 
   // Foto salva como data URL chega aqui como o endereço curto de /api/imagem
   // (ver lib/imagemPublica.js): nesse caso a foto não mudou e a coluna fica como está.
-  const fotoSemMudanca = urlImagem?.startsWith(`${CAMINHO_BASE}/api/imagem/`);
 
   try {
     await db

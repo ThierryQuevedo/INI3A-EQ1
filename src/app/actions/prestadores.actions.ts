@@ -14,6 +14,7 @@ import {
 import { comEstatisticas } from '@/lib/avaliacoes';
 import { getSession } from '@/app/actions/auth.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
+import { podeVerContato } from '@/lib/contato';
 
 // `incluirDesativados` é só para o próprio prestador ver os serviços que tirou do ar.
 export async function buscarPerfilPrestador(
@@ -32,7 +33,6 @@ export async function buscarPerfilPrestador(
       id: usuarios.id,
       slug: usuarios.slug,
       nome: usuarios.nome,
-      email: usuarios.email,
       telefone: usuarios.telefone,
       urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
@@ -51,6 +51,14 @@ export async function buscarPerfilPrestador(
   if (!dadosUsuario) return null;
 
   const prestadorId = dadosUsuario.id;
+
+  // Server action também é endpoint público: quem vê os desativados e o
+  // telefone é decidido pela sessão, não pelo parâmetro recebido.
+  const visitante = await getSession();
+  if (visitante?.id !== prestadorId) incluirDesativados = false;
+  if (!(await podeVerContato(visitante?.id, prestadorId))) {
+    dadosUsuario.telefone = null;
+  }
 
 
   const servicosDoPrestador = await db
@@ -145,10 +153,18 @@ export async function atualizarLocalizacaoPrestador(dados: {
     return { erro: 'Não autorizado.' };
   }
 
-  const atualizacao: Record<string, number | string | null> = {};
-  if ('latitude' in dados) atualizacao.latitude = dados.latitude ?? null;
-  if ('longitude' in dados) atualizacao.longitude = dados.longitude ?? null;
-  if ('enderecoTexto' in dados) atualizacao.enderecoTexto = dados.enderecoTexto?.trim() || null;
+  const atualizacao: Record<string, number | string | null | undefined> = {};
+  const coordenada = (valor, limite) => {
+    if (valor == null) return null;
+    const n = Number(valor);
+    return Number.isFinite(n) && Math.abs(n) <= limite ? n : undefined;
+  };
+  if ('latitude' in dados) atualizacao.latitude = coordenada(dados.latitude, 90);
+  if ('longitude' in dados) atualizacao.longitude = coordenada(dados.longitude, 180);
+  if (Object.values(atualizacao).some((v) => v === undefined)) {
+    return { erro: 'Localização inválida.' };
+  }
+  if ('enderecoTexto' in dados) atualizacao.enderecoTexto = String(dados.enderecoTexto ?? '').trim().slice(0, 200) || null;
 
   if (Object.keys(atualizacao).length === 0) {
     return { erro: null, sucesso: true };

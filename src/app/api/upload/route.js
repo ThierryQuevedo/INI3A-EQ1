@@ -2,6 +2,7 @@ import { db } from '@/db';
 import { usuarios, servicos } from '@/db/schema';
 import { and, eq } from 'drizzle-orm';
 import { getSession } from '@/app/actions/auth.actions';
+import { dataUrlDeImagemValida } from '@/lib/validarImagem';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,9 +33,18 @@ export async function POST(request) {
       if (body?.dataUrl) {
         const url = body.dataUrl;
 
+        // Só data URL de imagem PNG/JPG/WEBP de até 5 MB vai para o banco.
+        if (!dataUrlDeImagemValida(url)) {
+          return Response.json(
+            { success: false, error: 'Formato inválido. Apenas PNG, JPG e WEBP de até 5MB são suportados.' },
+            { status: 400 }
+          );
+        }
+
         // Persistência opcional via JSON
+        let salvoNoBanco = false;
         if (tipo || salvarNoBanco) {
-          await persistirNoBanco({ tipo, servicoId, url });
+          salvoNoBanco = await persistirNoBanco({ tipo, servicoId, url });
         }
 
         return Response.json({
@@ -43,7 +53,7 @@ export async function POST(request) {
           name: body.name || 'imagem.png',
           size: body.size || 0,
           type: body.type || 'image/png',
-          salvoNoBanco: true,
+          salvoNoBanco,
         });
       }
 
@@ -65,7 +75,8 @@ export async function POST(request) {
     const extensaoValida = EXTENSOES_PERMITIDAS.some((ext) => nomeArquivo.endsWith(ext));
     const tipoValido = FORMATOS_PERMITIDOS.includes(file.type);
 
-    if (!tipoValido && !extensaoValida) {
+    // MIME e extensão precisam bater os dois: só um deles é fácil de forjar.
+    if (!tipoValido || !extensaoValida) {
       return Response.json(
         {
           success: false,

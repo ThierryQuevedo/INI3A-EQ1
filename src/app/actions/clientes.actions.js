@@ -11,6 +11,7 @@ import {
 } from '@/db/schema';
 import { imagemPublica } from '@/lib/imagemPublica';
 import { getSession } from './auth.actions';
+import { podeVerContato } from '@/lib/contato';
 
 export async function buscarPerfilCliente(identificador) {
   if (!identificador) return null;
@@ -25,7 +26,6 @@ export async function buscarPerfilCliente(identificador) {
       id: usuarios.id,
       slug: usuarios.slug,
       nome: usuarios.nome,
-      email: usuarios.email,
       telefone: usuarios.telefone,
       urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
@@ -37,6 +37,12 @@ export async function buscarPerfilCliente(identificador) {
     .limit(1);
 
   if (!dadosUsuario) return null;
+
+  // E-mail nunca sai daqui; telefone só para quem já tem agendamento com a pessoa.
+  const visitante = await getSession();
+  if (!(await podeVerContato(visitante?.id, dadosUsuario.id))) {
+    dadosUsuario.telefone = null;
+  }
 
   const clienteId = dadosUsuario.id;
 

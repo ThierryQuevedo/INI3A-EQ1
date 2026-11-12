@@ -11,9 +11,21 @@ import { SESSION_COOKIE, COMPLETAR_CADASTRO_COOKIE, criarSessao, consumirProximo
 import { destinoPadrao, filtroEmail, gerarSlugUnicoDeUsuario, normalizarEmail } from '@/lib/usuarios';
 import { desformatarTelefone, formatarTelefone } from '@/lib/formatarTelefone';
 import { imagemPublica } from '@/lib/imagemPublica';
+import { validarUrlImagem } from '@/lib/validarImagem';
+import { verificarLimite, registrarFalha, limparFalhas, ipDaRequisicao } from '@/lib/limiteTentativas';
 
 const ERRO_EMAIL_EM_USO = 'Já existe uma conta com este e-mail.';
 const ERRO_TELEFONE_EM_USO = 'Este telefone já está em uso em outra conta.';
+// A mesma mensagem para e-mail inexistente e senha errada: mensagens
+// diferentes deixavam descobrir quais e-mails têm conta.
+const ERRO_LOGIN = 'E-mail ou senha incorretos.';
+const TAMANHO_MINIMO_SENHA = 6;
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Força bruta: 5 erros por e-mail e 20 por IP a cada 15 minutos.
+const JANELA_LOGIN_MS = 15 * 60 * 1000;
+const MAXIMO_POR_EMAIL = 5;
+const MAXIMO_POR_IP = 20;
 
 // Login e cadastro devolvem `destino` e quem navega é o formulário, com uma
 // carga completa da página (ver lib/useIrAposEntrar.js). Como a página nasce do
@@ -28,6 +40,23 @@ export async function cadastrar(estadoAnterior: unknown, formData: FormData) {
 
     if (!nome || !email || !senha || !digitosTelefone) {
       return { erro: 'Campos incompletos.' };
+    }
+
+    if (nome.length > 100) {
+      return { erro: 'O nome pode ter no máximo 100 caracteres.', errosCampos: { nome: 'O nome pode ter no máximo 100 caracteres.' } };
+    }
+
+    if (!RE_EMAIL.test(email)) {
+      return { erro: 'Informe um e-mail válido.', errosCampos: { email: 'Informe um e-mail válido.' } };
+    }
+
+    if (senha.length < TAMANHO_MINIMO_SENHA) {
+      const msg = `A senha deve ter ao menos ${TAMANHO_MINIMO_SENHA} caracteres.`;
+      return { erro: msg, errosCampos: { senha: msg } };
+    }
+
+    if (digitosTelefone.length < 10) {
+      return { erro: 'Informe um telefone válido, com DDD.', errosCampos: { cel: 'Informe um telefone válido, com DDD.' } };
     }
 
     // Sempre na mesma máscara: é ela que a coluna única compara.
@@ -92,29 +121,34 @@ export async function login(estadoAnterior: unknown, formData: FormData) {
       return { erro: 'Preencha todos os campos.' };
     }
 
+    const chaveEmail = `login:email:${normalizarEmail(email)}`;
+    const chaveIp = `login:ip:${await ipDaRequisicao()}`;
+    const limite = [
+      verificarLimite(chaveEmail, { maximo: MAXIMO_POR_EMAIL }),
+      verificarLimite(chaveIp, { maximo: MAXIMO_POR_IP }),
+    ].find((l) => l.bloqueado);
+    if (limite) {
+      return {
+        erro: `Muitas tentativas sem sucesso. Aguarde ${limite.aguardarMinutos} minuto(s) e tente de novo.`,
+      };
+    }
+
     const resultado = await db
-      .select()
+      .select({ id: usuarios.id, senha: usuarios.senha, tipo: usuarios.tipo })
       .from(usuarios)
       .where(filtroEmail(email))
       .limit(1);
 
     const usuario = resultado[0];
+    const senhaValida = usuario ? await bcrypt.compare(String(senha), usuario.senha) : false;
 
-    if (!usuario) {
-      return {
-        erro: 'Não existe uma conta com este e-mail.',
-        errosCampos: { email: 'Não existe uma conta com este e-mail.' },
-      };
-    }
-
-    const senhaValida = await bcrypt.compare(String(senha), usuario.senha);
     if (!senhaValida) {
-      return {
-        erro: 'Senha incorreta.',
-        errosCampos: { senha: 'Senha incorreta.' },
-      };
+      registrarFalha(chaveEmail, { janelaMs: JANELA_LOGIN_MS });
+      registrarFalha(chaveIp, { janelaMs: JANELA_LOGIN_MS });
+      return { erro: ERRO_LOGIN, errosCampos: { senha: ERRO_LOGIN } };
     }
 
+    limparFalhas(chaveEmail);
     await criarSessao(usuario.id);
     const proximo = await consumirProximo();
 
@@ -237,6 +271,10 @@ export async function atualizarNome(estadoAnterior: unknown, formData: FormData)
     return { erro: 'Informe um nome válido.' };
   }
 
+  if (String(nome).trim().length > 100) {
+    return { erro: 'O nome pode ter no máximo 100 caracteres.' };
+  }
+
   await db.update(usuarios).set({ nome: String(nome).trim() }).where(eq(usuarios.id, usuario.id));
 
   revalidatePath('/configuracoes');
@@ -255,12 +293,15 @@ export async function atualizarEmail(estadoAnterior: unknown, formData: FormData
     return { erro: 'Informe um e-mail válido.' };
   }
 
-  const emailNormalizado = String(email).trim();
+  const emailNormalizado = normalizarEmail(email);
+  if (!RE_EMAIL.test(emailNormalizado)) {
+    return { erro: 'Informe um e-mail válido.' };
+  }
 
   const [existente] = await db
     .select({ id: usuarios.id })
     .from(usuarios)
-    .where(eq(usuarios.email, emailNormalizado))
+    .where(filtroEmail(emailNormalizado))
     .limit(1);
 
   if (existente && existente.id !== usuario.id) {
@@ -285,7 +326,12 @@ export async function atualizarTelefone(estadoAnterior: unknown, formData: FormD
     return { erro: 'Informe um telefone válido.' };
   }
 
-  const telefoneNormalizado = String(telefone).trim();
+  // Sempre na mesma máscara do cadastro: é ela que a coluna única compara.
+  const digitos = desformatarTelefone(telefone);
+  if (digitos.length < 10) {
+    return { erro: 'Informe um telefone válido, com DDD.' };
+  }
+  const telefoneNormalizado = formatarTelefone(digitos);
 
   const [existente] = await db
     .select({ id: usuarios.id })
@@ -326,8 +372,8 @@ export async function atualizarSenha(estadoAnterior: unknown, formData: FormData
     return { erro: 'Confirme a nova senha.' };
   }
 
-  if (String(novaSenha).length < 6) {
-    return { erro: 'A nova senha deve ter ao menos 6 caracteres.' };
+  if (String(novaSenha).length < TAMANHO_MINIMO_SENHA) {
+    return { erro: `A nova senha deve ter ao menos ${TAMANHO_MINIMO_SENHA} caracteres.` };
   }
 
   if (String(novaSenha) !== String(confirmarSenha)) {
@@ -352,6 +398,11 @@ export async function atualizarSenha(estadoAnterior: unknown, formData: FormData
   const novaSenhaHash = await bcrypt.hash(String(novaSenha), 10);
   await db.update(usuarios).set({ senha: novaSenhaHash }).where(eq(usuarios.id, usuario.id));
 
+  // Encerra as sessões nos outros aparelhos; a deste continua aberta.
+  const cookieStore = await cookies();
+  const sessaoAtual = cookieStore.get(SESSION_COOKIE)?.value ?? '';
+  await db.delete(sessoes).where(and(eq(sessoes.usuarioId, usuario.id), ne(sessoes.id, sessaoAtual)));
+
   revalidatePath('/configuracoes');
 
   return { erro: null, sucesso: true };
@@ -363,7 +414,11 @@ export async function atualizarFotoPerfil(urlImagem: string) {
     throw new Error('Não autorizado');
   }
 
-  await db.update(usuarios).set({ urlImagem }).where(eq(usuarios.id, usuario.id));
+  const validacao = validarUrlImagem(urlImagem);
+  if (!validacao.valido) throw new Error('Imagem inválida');
+  if (validacao.semMudanca) return;
+
+  await db.update(usuarios).set({ urlImagem: validacao.valor }).where(eq(usuarios.id, usuario.id));
 
   revalidatePath('/configuracoes');
 }
@@ -374,7 +429,11 @@ export async function atualizarUrlBanner(urlBanner: string) {
     throw new Error('Não autorizado');
   }
 
-  await db.update(usuarios).set({ urlBanner }).where(eq(usuarios.id, usuario.id));
+  const validacao = validarUrlImagem(urlBanner);
+  if (!validacao.valido) throw new Error('Imagem inválida');
+  if (validacao.semMudanca) return;
+
+  await db.update(usuarios).set({ urlBanner: validacao.valor }).where(eq(usuarios.id, usuario.id));
 
   revalidatePath('/configuracoes');
 }

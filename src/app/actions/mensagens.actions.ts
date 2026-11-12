@@ -11,6 +11,7 @@ import { imagemPublica } from '@/lib/imagemPublica';
 import { notificarNovaMensagem } from '@/lib/notificacoes';
 
 const STATUS_ENCERRADO = ['concluido', 'cancelado'];
+const TAMANHO_MAXIMO_MENSAGEM = 2000;
 
 // `usuarios` entra duas vezes no join (cliente e prestador), então o segundo
 // lado precisa de um alias — mesmo padrão usado em src/lib/notificacoes.js.
@@ -174,6 +175,9 @@ export async function enviarMensagem({ agendamentoId, texto }: { agendamentoId: 
 
   const textoLimpo = String(texto ?? '').trim();
   if (!textoLimpo) return { erro: 'Escreva uma mensagem.' };
+  if (textoLimpo.length > TAMANHO_MAXIMO_MENSAGEM) {
+    return { erro: `A mensagem pode ter no máximo ${TAMANHO_MAXIMO_MENSAGEM} caracteres.` };
+  }
 
   const [nova] = await db
     .insert(mensagens)

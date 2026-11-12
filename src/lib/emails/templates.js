@@ -169,6 +169,24 @@ export function emailCodigoExclusaoServico({ usuarioNome, servicoNome, codigo })
   };
 }
 
+export function emailCodigoRedefinirSenha({ usuarioNome, codigo }) {
+  return {
+    assunto: `${codigo} é o seu código para redefinir a senha`,
+    html: layoutEmail({
+      saudacao: `Olá, ${usuarioNome}.`,
+      paragrafos: [
+        'Recebemos um pedido para redefinir a senha da sua conta no Marca Aí. Use o código abaixo na tela de redefinição. Ele vale por 10 minutos.',
+        'Se não foi você, ignore este e-mail: a sua senha continua a mesma.',
+      ],
+      destaque: {
+        rotulo: 'Código de redefinição',
+        itens: [['Código', `<span style="font-size: 22px; font-weight: 700; letter-spacing: 0.12em;">${escapar(codigo)}</span>`]],
+      },
+      cta: { texto: 'Abrir a tela de redefinição', href: linkApp('/esqueci-senha/') },
+    }),
+  };
+}
+
 export function emailNovaMensagem({ agendamentoId, destinatarioNome, remetenteNome, servicoNome, texto }) {
   const link = linkApp(`/mensagens/${agendamentoId}/`);
   const previa = texto.length > 140 ? `${texto.slice(0, 140)}…` : texto;
