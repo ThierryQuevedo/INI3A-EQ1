@@ -30,9 +30,13 @@ const nextConfig = {
     ],
   },
   reactCompiler: true,
-  // libera forbidden
   experimental: {
+    // libera forbidden
     authInterrupts: true,
+    // foto do servico vira data URL base64 (~33% maior) dentro do FormData da action
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
   // Cabeçalhos de segurança em todas as respostas. A CSP fica só nas diretivas
   // que não dependem dos scripts inline do Next (bloqueia iframe de terceiros,
