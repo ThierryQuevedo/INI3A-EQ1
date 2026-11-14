@@ -48,7 +48,7 @@ export default async function PaginaConfiguracoes() {
           <div className="absolute inset-0 bg-secondary" />
         )}
 
-        <div className="relative z-100 flex flex-col items-center">
+        <div className="relative flex flex-col items-center">
           <ProfileAvatar usuario={usuario} inicialNome={inicialNome} />
 
           <h1 className="text-foreground text-h4 font-bold tracking-tight mt-4 drop-shadow-sm">

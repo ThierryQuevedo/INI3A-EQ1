@@ -121,7 +121,7 @@ export default function ServiceCard({ servico, interativo = true }) {
       )}
 
       {/* acoes no fim do card */}
-      <div className={cn("px-3 pb-4 pt-1 @min-[12rem]:px-4 flex flex-wrap items-baseline justify-between gap-x-2", !interativo && "mt-auto")}>
+      <div className={cn("px-3 pb-4 pt-1 @min-[12rem]:px-4 flex flex-wrap items-baseline justify-between gap-x-2 @max-[12rem]:flex-col @max-[12rem]:items-start", !interativo && "mt-auto")}>
         <span className="text-body-lg font-bold text-foreground whitespace-nowrap tabular-nums">
           {formatarPreco(preco)}
         </span>

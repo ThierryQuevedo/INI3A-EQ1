@@ -4,7 +4,7 @@ import { Plus, Trash2, Loader2 } from "lucide-react";
 import Switch from "@/app/components/ui/Switch";
 
 const CAMPO_HORA_CLASSE =
-  "h-10 pointer-coarse:h-11 rounded-lg border border-input bg-card px-3 text-body-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed";
+  "min-w-[5.5rem] flex-1 sm:flex-none sm:w-32 h-10 pointer-coarse:h-11 rounded-lg border border-input bg-card px-2 sm:px-3 text-body-sm font-semibold text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:cursor-not-allowed";
 
 export default function DiaDisponibilidadeCard({
   dia,
@@ -43,14 +43,14 @@ export default function DiaDisponibilidadeCard({
 
         <div className="flex items-center gap-2 shrink-0">
           {processando && <Loader2 size={16} className="animate-spin text-muted-foreground" aria-hidden="true" />}
-          {!temHorarios && <span className="text-caption text-muted-foreground">Indisponível</span>}
+          {!temHorarios && <span className="text-caption text-muted-foreground max-[22rem]:sr-only">Indisponível</span>}
         </div>
       </div>
 
       {temHorarios && (
         <div className="border-t border-border divide-y divide-border">
           {ranges.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 sm:gap-3 px-5 py-3 flex-wrap">
+            <div key={r.id} className="flex items-center gap-1.5 sm:gap-3 px-4 sm:px-5 py-3">
               <label className="sr-only-status" htmlFor={`inicio-${r.id}`}>Início em {dia.nome}</label>
               <input
                 id={`inicio-${r.id}`}
@@ -77,7 +77,7 @@ export default function DiaDisponibilidadeCard({
                 disabled={processando}
                 aria-label={`Remover horário de ${r.horaInicio} às ${r.horaFim} em ${dia.nome}`}
                 title="Remover horário"
-                className="ml-auto relative area-toque h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="ml-auto shrink-0 relative area-toque h-10 w-10 flex items-center justify-center rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Trash2 size={16} aria-hidden="true" />
               </button>

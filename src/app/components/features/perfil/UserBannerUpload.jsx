@@ -201,7 +201,7 @@ export default function UserBannerUpload({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={abrirSeletor}
-        className={`w-full h-44 sm:h-52 md:h-60 rounded-2xl overflow-hidden relative group cursor-pointer border transition select-none ${
+        className={`w-full ${imagemExibida ? "h-44 sm:h-52 md:h-60" : ""} rounded-2xl overflow-hidden relative group cursor-pointer border transition select-none ${
           isDragging
             ? "border-primary ring-4 ring-primary/20 bg-primary/5 scale-[1.005]"
             : "border-border hover:border-primary/50 bg-muted/40"
@@ -218,16 +218,27 @@ export default function UserBannerUpload({
             }`}
           />
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-card/80 to-muted/80">
-            <div className="w-14 h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <ImageIcon size={28} aria-hidden="true" />
+          <div className="w-full min-h-44 sm:min-h-52 md:min-h-60 flex flex-col items-center justify-center px-4 py-5 sm:p-6 text-center bg-gradient-to-br from-card/80 to-muted/80">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <ImageIcon size={26} aria-hidden="true" />
             </div>
             <p className="font-medium text-foreground text-body-sm">
               Adicione uma capa ao seu perfil
             </p>
-            <p className="text-caption text-muted-foreground mt-1">
-              Arraste uma imagem ou clique para selecionar (proporção recomendada 3:1)
+            <p className="text-caption text-muted-foreground mt-1 max-w-xs">
+              <span className="pointer-coarse:hidden">Arraste uma imagem ou clique para selecionar</span>
+              <span className="pointer-fine:hidden">Toque para escolher uma imagem</span>
+              {" "}(proporção 3:1)
             </p>
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); abrirSeletor(); }}
+              aria-label="Adicionar capa do perfil"
+              className="mt-4 px-4 min-h-11 rounded-lg bg-primary hover:bg-primary-hover text-primary-foreground text-body-sm font-semibold inline-flex items-center gap-2 transition shadow-sm active:scale-95 cursor-pointer"
+            >
+              <Camera size={16} aria-hidden="true" />
+              Adicionar capa
+            </button>
           </div>
         )}
 
@@ -246,11 +257,12 @@ export default function UserBannerUpload({
           </div>
         )}
 
+        {imagemExibida && (
         <div
           className="absolute bottom-3 right-3 z-10 flex items-center gap-2"
           onClick={(e) => e.stopPropagation()}
         >
-          {imagemExibida && !isUploading && (
+          {!isUploading && (
             <button
               type="button"
               onClick={handleRemoverCapa}
@@ -266,14 +278,15 @@ export default function UserBannerUpload({
           <button
             type="button"
             onClick={abrirSeletor}
-            title={imagemExibida ? "Alterar capa" : "Adicionar capa"}
-            aria-label={imagemExibida ? "Alterar capa do perfil" : "Adicionar capa do perfil"}
+            title="Alterar capa"
+            aria-label="Alterar capa do perfil"
             className="px-3.5 py-2 pointer-coarse:min-h-11 rounded-lg bg-black/60 hover:bg-black/85 text-white backdrop-blur-md text-caption font-semibold flex items-center gap-2 transition shadow-md active:scale-95 cursor-pointer"
           >
             <Camera size={16} aria-hidden="true" />
-            <span>{imagemExibida ? "Alterar capa" : "Adicionar capa"}</span>
+            <span>Alterar capa</span>
           </button>
         </div>
+        )}
       </div>
 
       <ImageCropperModal

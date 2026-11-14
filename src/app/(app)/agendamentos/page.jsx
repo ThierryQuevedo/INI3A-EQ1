@@ -76,12 +76,23 @@ function CardAgendamento({ item, usuarioLogado }) {
             )}
           </div>
           {ehCliente ? (
-            <p className="text-body-sm text-muted-foreground truncate mt-1">
+            <p className="text-body-sm text-muted-foreground break-words mt-1">
               {item.prestadorNome} · <span className="text-success font-semibold">{formatarPreco(item.servicoPreco)}</span>
             </p>
           ) : (
-            <p className="text-body-sm text-muted-foreground truncate mt-1">
-              {item.clienteNome}{item.clienteTelefone ? ` · ${item.clienteTelefone}` : ''}
+            <p className="text-body-sm text-muted-foreground break-words mt-1">
+              {item.clienteNome}
+              {item.clienteTelefone && (
+                <>
+                  {' · '}
+                  <a
+                    href={`tel:${item.clienteTelefone.replace(/[^\d+]/g, '')}`}
+                    className="relative area-toque whitespace-nowrap underline-offset-4 hover:text-foreground hover:underline"
+                  >
+                    {item.clienteTelefone}
+                  </a>
+                </>
+              )}
             </p>
           )}
           {ehCliente && item.status === 'pendente' && (
@@ -161,7 +172,7 @@ function CardAgendamento({ item, usuarioLogado }) {
                 descricao="Confirma que o serviço foi realizado?"
               />
             ) : (
-              <p className="text-caption text-muted-foreground sm:text-right">Concluir libera no horário marcado</p>
+              <p className="basis-full order-last text-caption text-muted-foreground sm:basis-auto sm:order-none sm:text-right">Concluir libera no horário marcado</p>
             )
           )}
           {STATUS_CANCELAVEL.includes(item.status) && (

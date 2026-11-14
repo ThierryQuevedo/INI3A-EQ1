@@ -202,7 +202,7 @@ export default function ProfileAvatar({
           )}
 
           {!isUploading && (
-            <div className="absolute inset-0 bg-black/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 z-10">
+            <div className="pointer-coarse:invisible absolute inset-0 bg-black/55 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 z-10">
               <Camera size={24} className="stroke-[2.2]" aria-hidden="true" />
               <span className="text-caption font-semibold">
                 Alterar
@@ -226,6 +226,19 @@ export default function ProfileAvatar({
             </div>
           )}
         </div>
+
+        {/* toque nao tem hover: o selo mostra que a foto pode ser trocada */}
+        {!isUploading && (
+          <button
+            type="button"
+            onClick={abrirSeletor}
+            title="Alterar foto de perfil"
+            aria-label="Alterar foto de perfil"
+            className="pointer-fine:invisible absolute area-toque -bottom-1 -left-1 z-20 w-9 h-9 rounded-full bg-primary text-primary-foreground border-2 border-background shadow-soft flex items-center justify-center active:scale-95 transition cursor-pointer"
+          >
+            <Camera size={16} aria-hidden="true" />
+          </button>
+        )}
 
         {imagemExibida && !isUploading && (
           <button

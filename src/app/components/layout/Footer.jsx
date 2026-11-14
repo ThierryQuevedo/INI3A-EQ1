@@ -14,22 +14,22 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} Todos os direitos reservados.
           </p>
         </div>
-        <nav className="flex items-center gap-6 font-medium" aria-label="Links institucionais">
+        <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 font-medium" aria-label="Links institucionais">
           <Link
             href="/sobre"
-            className="inline-flex items-center min-h-6 pointer-coarse:min-h-11 hover:text-foreground transition-colors cursor-pointer"
+            className="inline-flex items-center whitespace-nowrap min-h-6 pointer-coarse:min-h-11 hover:text-foreground transition-colors cursor-pointer"
           >
             Sobre nós
           </Link>
           <Link
             href="/termos"
-            className="inline-flex items-center min-h-6 pointer-coarse:min-h-11 hover:text-foreground transition-colors cursor-pointer"
+            className="inline-flex items-center whitespace-nowrap min-h-6 pointer-coarse:min-h-11 hover:text-foreground transition-colors cursor-pointer"
           >
             Termos de uso
           </Link>
           <Link
             href="/suporte"
-            className="inline-flex items-center min-h-6 pointer-coarse:min-h-11 hover:text-foreground transition-colors cursor-pointer"
+            className="inline-flex items-center whitespace-nowrap min-h-6 pointer-coarse:min-h-11 hover:text-foreground transition-colors cursor-pointer"
           >
             Suporte
           </Link>

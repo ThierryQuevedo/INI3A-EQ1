@@ -147,11 +147,11 @@ export default function ServiceImageUpload({
 
   return (
     <div className={`flex flex-col gap-2 ${className}`}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-baseline justify-between gap-3">
         <label className="text-caption font-inter font-medium text-foreground">
           {label} {required && <span className="text-destructive">*</span>}
         </label>
-        <span className="text-caption text-muted-foreground font-inter">
+        <span className="shrink-0 text-caption text-muted-foreground font-inter">
           {required ? "Obrigatório" : "Opcional"}
         </span>
       </div>
@@ -203,7 +203,7 @@ export default function ServiceImageUpload({
             }
           }}
           // sem aria label pois o nome vem do texto visivel
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3 select-none ${
+          className={`border-2 border-dashed rounded-xl p-5 sm:p-8 text-center cursor-pointer transition flex flex-col items-center justify-center gap-3 select-none ${
             isDragging
               ? "border-primary bg-primary/10 ring-4 ring-primary/20 scale-[1.01]"
               : "border-border hover:border-primary/60 bg-muted/20 hover:bg-muted/40"
@@ -219,7 +219,8 @@ export default function ServiceImageUpload({
 
           <div className="space-y-1">
             <p className="font-semibold text-foreground text-body font-inter">
-              Arraste uma foto do serviço ou clique para selecionar
+              <span className="pointer-coarse:hidden">Arraste uma foto do serviço ou clique para selecionar</span>
+              <span className="pointer-fine:hidden">Toque para escolher uma foto do serviço</span>
             </p>
             <p className="text-caption text-muted-foreground font-inter">
               Formatos aceitos: PNG, JPG ou WEBP (limite de até {maxSizeMB}MB)
@@ -282,7 +283,7 @@ export default function ServiceImageUpload({
               disabled={isUploading}
               title="Trocar foto"
               aria-label="Trocar foto do serviço"
-              className="px-3.5 py-2 rounded-lg bg-muted/60 hover:bg-muted text-foreground border border-border text-caption font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+              className="px-3.5 py-2 min-h-11 rounded-lg bg-muted/60 hover:bg-muted text-foreground border border-border text-caption font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
             >
               <RefreshCw size={14} aria-hidden="true" />
               <span>Trocar</span>
@@ -294,7 +295,7 @@ export default function ServiceImageUpload({
               disabled={isUploading}
               title="Remover foto"
               aria-label="Remover foto do serviço"
-              className="p-2 rounded-lg bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
+              className="size-11 shrink-0 flex items-center justify-center rounded-lg bg-destructive/10 hover:bg-destructive text-destructive hover:text-destructive-foreground border border-destructive/20 transition-colors cursor-pointer disabled:opacity-50"
             >
               <Trash2 size={16} aria-hidden="true" />
             </button>

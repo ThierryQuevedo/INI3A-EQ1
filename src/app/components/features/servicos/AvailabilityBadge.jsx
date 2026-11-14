@@ -42,7 +42,7 @@ export default function AvailabilityBadge({ proximoHorario, servicoId, nomeServi
     >
       <Clock size={16} className="shrink-0 text-primary" aria-hidden="true" />
       <span className="sr-only">Marcar {nomeServico || "este serviço"}: </span>
-      <span className="whitespace-nowrap">{textoDia},</span>
+      <span className="min-w-0">{textoDia},</span>
       <time dateTime={data.toISOString()} className="whitespace-nowrap font-bold tabular-nums text-body">
         {textoHora}
       </time>

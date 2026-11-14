@@ -15,7 +15,7 @@ export default function Header({ usuario }) {
                 <Link href="/" className="shrink-0 inline-flex items-center min-h-11 p-1 rounded-lg hover:opacity-90 transition-opacity">
                     <Image
                         src={logotipo}
-                        className="w-32 sm:w-36 h-auto object-contain"
+                        className="w-28 sm:w-36 h-auto object-contain"
                         alt="Marca Aí — página inicial"
                         priority
                     />
@@ -50,12 +50,12 @@ export default function Header({ usuario }) {
                     ) : (
                         <div className="flex items-center gap-1 sm:gap-3">
                             <ThemeToggle className="max-sm:hidden" />
-                            <Link href="/login" className="text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-3 h-11 inline-flex items-center rounded-lg">
+                            <Link href="/login" className="whitespace-nowrap text-body-sm font-semibold text-muted-foreground hover:text-foreground transition-colors px-2 sm:px-3 h-11 inline-flex items-center rounded-lg">
                                 Entrar
                             </Link>
                             <Link
                                 href="/cadastro"
-                                className="text-body-sm font-bold bg-primary hover:bg-primary-hover text-primary-foreground px-4 h-11 inline-flex items-center rounded-lg transition"
+                                className="whitespace-nowrap text-body-sm font-bold bg-primary hover:bg-primary-hover text-primary-foreground px-3 sm:px-4 h-11 inline-flex items-center rounded-lg transition"
                             >
                                 Criar Conta
                             </Link>

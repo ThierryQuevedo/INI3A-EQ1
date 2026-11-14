@@ -70,7 +70,40 @@ export default async function page({ searchParams }) {
                 </p>
             )}
 
-            <Card padding="none" className="relative overflow-x-auto">
+            {/* celular: um card por usuario, sem rolagem lateral */}
+            <ul className="md:hidden flex flex-col gap-3">
+                {listaUsuarios.map((user) => (
+                    <li key={user.id}>
+                        <Card padding="sm" className="flex flex-col gap-3">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <p className="text-body font-semibold text-foreground break-words">{user.nome}</p>
+                                    <p className="text-body-sm text-muted-foreground break-all">{user.email}</p>
+                                </div>
+                                <span className="shrink-0 px-2 h-6 inline-flex items-center rounded-md bg-muted text-caption font-semibold text-muted-foreground capitalize">{user.tipo}</span>
+                            </div>
+                            <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-body-sm">
+                                <dt className="text-muted-foreground">ID</dt>
+                                <dd className="text-foreground tabular-nums">{user.id}</dd>
+                                {user.telefone && (
+                                    <>
+                                        <dt className="text-muted-foreground">Telefone</dt>
+                                        <dd className="text-foreground">{user.telefone}</dd>
+                                    </>
+                                )}
+                                <dt className="text-muted-foreground">Criado em</dt>
+                                <dd className="text-foreground">{user.criadoEm.toLocaleString('pt-BR', { timeZone: FUSO, dateStyle: 'short', timeStyle: 'short' })}</dd>
+                            </dl>
+                            <form action={deleteUser} className="flex justify-end border-t border-border pt-3">
+                                <input type="hidden" name="id" value={user.id} />
+                                <BotaoExcluirConfirm mensagem={`Excluir o usuário "${user.nome}"? Esta ação não pode ser desfeita.`}>Excluir</BotaoExcluirConfirm>
+                            </form>
+                        </Card>
+                    </li>
+                ))}
+            </ul>
+
+            <Card padding="none" className="max-md:hidden relative overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-border bg-muted/50">

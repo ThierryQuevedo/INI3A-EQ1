@@ -55,8 +55,8 @@ function LinhaAgendamento({ ag, mostrarData }) {
         </div>
         <div className="min-w-0">
           <p className="text-body-sm font-semibold text-foreground truncate">{ag.clienteNome}</p>
-          <p className="text-caption text-muted-foreground truncate">
-            {ag.servicoNome} · {ag.duracaoEstimada} min
+          <p className="text-caption text-muted-foreground break-words">
+            {ag.servicoNome} · <span className="whitespace-nowrap">{ag.duracaoEstimada} min</span>
           </p>
           {ag.motivoCancelamento && (
             <p className="text-caption text-muted-foreground mt-0.5 break-words">
@@ -96,7 +96,7 @@ function LinhaAgendamento({ ag, mostrarData }) {
           />
         )}
         {ag.status === 'confirmado' && !horarioComecou && (
-          <span className="text-caption text-muted-foreground">Concluir libera no horário marcado</span>
+          <span className="basis-full order-last text-caption text-muted-foreground @2xl:basis-auto @2xl:order-none">Concluir libera no horário marcado</span>
         )}
         {podeCancelar && (
           <BotaoAcaoAgendamento
@@ -288,8 +288,13 @@ export default async function Dashboard({ searchParams }) {
         title={`Olá, ${primeiroNome}`}
         className="mb-6"
         actions={
-          <>
-            <Button asChild variant="ghost" size="sm">
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:gap-3">
+            <Button asChild size="sm" className="col-span-2 sm:order-last">
+              <Link href="/servicos/novo">
+                <Plus aria-hidden="true" /> Novo serviço
+              </Link>
+            </Button>
+            <Button asChild variant="outline" size="sm" className="sm:border-transparent sm:shadow-none">
               <Link href={`/prestador/${usuario.slug || usuario.id}`}>
                 <ExternalLink aria-hidden="true" /> Perfil público
               </Link>
@@ -299,12 +304,7 @@ export default async function Dashboard({ searchParams }) {
                 <CalendarClock aria-hidden="true" /> Disponibilidade
               </Link>
             </Button>
-            <Button asChild size="sm">
-              <Link href="/servicos/novo">
-                <Plus aria-hidden="true" /> Novo serviço
-              </Link>
-            </Button>
-          </>
+          </div>
         }
       />
 

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useActionState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { atualizarSenha } from "@/app/actions/auth.actions";
 import LinhaCampo from "./LinhaCampo";
@@ -17,7 +18,8 @@ function ModalSenha({ label, icon, onClose }) {
     }
   }, [state, onClose]);
 
-  return (
+  // portal no body: dentro do card o z-index ficava abaixo do header e da barra inferior
+  return createPortal(
     <div role="dialog" aria-modal="true" aria-label={`Editar ${label}`} className="fixed inset-0 bg-black/40 flex items-center justify-center z-[100] px-4">
       <div className="bg-card rounded-xl p-6 shadow-elevated max-w-sm w-full">
         <div className="flex items-center justify-between mb-4">
@@ -98,7 +100,8 @@ function ModalSenha({ label, icon, onClose }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

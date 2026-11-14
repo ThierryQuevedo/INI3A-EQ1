@@ -82,8 +82,8 @@ export default function DashboardCliente({ usuario, dados, pagamentosAFazer }) {
         description="Acompanhe seus agendamentos, avalie serviços e peça de novo."
         className="mb-6"
         actions={
-          <>
-            <Button asChild variant="ghost" size="sm">
+          <div className="grid grid-cols-2 gap-2 w-full sm:flex sm:w-auto sm:gap-3">
+            <Button asChild variant="outline" size="sm" className="sm:border-transparent sm:shadow-none">
               <Link href={`/cliente/${usuario.slug || usuario.id}`}>
                 <User aria-hidden="true" /> Perfil público
               </Link>
@@ -93,7 +93,7 @@ export default function DashboardCliente({ usuario, dados, pagamentosAFazer }) {
                 <Search aria-hidden="true" /> Explorar serviços
               </Link>
             </Button>
-          </>
+          </div>
         }
       />
 
@@ -160,8 +160,8 @@ export default function DashboardCliente({ usuario, dados, pagamentosAFazer }) {
                       >
                         {ag.servicoNome}
                       </Link>
-                      <p className="text-caption text-muted-foreground truncate">
-                        {formatarData(ag.dataHora)} às {formatarHora(ag.dataHora)} · {ag.prestadorNome}
+                      <p className="text-caption text-muted-foreground break-words">
+                        {formatarData(ag.dataHora)} <span className="whitespace-nowrap">às {formatarHora(ag.dataHora)}</span> · {ag.prestadorNome}
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
@@ -186,7 +186,7 @@ export default function DashboardCliente({ usuario, dados, pagamentosAFazer }) {
                   <li key={item.id} className="flex items-center gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-body-sm font-semibold text-foreground truncate">{item.servicoNome}</p>
-                      <p className="text-caption text-muted-foreground truncate">
+                      <p className="text-caption text-muted-foreground line-clamp-2 break-words">
                         {new Date(item.dataHora).toLocaleDateString('pt-BR', { timeZone: FUSO })} · {item.prestadorNome} · {formatarPreco(item.servicoPreco)}
                       </p>
                     </div>

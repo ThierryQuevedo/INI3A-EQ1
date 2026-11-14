@@ -115,7 +115,7 @@ export default function NotificacoesDropdown() {
         <section
           id={idPainel}
           aria-labelledby={idTitulo}
-          className="absolute right-0 top-full mt-3 w-80 max-w-[90vw] bg-card rounded-xl shadow-elevated border border-border overflow-hidden z-50"
+          className="absolute right-0 top-full mt-3 w-80 max-w-[90vw] max-sm:fixed max-sm:inset-x-4 max-sm:top-[4.5rem] max-sm:mt-0 max-sm:w-auto max-sm:max-w-none bg-card rounded-xl shadow-elevated border border-border overflow-hidden z-50"
         >
           <div className="flex items-center justify-between px-5 py-3.5 border-b border-border">
             <h2 id={idTitulo} className="text-body-sm font-bold text-foreground">Notificações</h2>

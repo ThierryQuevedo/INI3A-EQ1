@@ -59,7 +59,7 @@ export default function SuportePage() {
         </p>
         <a
           href="mailto:contato@marcaai.com.br"
-          className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+          className="inline-flex items-center gap-2 min-h-11 text-primary font-semibold break-all hover:underline"
         >
           <Mail size={16} aria-hidden="true" />
           contato@marcaai.com.br

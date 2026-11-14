@@ -206,17 +206,17 @@ export default function CadastroForm({ destinoSessao = null }) {
 
           <div className="pt-2">
             <span className="block text-foreground text-body-sm font-semibold mb-3">
-              Qual categoria você se enquadra?
+              Em qual categoria você se enquadra?
             </span>
 
-            <div className="flex justify-center gap-3" role="group" aria-label="Categoria de conta">
+            <div className="grid grid-cols-2 gap-3 sm:max-w-80 sm:mx-auto" role="group" aria-label="Categoria de conta">
               <Button
                 type="button"
                 variant={categoria === "cliente" ? "default" : "outline"}
                 size="lg"
                 onClick={() => setCategoria("cliente")}
                 aria-pressed={categoria === "cliente"}
-                className="flex-1 max-w-40"
+                className="w-full"
               >
                 Cliente
               </Button>
@@ -227,7 +227,7 @@ export default function CadastroForm({ destinoSessao = null }) {
                 size="lg"
                 onClick={() => setCategoria("prestador")}
                 aria-pressed={categoria === "prestador"}
-                className="flex-1 max-w-40"
+                className="w-full"
               >
                 Prestador
               </Button>
