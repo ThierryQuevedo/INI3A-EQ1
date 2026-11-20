@@ -205,12 +205,12 @@ async function main() {
       const [u] = await tx.insert(usuarios).values({
         nome: p.nome, slug: gerarSlug(p.nome), email: emailDe(p.nome), telefone: telefone(n++),
         senha, tipo: 'prestador', criadoEm: desde(90 - i * 4),
+        latitude: BAURU.lat + p.d[0], longitude: BAURU.lng + p.d[1], enderecoTexto: `${p.bairro}, Bauru - SP`,
       }).returning();
       ids[p.chave] = u.id;
       nomes[p.chave] = p.nome;
       await tx.insert(prestadores).values({
         usuarioId: u.id, biografia: p.bio, raioAtendimentoKm: 15,
-        latitude: BAURU.lat + p.d[0], longitude: BAURU.lng + p.d[1], enderecoTexto: `${p.bairro}, Bauru - SP`,
       });
     }
     for (const [i, c] of CLIENTES.entries()) {

@@ -4,7 +4,7 @@ import EstrelasNota from "@/app/components/ui/EstrelasNota";
 import FavoritoButton from "./FavoritoButton";
 
 export default function PrestadorFavoritoCard({ prestador }) {
-  const { id, slug, nome, urlImagem, enderecoTexto, avaliacaoMedia = 0, totalAvaliacoes = 0 } = prestador;
+  const { id, slug, nome, urlImagem, avaliacaoMedia = 0, totalAvaliacoes = 0 } = prestador;
 
   return (
     <article className="group relative bg-card rounded-xl shadow-soft hover:shadow-card border border-border transition hover:-translate-y-1 overflow-hidden">
@@ -22,7 +22,6 @@ export default function PrestadorFavoritoCard({ prestador }) {
         </div>
         <div className="min-w-0 flex-1 pr-8">
           <h3 className="font-bold text-body text-foreground truncate">{nome}</h3>
-          {enderecoTexto && <p className="text-body-sm text-muted-foreground truncate mt-0.5">{enderecoTexto}</p>}
           <div className="flex items-center gap-1.5 mt-1.5">
             <EstrelasNota nota={avaliacaoMedia} tamanho={13} />
             <span className="text-caption text-muted-foreground font-medium">

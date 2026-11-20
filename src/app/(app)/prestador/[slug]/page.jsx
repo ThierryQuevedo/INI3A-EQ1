@@ -56,9 +56,8 @@ export default async function PerfilPrestador({ params }) {
     new Date(usuario.criadoEm).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric', timeZone: FUSO })
   );
 
-  const localizacao = usuario.enderecoTexto
-    ? usuario.enderecoTexto
-    : usuario.raioAtendimentoKm
+  // o endereco do usuario e privado: no perfil so o raio de atendimento
+  const localizacao = usuario.raioAtendimentoKm
     ? `Atende num raio de ${usuario.raioAtendimentoKm} km`
     : null;
 
@@ -72,6 +71,7 @@ export default async function PerfilPrestador({ params }) {
     preco: s.preco,
     urlImagem: s.urlImagem,
     duracaoEstimada: s.duracaoEstimada,
+    endereco: s.endereco,
     avaliacaoMedia: s.avaliacaoMedia,
     totalAvaliacoes: s.totalAvaliacoes,
     proximoHorario: proximosHorarios[s.id] ?? null,

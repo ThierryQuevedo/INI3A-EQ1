@@ -33,5 +33,12 @@ export default async function CadastroServicoPage() {
   }
 
   const categorias = await listarCategorias();
-  return <ServicoForm categorias={categorias} action={cadastrarServico} nomePrestador={usuario.nome} />;
+  return (
+    <ServicoForm
+      categorias={categorias}
+      action={cadastrarServico}
+      nomePrestador={usuario.nome}
+      enderecoPadrao={usuario.enderecoTexto ?? ''}
+    />
+  );
 }

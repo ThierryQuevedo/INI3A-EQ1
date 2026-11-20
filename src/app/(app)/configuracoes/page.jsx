@@ -2,7 +2,7 @@ import { User, ShieldCheck, Mail, Phone, Calendar, MapPin, ExternalLink } from "
 import Image from "next/image";
 import Link from "next/link";
 import { requireSession, atualizarNome, atualizarEmail, atualizarTelefone } from "@/app/actions/auth.actions";
-import { atualizarEnderecoTextoAction } from "@/app/actions/prestadores.actions";
+import { atualizarEnderecoAction } from "@/app/actions/endereco.actions";
 import ProfileAvatar from "@/app/components/features/perfil/ProfileAvatar";
 import UserBannerUpload from "@/app/components/features/perfil/UserBannerUpload";
 import LocationButton from "@/app/components/features/perfil/LocationButton";
@@ -125,28 +125,30 @@ export default async function PaginaConfiguracoes() {
             />
           </div>
 
-          {ehPrestador && (
-            <div className="mt-10 pt-6 border-t border-border">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-h6 font-bold text-foreground tracking-tight">Localização do perfil público</h2>
-              </div>
-              <div className="space-y-5">
-                <CampoEditavel
-                  label="Endereço exibido no perfil"
-                  name="enderecoTexto"
-                  valor={usuario.enderecoTexto}
-                  action={atualizarEnderecoTextoAction}
-                  icon={<MapPin size={16} className="text-muted-foreground" aria-hidden="true" />}
-                />
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                  <p className="text-body-sm text-muted-foreground max-w-sm">
-                    Usada para mostrar distância e a seção &quot;Perto de você&quot; para clientes.
-                  </p>
-                  <LocationButton />
-                </div>
+          <div className="mt-10 pt-6 border-t border-border">
+            <div className="mb-4">
+              <h2 className="text-h6 font-bold text-foreground tracking-tight">Meu endereço</h2>
+              <p className="text-body-sm text-muted-foreground mt-1">
+                Usado no filtro &quot;Perto de mim&quot;{ehPrestador ? " e para mostrar aos clientes a distância até você" : ""}.
+                Ele não aparece no seu perfil público.
+              </p>
+            </div>
+            <div className="space-y-5">
+              <CampoEditavel
+                label="Endereço"
+                name="enderecoTexto"
+                valor={usuario.enderecoTexto}
+                action={atualizarEnderecoAction}
+                icon={<MapPin size={16} className="text-muted-foreground" aria-hidden="true" />}
+              />
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <p className="text-body-sm text-muted-foreground max-w-sm">
+                  Ou preencha automaticamente com a sua localização atual.
+                </p>
+                <LocationButton />
               </div>
             </div>
-          )}
+          </div>
 
           <div className="mt-10 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
             {dataCriacao && (

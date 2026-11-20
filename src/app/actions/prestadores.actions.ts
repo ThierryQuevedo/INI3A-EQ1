@@ -39,9 +39,6 @@ export async function buscarPerfilPrestador(
       criadoEm: usuarios.criadoEm,
       biografia: prestadores.biografia,
       raioAtendimentoKm: prestadores.raioAtendimentoKm,
-      latitude: prestadores.latitude,
-      longitude: prestadores.longitude,
-      enderecoTexto: prestadores.enderecoTexto,
     })
     .from(usuarios)
     .innerJoin(prestadores, eq(prestadores.usuarioId, usuarios.id))
@@ -69,6 +66,7 @@ export async function buscarPerfilPrestador(
       preco: servicos.preco,
       urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       duracaoEstimada: servicos.duracaoEstimada,
+      endereco: servicos.enderecoTexto,
       categoriaNome: categorias.nome,
       desativadoEm: servicos.desativadoEm,
     })
@@ -143,49 +141,6 @@ export async function buscarPerfilPrestador(
   };
 }
 
-export async function atualizarLocalizacaoPrestador(dados: {
-  latitude?: number | null;
-  longitude?: number | null;
-  enderecoTexto?: string | null;
-}) {
-  const usuario = await getSession();
-  if (!usuario || usuario.tipo !== 'prestador') {
-    return { erro: 'Não autorizado.' };
-  }
-
-  const atualizacao: Record<string, number | string | null | undefined> = {};
-  const coordenada = (valor, limite) => {
-    if (valor == null) return null;
-    const n = Number(valor);
-    return Number.isFinite(n) && Math.abs(n) <= limite ? n : undefined;
-  };
-  if ('latitude' in dados) atualizacao.latitude = coordenada(dados.latitude, 90);
-  if ('longitude' in dados) atualizacao.longitude = coordenada(dados.longitude, 180);
-  if (Object.values(atualizacao).some((v) => v === undefined)) {
-    return { erro: 'Localização inválida.' };
-  }
-  if ('enderecoTexto' in dados) atualizacao.enderecoTexto = String(dados.enderecoTexto ?? '').trim().slice(0, 200) || null;
-
-  if (Object.keys(atualizacao).length === 0) {
-    return { erro: null, sucesso: true };
-  }
-
-  await db
-    .update(prestadores)
-    .set(atualizacao)
-    .where(eq(prestadores.usuarioId, usuario.id));
-
-  revalidatePath('/configuracoes');
-  if (usuario.slug) revalidatePath(`/prestador/${usuario.slug}`);
-  revalidatePath(`/prestador/${usuario.id}`);
-
-  return { erro: null, sucesso: true };
-}
-
-export async function atualizarEnderecoTextoAction(estadoAnterior: unknown, formData: FormData) {
-  const enderecoTexto = formData.get('enderecoTexto');
-  return atualizarLocalizacaoPrestador({ enderecoTexto: enderecoTexto ? String(enderecoTexto) : null });
-}
 export async function tornarPrestadorAction() {
   const usuario = await getSession();
   if (!usuario) {

@@ -208,6 +208,9 @@ export async function getSession() {
         urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
         urlBanner: imagemPublica(usuarios.urlBanner, 'banner', usuarios.id),
         criadoEm: usuarios.criadoEm,
+        enderecoTexto: usuarios.enderecoTexto,
+        latitude: usuarios.latitude,
+        longitude: usuarios.longitude,
         expiraEm: sessoes.expiraEm,
       })
       .from(sessoes)

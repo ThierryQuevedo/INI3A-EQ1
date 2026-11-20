@@ -26,6 +26,7 @@ export default async function EditarServicoPage({ params }) {
       descricao: servicos.descricao,
       preco: servicos.preco,
       duracaoEstimada: servicos.duracaoEstimada,
+      endereco: servicos.enderecoTexto,
       urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       categoriaId: servicos.categoriaId,
       categoriaNome: tabelaCategorias.nome,
@@ -53,6 +54,8 @@ export default async function EditarServicoPage({ params }) {
       action={atualizarServico}
       nomePrestador={usuario.nome}
       servico={dadosDoFormulario}
+      // servico antigo sem endereco parte do endereco do usuario
+      enderecoPadrao={usuario.enderecoTexto ?? ''}
     />
   );
 }

@@ -85,6 +85,7 @@ function validarCamposServico(formData) {
   const preco = formData.get('preco')?.toString() || '';
   const duracaoRaw = formData.get('duracaoEstimada')?.toString() || '';
   const descricao = formData.get('descricao')?.toString().trim() || '';
+  const endereco = formData.get('endereco')?.toString().trim().replace(/\s+/g, ' ') || '';
 
   if (!nome) return { erro: 'Informe o nome do serviço.', campo: 'nome' };
   if (nome.length > 120) return { erro: 'O nome pode ter no máximo 120 caracteres.', campo: 'nome' };
@@ -109,6 +110,9 @@ function validarCamposServico(formData) {
     return { erro: 'A duração deve ser um número inteiro de minutos, entre 1 e 1440.', campo: 'duracaoEstimada' };
   }
 
+  if (!endereco) return { erro: 'Informe o endereço onde o serviço é realizado.', campo: 'endereco' };
+  if (endereco.length > 200) return { erro: 'O endereço pode ter no máximo 200 caracteres.', campo: 'endereco' };
+
   const imagem = validarUrlImagem(formData.get('urlImagem')?.toString());
   if (!imagem.valido) return { erro: ERRO_IMAGEM_INVALIDA, campo: 'urlImagem' };
 
@@ -120,6 +124,7 @@ function validarCamposServico(formData) {
       preco: precoNum.toFixed(2),
       duracaoEstimada,
       descricao: descricao || null,
+      endereco,
       urlImagem: imagem.semMudanca ? undefined : imagem.valor,
       fotoSemMudanca: !!imagem.semMudanca,
     },
@@ -159,7 +164,8 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
 
   const validacao = validarCamposServico(formData);
   if (!validacao.dados) return validacao;
-  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem } = validacao.dados;
+  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, endereco, urlImagem } =
+    validacao.dados;
 
   try {
     const [prestadorExiste] = await db
@@ -191,6 +197,7 @@ export async function cadastrarServico(_estadoAnterior: unknown, formData: FormD
       nome,
       slug: await gerarSlugUnicoDeServico(nome),
       descricao,
+      enderecoTexto: endereco,
       urlImagem: urlImagem ?? null,
       preco,
       duracaoEstimada,
@@ -303,8 +310,17 @@ export async function atualizarServico(_estadoAnterior: unknown, formData: FormD
 
   const validacao = validarCamposServico(formData);
   if (!validacao.dados) return validacao;
-  const { nome, categoriaIdRaw, novaCategoriaNome, preco, duracaoEstimada, descricao, urlImagem, fotoSemMudanca } =
-    validacao.dados;
+  const {
+    nome,
+    categoriaIdRaw,
+    novaCategoriaNome,
+    preco,
+    duracaoEstimada,
+    descricao,
+    endereco,
+    urlImagem,
+    fotoSemMudanca,
+  } = validacao.dados;
 
   // Foto salva como data URL chega aqui como o endereço curto de /api/imagem
   // (ver lib/imagemPublica.js): nesse caso a foto não mudou e a coluna fica como está.
@@ -316,6 +332,7 @@ export async function atualizarServico(_estadoAnterior: unknown, formData: FormD
         categoriaId: await resolverCategoriaId(categoriaIdRaw, novaCategoriaNome),
         nome,
         descricao,
+        enderecoTexto: endereco,
         preco,
         duracaoEstimada,
         ...(fotoSemMudanca ? {} : { urlImagem }),

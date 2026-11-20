@@ -8,6 +8,7 @@ import { avaliacoes, agendamentos, servicos } from '@/db/schema';
 import { getSession } from './auth.actions';
 import { notificarNovaAvaliacao } from '@/lib/notificacoes';
 import { verificarPodeAvaliar } from '@/lib/avaliacoes';
+import { STATUS_ATENDIMENTO_ENCERRADO } from '@/lib/regrasAgendamento';
 
 const TAMANHO_MAXIMO_COMENTARIO = 1000;
 
@@ -106,7 +107,8 @@ export async function avaliarCliente({
 
   if (!agendamento) return { erro: 'Agendamento não encontrado.' };
   if (agendamento.prestadorId !== usuario.id) return { erro: 'Não autorizado.' };
-  if (agendamento.status !== 'concluido') {
+  // prestador tambem avalia o cliente que nao compareceu
+  if (!STATUS_ATENDIMENTO_ENCERRADO.includes(agendamento.status)) {
     return { erro: 'Este serviço ainda não foi concluído.' };
   }
 

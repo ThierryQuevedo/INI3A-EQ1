@@ -15,8 +15,12 @@ import PageContainer, { PageHeader } from '@/app/components/ui/PageContainer';
 import { Card } from '@/app/components/ui/card';
 import EmptyState from '@/app/components/ui/EmptyState';
 import { Button } from '@/app/components/ui/button';
-
-const STATUS_CANCELAVEL = ['pendente', 'confirmado'];
+import {
+  ANTECEDENCIA_CANCELAMENTO_MIN,
+  aguardandoInicio,
+  podeCancelar,
+  podeEncerrarAtendimento,
+} from '@/lib/regrasAgendamento';
 
 export const metadata = { title: 'Sua agenda' };
 
@@ -42,7 +46,10 @@ function CardAgendamento({ item, usuarioLogado }) {
     : new Date(item.dataHora).toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short', timeZone: FUSO });
   // papel e por agendamento pois prestador tambem agenda
   const ehCliente = item.papel === 'cliente';
-  const horarioComecou = new Date(item.dataHora) <= new Date();
+  const agora = new Date();
+  const mostrarCancelar = podeCancelar(item, agora);
+  const mostrarEncerrar = podeEncerrarAtendimento(item, agora);
+  const esperandoInicio = aguardandoInicio(item, agora);
   const pagamento = STATUS_PAGAMENTO[item.pagamentoStatus];
   const IconPagamento = pagamento?.Icon;
   const hrefPagamento = `/agendamentos/${item.id}/pagamento`;
@@ -162,8 +169,8 @@ function CardAgendamento({ item, usuarioLogado }) {
               descricao={`Deseja confirmar o agendamento de ${item.clienteNome} para ${item.servicoNome}?`}
             />
           )}
-          {!ehCliente && item.status === 'confirmado' && (
-            horarioComecou ? (
+          {!ehCliente && mostrarEncerrar && (
+            <>
               <BotaoAcaoAgendamento
                 agendamentoId={item.id}
                 novoStatus="concluido"
@@ -171,11 +178,26 @@ function CardAgendamento({ item, usuarioLogado }) {
                 titulo="Concluir agendamento?"
                 descricao="Confirma que o serviço foi realizado?"
               />
-            ) : (
-              <p className="basis-full order-last text-caption text-muted-foreground sm:basis-auto sm:order-none sm:text-right">Concluir libera no horário marcado</p>
-            )
+              <BotaoAcaoAgendamento
+                agendamentoId={item.id}
+                novoStatus="nao_compareceu"
+                label="Cliente não compareceu"
+                titulo="Registrar que o cliente não compareceu?"
+                descricao={`O agendamento de ${item.clienteNome} será encerrado como ausência.${pago ? ' O valor pago não será devolvido.' : ''} Essa ação não pode ser desfeita.`}
+                variant="destructive"
+                aparencia="perigo"
+              />
+            </>
           )}
-          {STATUS_CANCELAVEL.includes(item.status) && (
+          {esperandoInicio && (
+            <p className="basis-full order-last text-caption text-muted-foreground sm:basis-auto sm:order-none sm:text-right">
+              {ehCliente ? 'Aguardando o início' : 'Aguardando o início · concluir libera no horário marcado'}
+            </p>
+          )}
+          {!ehCliente && item.status === 'confirmado' && !esperandoInicio && !mostrarEncerrar && (
+            <p className="basis-full order-last text-caption text-muted-foreground sm:basis-auto sm:order-none sm:text-right">Concluir libera no horário marcado</p>
+          )}
+          {mostrarCancelar && (
             <BotaoAcaoAgendamento
               agendamentoId={item.id}
               novoStatus="cancelado"
@@ -183,7 +205,7 @@ function CardAgendamento({ item, usuarioLogado }) {
               titulo="Cancelar agendamento?"
               descricao={
                 item.status === 'confirmado'
-                  ? `Este horário já estava confirmado. O motivo será enviado para a outra pessoa.${pago ? ' O valor pago será devolvido integralmente ao cliente.' : ''} Essa ação não pode ser desfeita.`
+                  ? `Este horário já estava confirmado. O motivo será enviado para a outra pessoa.${pago ? ' O valor pago será devolvido integralmente ao cliente.' : ''} Só é possível cancelar até ${ANTECEDENCIA_CANCELAMENTO_MIN} minutos antes do horário. Essa ação não pode ser desfeita.`
                   : 'Essa ação não pode ser desfeita.'
               }
               pedirMotivo
@@ -228,7 +250,7 @@ function CardAgendamento({ item, usuarioLogado }) {
         </div>
       )}
 
-      {!ehCliente && item.status === 'concluido' && (
+      {!ehCliente && (item.status === 'concluido' || item.status === 'nao_compareceu') && (
         <div className="mt-1">
           <AvaliacaoServico
             agendamentoId={item.id}

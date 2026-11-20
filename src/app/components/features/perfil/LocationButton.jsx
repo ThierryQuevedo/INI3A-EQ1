@@ -4,8 +4,9 @@ import { useState } from "react";
 import { LocateFixed, Loader2 } from "lucide-react";
 import { Button } from "@/app/components/ui/button";
 import { useToast } from "@/app/components/ui/ToastProvider";
-import { atualizarLocalizacaoPrestador } from "@/app/actions/prestadores.actions";
+import { salvarLocalizacaoAtualAction } from "@/app/actions/endereco.actions";
 
+// pega o gps e salva como o endereco do usuario (o mesmo do campo manual)
 export default function LocationButton({ onSuccess, className }) {
   const [carregando, setCarregando] = useState(false);
   const toast = useToast();
@@ -20,20 +21,20 @@ export default function LocationButton({ onSuccess, className }) {
     navigator.geolocation.getCurrentPosition(
       async (posicao) => {
         const { latitude, longitude } = posicao.coords;
-        const resultado = await atualizarLocalizacaoPrestador({ latitude, longitude });
+        const resultado = await salvarLocalizacaoAtualAction({ latitude, longitude });
         setCarregando(false);
         if (resultado?.erro) {
           toast.error(resultado.erro);
           return;
         }
-        toast.success("Localização atualizada.");
-        onSuccess?.({ latitude, longitude });
+        toast.success("Endereço atualizado pela sua localização.");
+        onSuccess?.({ latitude, longitude, enderecoTexto: resultado.enderecoTexto });
       },
       () => {
         setCarregando(false);
         toast.error("Não foi possível obter sua localização. Verifique a permissão do navegador.");
       },
-      { enableHighAccuracy: false, timeout: 10000 }
+      { enableHighAccuracy: true, timeout: 15000 }
     );
   }
 

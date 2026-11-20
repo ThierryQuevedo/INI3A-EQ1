@@ -1,6 +1,6 @@
 "use client";
 import { startTransition, useActionState, useEffect, useMemo, useState } from 'react';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2, MapPin } from 'lucide-react';
 import ServiceImageUpload from '@/app/components/features/servicos/ServiceImageUpload';
 import ServiceCard from '@/app/components/features/servicos/ServiceCard';
 import Combobox from '@/app/components/ui/Combobox';
@@ -16,7 +16,7 @@ const CLASSE_TEXTAREA =
 
 const ESTADO_INICIAL = { erro: null, campo: null };
 
-export default function ServicoForm({ categorias = [], action, nomePrestador, servico = null }) {
+export default function ServicoForm({ categorias = [], action, nomePrestador, servico = null, enderecoPadrao = '' }) {
   const [estado, formAction, enviando] = useActionState(action, ESTADO_INICIAL);
   const editando = !!servico;
 
@@ -27,6 +27,8 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
   const [preco, setPreco] = useState(servico?.preco ?? '');
   const [duracao, setDuracao] = useState(servico ? String(servico.duracaoEstimada) : '');
   const [descricao, setDescricao] = useState(servico?.descricao ?? '');
+  // servico novo ou antigo sem endereco parte do endereco do perfil
+  const [endereco, setEndereco] = useState(servico?.endereco || enderecoPadrao || '');
   const [urlImagem, setUrlImagem] = useState(servico?.urlImagem ?? '');
 
   // erro do servidor leva o foco ao campo
@@ -46,6 +48,7 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
     nomeCategoria: nomeCategoriaPreview || null,
     preco,
     duracaoEstimada: duracao === '' ? null : duracao,
+    endereco: endereco.trim() || null,
     urlImagem,
   };
 
@@ -226,6 +229,34 @@ export default function ServicoForm({ categorias = [], action, nomePrestador, se
               </div>
             </FormField>
           </div>
+
+          <FormField
+            id="endereco"
+            label="Endereço do atendimento"
+            required
+            hint="Onde o serviço é realizado. Aparece no card para o cliente antes de agendar."
+            error={erroDoCampo('endereco')}
+          >
+            <div className="relative">
+              <MapPin
+                size={16}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                aria-hidden="true"
+              />
+              <Input
+                id="endereco"
+                name="endereco"
+                placeholder="Ex: Rua das Flores, 123 – Centro, Bauru/SP"
+                value={endereco}
+                onChange={(e) => setEndereco(e.target.value)}
+                maxLength={200}
+                autoComplete="street-address"
+                className="pl-10"
+                required
+                {...propsErro('endereco')}
+              />
+            </div>
+          </FormField>
 
           <ServiceImageUpload
             name="urlImagem"

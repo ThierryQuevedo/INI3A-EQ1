@@ -95,6 +95,7 @@ export async function listarFavoritos() {
       preco: servicos.preco,
       urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       duracaoEstimada: servicos.duracaoEstimada,
+      endereco: servicos.enderecoTexto,
       categoriaId: servicos.categoriaId,
       nomeCategoria: categorias.nome,
       nomeProfissional: usuarios.nome,
@@ -116,7 +117,6 @@ export async function listarFavoritos() {
       nome: usuarios.nome,
       urlImagem: imagemPublica(usuarios.urlImagem, 'avatar', usuarios.id),
       biografia: prestadores.biografia,
-      enderecoTexto: prestadores.enderecoTexto,
     })
     .from(favoritos)
     .innerJoin(usuarios, eq(favoritos.prestadorId, usuarios.id))

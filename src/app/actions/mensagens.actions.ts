@@ -10,7 +10,7 @@ import { getSession } from './auth.actions';
 import { imagemPublica } from '@/lib/imagemPublica';
 import { notificarNovaMensagem } from '@/lib/notificacoes';
 
-const STATUS_ENCERRADO = ['concluido', 'cancelado'];
+const STATUS_ENCERRADO = ['concluido', 'cancelado', 'nao_compareceu'];
 const TAMANHO_MAXIMO_MENSAGEM = 2000;
 
 // usuarios entra duas vezes no join

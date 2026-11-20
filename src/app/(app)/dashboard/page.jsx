@@ -15,13 +15,20 @@ import { rotuloStatus } from "@/lib/statusAgendamento";
 import { FUSO, hojeNoFuso, instanteNoFuso, partesNoFuso, somarDias } from "@/lib/formatoData";
 import { db } from "@/db";
 import { agendamentos, servicos, usuarios } from "@/db/schema";
-import { eq, and, gte, lt } from "drizzle-orm";
+import { eq, and, gte, lt, inArray } from "drizzle-orm";
 import { buscarDashboardCliente } from "@/app/actions/clientes.actions";
 import { listarPagamentosAFazer } from "@/app/actions/pagamentos.actions";
 import { buscarPerfilPrestador } from "@/app/actions/prestadores.actions";
 import { buscarMotivosCancelamento } from "@/lib/motivoCancelamento";
 import { resumirPagamentos } from "@/lib/pagamentos";
 import { STATUS_PAGAMENTO } from "@/lib/statusPagamento";
+import {
+  ANTECEDENCIA_CANCELAMENTO_MIN,
+  STATUS_ATENDIMENTO_ENCERRADO,
+  aguardandoInicio,
+  podeCancelar as podeCancelarAgendamento,
+  podeEncerrarAtendimento,
+} from "@/lib/regrasAgendamento";
 
 export const metadata = { title: 'Painel' };
 
@@ -40,9 +47,10 @@ function formatarData(data) {
 
 function LinhaAgendamento({ ag, mostrarData }) {
   const podeConfirmar = ag.status === 'pendente';
-  const horarioComecou = new Date(ag.dataHora) <= new Date();
-  const podeConcluir = ag.status === 'confirmado' && horarioComecou;
-  const podeCancelar = ag.status !== 'cancelado' && ag.status !== 'concluido';
+  const agora = new Date();
+  const podeConcluir = podeEncerrarAtendimento(ag, agora);
+  const esperandoInicio = aguardandoInicio(ag, agora);
+  const podeCancelar = podeCancelarAgendamento(ag, agora);
   const pagamento = STATUS_PAGAMENTO[ag.pagamentoStatus];
   const IconPagamento = pagamento?.Icon;
 
@@ -95,8 +103,21 @@ function LinhaAgendamento({ ag, mostrarData }) {
             descricao={`Deseja marcar como concluído o agendamento de ${ag.clienteNome}?`}
           />
         )}
-        {ag.status === 'confirmado' && !horarioComecou && (
-          <span className="basis-full order-last text-caption text-muted-foreground @2xl:basis-auto @2xl:order-none">Concluir libera no horário marcado</span>
+        {podeConcluir && (
+          <BotaoAcaoAgendamento
+            agendamentoId={ag.id}
+            novoStatus="nao_compareceu"
+            label="Cliente não compareceu"
+            titulo="Registrar que o cliente não compareceu?"
+            descricao={`O agendamento de ${ag.clienteNome} será encerrado como ausência.${ag.pagamentoStatus === 'pago' ? ' O valor pago não será devolvido.' : ''} Esta ação não pode ser desfeita.`}
+            variant="destructive"
+            aparencia="perigo"
+          />
+        )}
+        {ag.status === 'confirmado' && !podeConcluir && (
+          <span className="basis-full order-last text-caption text-muted-foreground @2xl:basis-auto @2xl:order-none">
+            {esperandoInicio ? 'Aguardando o início · concluir libera no horário marcado' : 'Concluir libera no horário marcado'}
+          </span>
         )}
         {podeCancelar && (
           <BotaoAcaoAgendamento
@@ -106,7 +127,7 @@ function LinhaAgendamento({ ag, mostrarData }) {
             titulo="Cancelar agendamento?"
             descricao={
               ag.status === 'confirmado'
-                ? `Este horário de ${ag.clienteNome} já estava confirmado. O motivo será enviado para a outra pessoa. Esta ação não pode ser desfeita.`
+                ? `Este horário de ${ag.clienteNome} já estava confirmado. O motivo será enviado para a outra pessoa. Só é possível cancelar até ${ANTECEDENCIA_CANCELAMENTO_MIN} minutos antes do horário. Esta ação não pode ser desfeita.`
                 : `Tem certeza que deseja cancelar o agendamento de ${ag.clienteNome}? Esta ação não pode ser desfeita.`
             }
             pedirMotivo
@@ -245,7 +266,8 @@ export default async function Dashboard({ searchParams }) {
       .innerJoin(servicos, eq(agendamentos.servicoId, servicos.id))
       .where(and(
         eq(servicos.prestadorId, prestadorId),
-        eq(agendamentos.status, 'concluido'),
+        // ausencia do cliente entra no faturamento como concluido
+        inArray(agendamentos.status, STATUS_ATENDIMENTO_ENCERRADO),
         gte(agendamentos.dataHora, primeiroDiaMes)
       )),
 

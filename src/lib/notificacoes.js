@@ -9,6 +9,7 @@ import {
   emailAgendamentoCancelado,
   emailAgendamentoConfirmado,
   emailAgendamentoSolicitadoCliente,
+  emailClienteNaoCompareceu,
   emailNovaAvaliacao,
   emailNovaMensagem,
   emailNovoAgendamentoPrestador,
@@ -184,6 +185,21 @@ export async function notificarServicoConcluido(agendamentoId) {
       emailDestino: dados.clienteEmail,
       tipo: 'servico_concluido',
       template: emailServicoConcluido(dados),
+    });
+  });
+}
+
+// avisa o cliente que a ausencia foi registrada
+export async function notificarClienteNaoCompareceu(agendamentoId) {
+  await comProtecao('notificarClienteNaoCompareceu', async () => {
+    const dados = await dadosDoAgendamento(agendamentoId);
+    if (!dados) return;
+
+    await registrarEEnviar({
+      usuarioId: dados.clienteId,
+      emailDestino: dados.clienteEmail,
+      tipo: 'cliente_nao_compareceu',
+      template: emailClienteNaoCompareceu(dados),
     });
   });
 }

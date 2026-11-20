@@ -1,10 +1,11 @@
-import { Clock3, CalendarCheck2, CheckCircle2, XCircle } from 'lucide-react';
+import { Clock3, CalendarCheck2, CheckCircle2, XCircle, UserX } from 'lucide-react';
 
 export const STATUS_AGENDAMENTO = {
   pendente: { label: 'Aguardando confirmação', badge: 'bg-warning/15 text-warning', Icon: Clock3 },
   confirmado: { label: 'Confirmado', badge: 'bg-success/15 text-success', Icon: CalendarCheck2 },
   concluido: { label: 'Concluído', badge: 'bg-secondary text-secondary-foreground', Icon: CheckCircle2 },
   cancelado: { label: 'Cancelado', badge: 'bg-destructive/10 text-destructive', Icon: XCircle },
+  nao_compareceu: { label: 'Cliente não compareceu', badge: 'bg-warning/15 text-warning', Icon: UserX },
 };
 
 const FALLBACK = { label: null, badge: 'bg-muted text-muted-foreground', Icon: Clock3 };

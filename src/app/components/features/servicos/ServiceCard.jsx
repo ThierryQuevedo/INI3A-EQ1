@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/app/components/ui/button";
 import EstrelasNota from "@/app/components/ui/EstrelasNota";
@@ -22,6 +22,7 @@ export default function ServiceCard({ servico, interativo = true }) {
     preco,
     urlImagem,
     duracaoEstimada,
+    endereco,
     distanciaKm,
     avaliacaoMedia = 0,
     totalAvaliacoes = 0,
@@ -77,6 +78,13 @@ export default function ServiceCard({ servico, interativo = true }) {
         <p className="text-body-sm text-muted-foreground truncate mt-0.5" title={nomeProfissional}>
           {nomeProfissional || "Profissional"}
         </p>
+        {endereco && (
+          <p className="flex items-start gap-1 text-body-sm text-muted-foreground mt-1" title={endereco}>
+            <MapPin size={14} className="shrink-0 mt-[0.2em]" aria-hidden="true" />
+            <span className="sr-only-status">Endereço: </span>
+            <span className="line-clamp-2 break-words min-w-0">{endereco}</span>
+          </p>
+        )}
 
         <div className="flex items-center gap-1.5 mt-2">
           {totalAvaliacoes > 0 ? (

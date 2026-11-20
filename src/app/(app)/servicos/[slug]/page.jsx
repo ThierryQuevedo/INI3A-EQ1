@@ -1,4 +1,4 @@
-import { Calendar, Mail, Clock3, Star, ChevronRight, Pencil } from 'lucide-react';
+import { Calendar, Mail, Clock3, Star, ChevronRight, Pencil, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -56,6 +56,7 @@ export default async function DetalheServico({ params, searchParams }) {
       descricao: servicos.descricao,
       preco: servicos.preco,
       duracaoEstimada: servicos.duracaoEstimada,
+      endereco: servicos.enderecoTexto,
       urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
       categoriaNome: categorias.nome,
       prestadorId: servicos.prestadorId,
@@ -89,6 +90,7 @@ export default async function DetalheServico({ params, searchParams }) {
     descricao: dadosDb.descricao,
     preco: dadosDb.preco || "0.00",
     duracaoEstimada: dadosDb.duracaoEstimada || 0,
+    endereco: dadosDb.endereco,
     urlImagem: dadosDb.urlImagem,
     categoria: dadosDb.categoriaNome,
     avaliacaoMedia: estatisticas?.media ?? 0,
@@ -184,6 +186,14 @@ export default async function DetalheServico({ params, searchParams }) {
                 {formatarDuracao(servico.duracaoEstimada)}
               </p>
             </div>
+
+            {servico.endereco && (
+              <p className="flex items-start gap-1.5 text-body-sm text-foreground mt-3 break-words">
+                <MapPin size={16} className="shrink-0 mt-[0.15em] text-muted-foreground" aria-hidden="true" />
+                <span className="sr-only-status">Endereço do atendimento: </span>
+                {servico.endereco}
+              </p>
+            )}
 
             {servico.desativado ? (
               <p className="text-body-sm text-muted-foreground mt-4">

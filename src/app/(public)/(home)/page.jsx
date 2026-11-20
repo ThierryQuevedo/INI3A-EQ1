@@ -2,7 +2,7 @@ import Link from "next/link";
 import { CalendarDays, Clock, Star, ArrowRight, ChevronRight } from "lucide-react";
 import { desc, eq, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { servicos, usuarios, categorias, prestadores } from "@/db/schema";
+import { servicos, usuarios, categorias } from "@/db/schema";
 import CategoryIcon from "@/app/components/features/servicos/CategoryIcon";
 import CarrosselServicos from "@/app/components/features/home/CarrosselServicos";
 import BuscaHome from "@/app/components/features/home/BuscaHome";
@@ -19,6 +19,7 @@ import { ehHoje } from "@/lib/disponibilidade";
 import { FUSO, partesNoFuso } from "@/lib/formatoData";
 import PageContainer from "@/app/components/ui/PageContainer";
 import { imagemPublica } from '@/lib/imagemPublica';
+import { coordenadaAproximada } from '@/lib/geo';
 
 export const metadata = {
   title: { absolute: 'Marca Aí: encontre um profissional e agende na hora' },
@@ -58,15 +59,15 @@ export default async function Home() {
         preco: servicos.preco,
         urlImagem: imagemPublica(servicos.urlImagem, 'servico', servicos.id),
         duracaoEstimada: servicos.duracaoEstimada,
+        endereco: servicos.enderecoTexto,
         nomeProfissional: usuarios.nome,
         nomeCategoria: categorias.nome,
-        prestadorLatitude: prestadores.latitude,
-        prestadorLongitude: prestadores.longitude,
+        prestadorLatitude: usuarios.latitude,
+        prestadorLongitude: usuarios.longitude,
       })
       .from(servicos)
       .leftJoin(usuarios, eq(servicos.prestadorId, usuarios.id))
       .leftJoin(categorias, eq(servicos.categoriaId, categorias.id))
-      .leftJoin(prestadores, eq(servicos.prestadorId, prestadores.usuarioId))
       .where(isNull(servicos.desativadoEm))
       .orderBy(desc(servicos.id))
       .limit(24),
@@ -96,7 +97,16 @@ export default async function Home() {
 
   const catalogo = await comEstatisticas(catalogoBruto);
   const proximosHorarios = await calcularProximosHorariosLivres(catalogo.map((s) => s.id));
-  const catalogoComHorario = catalogo.map((s) => ({ ...s, proximoHorario: proximosHorarios[s.id] ?? null }));
+  const catalogoComHorario = catalogo.map((s) => ({
+    ...s,
+    prestadorLatitude: coordenadaAproximada(s.prestadorLatitude),
+    prestadorLongitude: coordenadaAproximada(s.prestadorLongitude),
+    proximoHorario: proximosHorarios[s.id] ?? null,
+  }));
+  const minhaLocalizacao =
+    usuario?.latitude != null && usuario?.longitude != null
+      ? { lat: usuario.latitude, lng: usuario.longitude }
+      : null;
 
   const maisBemAvaliados = [...catalogoComHorario]
     .filter((s) => s.totalAvaliacoes > 0)
@@ -170,7 +180,7 @@ export default async function Home() {
         </section>
       )}
 
-      <SecaoPertoDeVoce catalogo={catalogoComHorario} />
+      <SecaoPertoDeVoce catalogo={catalogoComHorario} minhaLocalizacao={minhaLocalizacao} />
 
       {maisBemAvaliados.length > 0 && (
         <section>

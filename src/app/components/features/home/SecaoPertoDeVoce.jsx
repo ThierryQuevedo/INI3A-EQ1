@@ -10,13 +10,15 @@ function temGeolocalizacao() {
   return typeof navigator !== "undefined" && !!navigator.geolocation;
 }
 
-export default function SecaoPertoDeVoce({ catalogo }) {
-  const [posicao, setPosicao] = useState(null);
+// minhalocalizacao vem do endereco salvo nas configuracoes; sem ele usa o gps
+export default function SecaoPertoDeVoce({ catalogo, minhaLocalizacao = null }) {
+  const [posicaoGps, setPosicao] = useState(null);
   // pronto quando nao ha geolocalizacao
-  const [pronto, setPronto] = useState(() => !temGeolocalizacao());
+  const [pronto, setPronto] = useState(() => !!minhaLocalizacao || !temGeolocalizacao());
+  const posicao = minhaLocalizacao ?? posicaoGps;
 
   useEffect(() => {
-    if (!temGeolocalizacao()) return;
+    if (minhaLocalizacao || !temGeolocalizacao()) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setPosicao({ lat: pos.coords.latitude, lng: pos.coords.longitude });
@@ -25,7 +27,7 @@ export default function SecaoPertoDeVoce({ catalogo }) {
       () => setPronto(true),
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
     );
-  }, []);
+  }, [minhaLocalizacao]);
 
   if (!pronto || !posicao) return null;
 

@@ -229,6 +229,34 @@ export function emailAgendamentoCancelado({ clienteNome, prestadorNome, servicoN
   };
 }
 
+export function emailClienteNaoCompareceu({ clienteNome, prestadorNome, servicoNome, dataHora }) {
+  const quando = formatarDataHora(dataHora);
+  const link = linkApp('/agendamentos');
+
+  return {
+    assunto: `Ausência registrada: ${servicoNome}`,
+    titulo: 'Ausência registrada',
+    mensagem: `${prestadorNome} registrou que você não compareceu ao agendamento de "${servicoNome}" de ${quando}.`,
+    link,
+    html: layoutEmail({
+      saudacao: `Olá, ${clienteNome}.`,
+      paragrafos: [
+        `<strong>${escapar(prestadorNome)}</strong> registrou que você não compareceu ao agendamento.`,
+        'O agendamento foi encerrado e não há reembolso do valor pago. Se acha que houve um engano, fale com o profissional pelas mensagens ou com o suporte.',
+      ],
+      destaque: {
+        rotulo: 'Cliente não compareceu',
+        itens: [
+          ['Serviço', escapar(servicoNome)],
+          ['Profissional', escapar(prestadorNome)],
+          ['Quando', escapar(quando)],
+        ],
+      },
+      cta: { texto: 'Ver minha agenda', href: link },
+    }),
+  };
+}
+
 export function emailCodigoExclusaoServico({ usuarioNome, servicoNome, codigo }) {
   return {
     assunto: `${codigo} é o seu código para excluir um serviço`,

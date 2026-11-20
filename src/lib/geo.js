@@ -17,3 +17,8 @@ export function formatarDistancia(km) {
   if (km < 10) return `${km.toFixed(1).replace('.', ',')} km`;
   return `${Math.round(km)} km`;
 }
+
+// ~1 km de precisao: o catalogo vai para o navegador e nao pode expor o endereco exato do prestador
+export function coordenadaAproximada(valor) {
+  return valor == null ? null : Math.round(valor * 100) / 100;
+}

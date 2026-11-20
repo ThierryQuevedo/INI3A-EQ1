@@ -15,7 +15,7 @@ function normalizarTexto(valor) {
     return (valor || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 }
 
-export default function ServicosClient({ servicos = [], categorias = [] }) {
+export default function ServicosClient({ servicos = [], categorias = [], minhaLocalizacao = null }) {
     const searchParams = useSearchParams();
     const [termoBusca, setTermoBusca] = useState(searchParams.get('q') || '');
     const [filtros, setFiltros] = useState(() => ({
@@ -27,6 +27,13 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
     const [statusLocalizacao, setStatusLocalizacao] = useState('idle'); // idle buscando pronta erro
 
     const ativarPertoDeMim = useCallback(() => {
+        // com endereco salvo nas configuracoes nao precisa pedir o gps
+        if (minhaLocalizacao) {
+            setPosicao(minhaLocalizacao);
+            setStatusLocalizacao('pronta');
+            setFiltros((f) => ({ ...f, pertoDeMim: true }));
+            return;
+        }
         if (typeof navigator === 'undefined' || !navigator.geolocation) {
             setStatusLocalizacao('erro');
             return;
@@ -41,7 +48,7 @@ export default function ServicosClient({ servicos = [], categorias = [] }) {
             () => setStatusLocalizacao('erro'),
             { enableHighAccuracy: false, timeout: 8000, maximumAge: 5 * 60 * 1000 }
         );
-    }, []);
+    }, [minhaLocalizacao]);
 
     const desativarPertoDeMim = useCallback(() => {
         setFiltros((f) => ({ ...f, pertoDeMim: false }));

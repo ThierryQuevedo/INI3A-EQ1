@@ -10,6 +10,7 @@ import { getSession } from './auth.actions';
 import {
   notificarAgendamentoCancelado,
   notificarAgendamentoConfirmado,
+  notificarClienteNaoCompareceu,
   notificarNovoAgendamento,
   notificarServicoConcluido,
 } from '@/lib/notificacoes';
@@ -17,13 +18,15 @@ import { buscarMotivosCancelamento, textoDoMotivo } from '@/lib/motivoCancelamen
 import { encerrarPagamentosComAviso, resumirPagamentos } from '@/lib/pagamentos';
 import { calcularSlotsLivresDoDia } from '@/lib/disponibilidade';
 import { instanteNoFuso, partesNoFuso } from '@/lib/formatoData';
+import { ANTECEDENCIA_CANCELAMENTO_MIN, horarioComecou, podeCancelar } from '@/lib/regrasAgendamento';
 
 // usuarios entra duas vezes no join
 const prestadorUsuarios = alias(usuarios, 'prestador_usuarios_agenda');
 
 const TRANSICOES_PERMITIDAS = {
   pendente: ['confirmado', 'cancelado'],
-  confirmado: ['concluido', 'cancelado'],
+  // nao_compareceu segue o mesmo fluxo financeiro de concluido: sem reembolso
+  confirmado: ['concluido', 'nao_compareceu', 'cancelado'],
 };
 
 const TAMANHO_MAXIMO_MOTIVO = 500;
@@ -255,8 +258,18 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
     return { erro: 'Este agendamento já foi encerrado.' };
   }
 
-  if (status === 'concluido' && atual.dataHora > new Date()) {
+  if (status === 'concluido' && !horarioComecou(atual.dataHora)) {
     return { erro: 'Só é possível concluir depois que o horário agendado começar.' };
+  }
+
+  if (status === 'nao_compareceu' && !horarioComecou(atual.dataHora)) {
+    return { erro: 'Só é possível registrar a ausência depois que o horário agendado começar.' };
+  }
+
+  if (status === 'cancelado' && !podeCancelar(atual)) {
+    return {
+      erro: `O prazo para cancelar terminou: só é possível cancelar até ${ANTECEDENCIA_CANCELAMENTO_MIN} minutos antes do horário.`,
+    };
   }
 
   const motivoLimpo = status === 'cancelado' ? String(motivo ?? '').trim().slice(0, TAMANHO_MAXIMO_MOTIVO) : '';
@@ -305,6 +318,9 @@ export async function atualizarStatusAgendamento(id: number, status: string, mot
       break;
     case 'concluido':
       after(() => notificarServicoConcluido(agendamentoId));
+      break;
+    case 'nao_compareceu':
+      after(() => notificarClienteNaoCompareceu(agendamentoId));
       break;
   }
 

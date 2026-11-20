@@ -31,13 +31,21 @@ const SECOES = [
     ],
   },
   {
-    titulo: '5. Uso adequado da plataforma',
+    titulo: '5. Endereço e localização',
+    paragrafos: [
+      'Informar um endereço é opcional. Ele pode ser digitado nas configurações ou preenchido pelo botão "Usar minha localização atual", que só acessa a localização do seu dispositivo com a sua permissão.',
+      'O endereço serve para o filtro "Perto de mim" e, no caso de prestadores, para mostrar aos clientes a distância aproximada até eles. Ele não aparece no seu perfil público, e a distância é calculada com precisão de cerca de 1 km.',
+      'Para converter o endereço em coordenadas (e a localização em endereço), o texto do endereço ou as coordenadas são enviados ao serviço de mapas OpenStreetMap (Nominatim). Você pode alterar ou apagar o endereço a qualquer momento nas configurações.',
+    ],
+  },
+  {
+    titulo: '6. Uso adequado da plataforma',
     paragrafos: [
       'Não é permitido usar o Marca Aí para fins ilegais, para divulgar conteúdo falso ou para contornar as regras de agendamento e avaliação da plataforma.',
     ],
   },
   {
-    titulo: '6. Alterações destes termos',
+    titulo: '7. Alterações destes termos',
     paragrafos: [
       'Estes termos podem ser atualizados periodicamente para refletir mudanças na plataforma. Mudanças relevantes serão comunicadas através do próprio site.',
     ],
@@ -51,7 +59,7 @@ export default function TermosPage() {
       <h1 className="text-h4 lg:text-h3 font-black tracking-tight text-foreground mt-2 mb-2">
         Termos de uso
       </h1>
-      <p className="text-body-sm text-muted-foreground mb-8">Última atualização: outubro de 2026</p>
+      <p className="text-body-sm text-muted-foreground mb-8">Última atualização: novembro de 2026</p>
 
       <div className="space-y-8">
         {SECOES.map((secao) => (
